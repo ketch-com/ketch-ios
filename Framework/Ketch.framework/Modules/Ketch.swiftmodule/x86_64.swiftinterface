@@ -1,0 +1,269 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.2.4 (swiftlang-1103.0.32.9 clang-1103.0.32.53)
+// swift-module-flags: -target x86_64-apple-ios13.2-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name Ketch
+import CoreLocation
+import CryptoKit
+import Foundation
+import Swift
+import UIKit
+public enum GetFullConfigurationValidationError : Ketch.ValidationError {
+  case cannotRetrieveLocation(_: Swift.Error?)
+  case cannotFindEnvironment(_: Swift.String)
+  case environmentMissedHash(_: Swift.String)
+  case supercargoHostInvalid(_: Swift.String)
+  case supercargoHostNotSpecified
+  public var description: Swift.String {
+    get
+  }
+}
+public struct Policy : Swift.Codable {
+  public var code: Swift.String?
+  public var version: Swift.Int?
+  public var url: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum GetConsentStatusValidationError : Ketch.ValidationError {
+  case wheelhouseHostNotSpecified
+  case wheelhouseHostInvalid(_: Swift.String)
+  case environmentCodeNotSpecified
+  case noIdentities
+  case noPurposes
+  case purposeIsNotFoundInConfig(_: Swift.String)
+  public var description: Swift.String {
+    get
+  }
+}
+public protocol ValidationError : Swift.Error {
+  var description: Swift.String { get }
+}
+public enum NetworkTaskError : Swift.Error {
+  case invalidStatusCode(_: Swift.Int)
+  case serverNotReachable
+  case requestError(Swift.Error?)
+  case decodeError(Swift.Error?)
+  case handleError(Swift.Error?)
+  case validationError(error: Ketch.ValidationError)
+  case unknown
+  public var description: Swift.String {
+    get
+  }
+}
+public struct Environment : Swift.Codable {
+  public var code: Swift.String?
+  public var pattern: Swift.String?
+  public var hash: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum GetLocationValidationError : Ketch.ValidationError {
+  case astrolabeHostNotSpecified
+  case astrolabeHostInvalid(_: Swift.String)
+  public var description: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers public class Ketch {
+  public static func setup(organizationCode: Swift.String, applicationCode: Swift.String, session: Foundation.URLSession = URLSession.shared) throws
+  public static func getBootstrapConfiguration(completion: @escaping (Ketch.NetworkTaskResult<Ketch.BootstrapConfiguration>) -> Swift.Void)
+  public static func getFullConfiguration(bootstrapConfiguration: Ketch.BootstrapConfiguration, environmentCode: Swift.String, coordinate: CoreLocation.CLLocationCoordinate2D, languageCode: Swift.String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (Ketch.NetworkTaskResult<Ketch.Configuration>) -> Swift.Void)
+  public static func getFullConfiguration(bootstrapConfiguration: Ketch.BootstrapConfiguration, environmentCode: Swift.String, languageCode: Swift.String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (Ketch.NetworkTaskResult<Ketch.Configuration>) -> Swift.Void)
+  public static func getFullConfiguration(bootstrapConfiguration: Ketch.BootstrapConfiguration, environmentCode: Swift.String, countryCode: Swift.String, regionCode: Swift.String?, languageCode: Swift.String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (Ketch.NetworkTaskResult<Ketch.Configuration>) -> Swift.Void)
+  public static func getConsentStatus(configuration: Ketch.Configuration, identities: [Swift.String : Swift.String], purposes: [Swift.String : Swift.String], completion: @escaping (Ketch.NetworkTaskResult<[Swift.String : Ketch.ConsentStatus]>) -> Swift.Void)
+  public static func setConsentStatus(configuration: Ketch.Configuration, identities: [Swift.String : Swift.String], consents: [Swift.String : Ketch.ConsentStatus], migrationOption: Ketch.MigrationOption, completion: @escaping (Ketch.NetworkTaskVoidResult) -> Swift.Void)
+  public static func invokeRights(configuration: Ketch.Configuration, identities: [Swift.String : Swift.String], rights: [Swift.String], userData: Ketch.UserData, completion: @escaping (Ketch.NetworkTaskVoidResult) -> Swift.Void)
+  @objc deinit
+}
+public struct Application : Swift.Codable {
+  public var code: Swift.String?
+  public var name: Swift.String?
+  public var platform: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct UserData {
+  public var email: Swift.String
+  public init(email: Swift.String)
+}
+public struct Options : Swift.Codable {
+  public var localStorage: Swift.Int?
+  public var migration: Swift.Int?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum KetchError : Ketch.ValidationError {
+  case alreadySetup
+  case haveNotSetupYet
+  public var description: Swift.String {
+    get
+  }
+  public static func == (a: Ketch.KetchError, b: Ketch.KetchError) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+public struct Right : Swift.Codable {
+  public var code: Swift.String?
+  public var name: Swift.String?
+  public var description: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum InvokeRightsValidationError : Ketch.ValidationError {
+  case gangplankHostNotSpecified
+  case gangplankHostInvalid(_: Swift.String)
+  case environmentCodeNotSpecified
+  case policyScopeCodeNotSpecified
+  case noIdentities
+  case noRights
+  case rightIsNotFoundInConfig(_: Swift.String)
+  public var description: Swift.String {
+    get
+  }
+}
+public enum SetConsentStatusValidationError : Ketch.ValidationError {
+  case wheelhouseHostNotSpecified
+  case wheelhouseHostInvalid(_: Swift.String)
+  case environmentCodeNotSpecified
+  case policyScopeCodeNotSpecified
+  case noIdentities
+  case noConsents
+  case purposeIsNotFoundInConfig(_: Swift.String)
+  public var description: Swift.String {
+    get
+  }
+}
+public struct BootstrapConfiguration : Swift.Codable {
+  public struct PolicyScope : Swift.Codable {
+    public var defaultScopeCode: Swift.String?
+    public var scopes: [Swift.String : Swift.String]?
+    public init(from decoder: Swift.Decoder) throws
+    public func encode(to encoder: Swift.Encoder) throws
+  }
+  public var version: Swift.Int?
+  public var organization: Ketch.Organization?
+  public var application: Ketch.Application?
+  public var environments: [Ketch.Environment]?
+  public var policyScope: Ketch.BootstrapConfiguration.PolicyScope?
+  public var identities: [Swift.String : Ketch.Identity]?
+  public var scripts: [Swift.String]?
+  public var services: Ketch.Services?
+  public var options: Ketch.Options?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct Configuration : Swift.Codable {
+  public struct PolicyScope : Swift.Codable {
+    public var defaultScopeCode: Swift.String?
+    public var code: Swift.String?
+    public init(from decoder: Swift.Decoder) throws
+    public func encode(to encoder: Swift.Encoder) throws
+  }
+  public var version: Swift.Int?
+  public var language: Swift.String?
+  public var organization: Ketch.Organization?
+  public var application: Ketch.Application?
+  public var environments: [Ketch.Environment]?
+  public var policyScope: Ketch.Configuration.PolicyScope?
+  public var identities: [Swift.String : Ketch.Identity]?
+  public var environment: Ketch.Environment?
+  public var deployment: Ketch.Deployment?
+  public var privacyPolicy: Ketch.Policy?
+  public var termsOfService: Ketch.Policy?
+  public var rights: [Ketch.Right]?
+  public var regulations: [Swift.String]?
+  public var purposes: [Ketch.Purpose]?
+  public var services: Ketch.Services?
+  public var options: Ketch.Options?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct Purpose : Swift.Codable {
+  public var code: Swift.String?
+  public var name: Swift.String?
+  public var description: Swift.String?
+  public var legalBasisCode: Swift.String?
+  public var requiresPrivacyPolicy: Swift.Bool?
+  public var requiresOptIn: Swift.Bool?
+  public var allowsOptOut: Swift.Bool?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct Services : Swift.Codable {
+  public var astrolabe: Swift.String?
+  public var gangplank: Swift.String?
+  public var halyard: Swift.String?
+  public var supercargo: Swift.String?
+  public var wheelhouse: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct Organization : Swift.Codable {
+  public var code: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public struct Deployment : Swift.Codable {
+  public var code: Swift.String?
+  public var version: Swift.Int?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+public enum MigrationOption : Swift.Int {
+  case `default`
+  case never
+  case fromAllow
+  case fromDeny
+  case always
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+}
+public enum NetworkTaskResult<ResultType> {
+  case success(ResultType?)
+  case cache(ResultType?)
+  case failure(Ketch.NetworkTaskError)
+}
+extension NetworkTaskResult {
+  public var isSuccess: Swift.Bool {
+    get
+  }
+  public var object: ResultType? {
+    get
+  }
+  public var error: Ketch.NetworkTaskError? {
+    get
+  }
+}
+public enum NetworkTaskVoidResult {
+  case success
+  case failure(Ketch.NetworkTaskError)
+  public var isSuccess: Swift.Bool {
+    get
+  }
+  public var error: Ketch.NetworkTaskError? {
+    get
+  }
+}
+public struct ConsentStatus : Swift.Codable, Swift.Equatable {
+  public var allowed: Swift.Bool?
+  public var legalBasisCode: Swift.String?
+  public init(allowed: Swift.Bool, legalBasisCode: Swift.String)
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+  public static func == (a: Ketch.ConsentStatus, b: Ketch.ConsentStatus) -> Swift.Bool
+}
+public struct Identity : Swift.Codable {
+  public var type: Swift.String?
+  public var variable: Swift.String?
+  public init(from decoder: Swift.Decoder) throws
+  public func encode(to encoder: Swift.Encoder) throws
+}
+extension Ketch.KetchError : Swift.Equatable {}
+extension Ketch.KetchError : Swift.Hashable {}
+extension Ketch.MigrationOption : Swift.Equatable {}
+extension Ketch.MigrationOption : Swift.Hashable {}
+extension Ketch.MigrationOption : Swift.RawRepresentable {}

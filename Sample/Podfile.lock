@@ -1,0 +1,16 @@
+PODS:
+  - Ketch (1.0.0)
+
+DEPENDENCIES:
+  - Ketch (from `..`)
+
+EXTERNAL SOURCES:
+  Ketch:
+    :path: ".."
+
+SPEC CHECKSUMS:
+  Ketch: 309ca811f4bbae926bf3dbdd31b6cda15c623723
+
+PODFILE CHECKSUM: 294c6ba5b30b312e7a1d501a8afeb6cd8c560c32
+
+COCOAPODS: 1.8.4

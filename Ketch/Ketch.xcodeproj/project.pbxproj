@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -68,6 +68,12 @@
 		79C976CE242B9352001CF957 /* NetworkTaskError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C976CA242B9352001CF957 /* NetworkTaskError.swift */; };
 		79C976CF242B9352001CF957 /* NetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C976CB242B9352001CF957 /* NetworkRequest.swift */; };
 		79C976D4242B93D1001CF957 /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C976D3242B93D1001CF957 /* CacheStore.swift */; };
+		9BB3DC282577FAC2006E6FB9 /* GRPC in Frameworks */ = {isa = PBXBuildFile; productRef = 9BB3DC272577FAC2006E6FB9 /* GRPC */; };
+		9BB3DC2A2577FAC2006E6FB9 /* CGRPCZlib in Frameworks */ = {isa = PBXBuildFile; productRef = 9BB3DC292577FAC2006E6FB9 /* CGRPCZlib */; };
+		9BB3DC2E2577FD02006E6FB9 /* mobile.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC2C2577FD01006E6FB9 /* mobile.grpc.swift */; };
+		9BB3DC2F2577FD02006E6FB9 /* mobile.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC2D2577FD01006E6FB9 /* mobile.pb.swift */; };
+		9BB3DC322577FD0D006E6FB9 /* transponder.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC302577FD0D006E6FB9 /* transponder.grpc.swift */; };
+		9BB3DC332577FD0D006E6FB9 /* transponder.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC312577FD0D006E6FB9 /* transponder.pb.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -145,6 +151,10 @@
 		79C976CA242B9352001CF957 /* NetworkTaskError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkTaskError.swift; sourceTree = "<group>"; };
 		79C976CB242B9352001CF957 /* NetworkRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkRequest.swift; sourceTree = "<group>"; };
 		79C976D3242B93D1001CF957 /* CacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStore.swift; sourceTree = "<group>"; };
+		9BB3DC2C2577FD01006E6FB9 /* mobile.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mobile.grpc.swift; sourceTree = "<group>"; };
+		9BB3DC2D2577FD01006E6FB9 /* mobile.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mobile.pb.swift; sourceTree = "<group>"; };
+		9BB3DC302577FD0D006E6FB9 /* transponder.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = transponder.grpc.swift; sourceTree = "<group>"; };
+		9BB3DC312577FD0D006E6FB9 /* transponder.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = transponder.pb.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +162,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BB3DC282577FAC2006E6FB9 /* GRPC in Frameworks */,
+				9BB3DC2A2577FAC2006E6FB9 /* CGRPCZlib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,6 +254,7 @@
 		79AE792A242A7357006AFD7D /* Ketch */ = {
 			isa = PBXGroup;
 			children = (
+				9BB3DC2B2577FCD0006E6FB9 /* gRPC */,
 				79C976D0242B9381001CF957 /* Store */,
 				79C976C7242B92CD001CF957 /* Base */,
 				79C0BFB2242BA255007142B5 /* Engine */,
@@ -388,6 +401,25 @@
 			path = Store;
 			sourceTree = "<group>";
 		};
+		9BB3DC2B2577FCD0006E6FB9 /* gRPC */ = {
+			isa = PBXGroup;
+			children = (
+				9BB3DC342577FD21006E6FB9 /* Generated */,
+			);
+			path = gRPC;
+			sourceTree = "<group>";
+		};
+		9BB3DC342577FD21006E6FB9 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				9BB3DC2C2577FD01006E6FB9 /* mobile.grpc.swift */,
+				9BB3DC2D2577FD01006E6FB9 /* mobile.pb.swift */,
+				9BB3DC302577FD0D006E6FB9 /* transponder.grpc.swift */,
+				9BB3DC312577FD0D006E6FB9 /* transponder.pb.swift */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -415,6 +447,10 @@
 			dependencies = (
 			);
 			name = Ketch;
+			packageProductDependencies = (
+				9BB3DC272577FAC2006E6FB9 /* GRPC */,
+				9BB3DC292577FAC2006E6FB9 /* CGRPCZlib */,
+			);
 			productName = Tender;
 			productReference = 79AE7928242A7357006AFD7D /* Ketch.framework */;
 			productType = "com.apple.product-type.framework";
@@ -465,6 +501,9 @@
 				Base,
 			);
 			mainGroup = 79AE791E242A7357006AFD7D;
+			packageReferences = (
+				9BB3DC262577FAC2006E6FB9 /* XCRemoteSwiftPackageReference "grpc-swift" */,
+			);
 			productRefGroup = 79AE7929242A7357006AFD7D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -498,6 +537,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				794110A1242E33C600BAA503 /* SetConsentStatusRequest.swift in Sources */,
+				9BB3DC322577FD0D006E6FB9 /* transponder.grpc.swift in Sources */,
 				7900412E242CA92500F381DB /* GetFullConfigurationValidationError.swift in Sources */,
 				794110AD242E3B1700BAA503 /* InvokeRightsRequest.swift in Sources */,
 				79C5E927242E254D00E28FBC /* String+Extensions.swift in Sources */,
@@ -519,6 +559,9 @@
 				79C0BFCA242BA674007142B5 /* Location.swift in Sources */,
 				79C976CC242B9352001CF957 /* NetworkTask.swift in Sources */,
 				796C7E662431CC230064C3F9 /* KetchError.swift in Sources */,
+				9BB3DC2E2577FD02006E6FB9 /* mobile.grpc.swift in Sources */,
+				9BB3DC332577FD0D006E6FB9 /* transponder.pb.swift in Sources */,
+				9BB3DC2F2577FD02006E6FB9 /* mobile.pb.swift in Sources */,
 				79C0BFD2242BA954007142B5 /* Right.swift in Sources */,
 				79C0BFB4242BA26F007142B5 /* Settings.swift in Sources */,
 				79C976CD242B9352001CF957 /* ResponseHandler.swift in Sources */,
@@ -816,6 +859,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9BB3DC262577FAC2006E6FB9 /* XCRemoteSwiftPackageReference "grpc-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/grpc/grpc-swift.git";
+			requirement = {
+				kind = revision;
+				revision = e2e138df61dcbfc2dc1cf284fdab6f983539ab48;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9BB3DC272577FAC2006E6FB9 /* GRPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9BB3DC262577FAC2006E6FB9 /* XCRemoteSwiftPackageReference "grpc-swift" */;
+			productName = GRPC;
+		};
+		9BB3DC292577FAC2006E6FB9 /* CGRPCZlib */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9BB3DC262577FAC2006E6FB9 /* XCRemoteSwiftPackageReference "grpc-swift" */;
+			productName = CGRPCZlib;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 79AE791F242A7357006AFD7D /* Project object */;
 }

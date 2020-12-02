@@ -29,13 +29,13 @@
 		796424B924375CB7002AD24F /* URLSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796424B824375CB7002AD24F /* URLSessionMock.swift */; };
 		796424BB24376697002AD24F /* BootstrapConfiguration+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796424BA24376697002AD24F /* BootstrapConfiguration+Mock.swift */; };
 		796424BD24376AFF002AD24F /* Configuration+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796424BC24376AFF002AD24F /* Configuration+Mock.swift */; };
-		796C7E662431CC230064C3F9 /* TenderError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C7E652431CC230064C3F9 /* TenderError.swift */; };
+		796C7E662431CC230064C3F9 /* KetchError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C7E652431CC230064C3F9 /* KetchError.swift */; };
 		796C7E682431D1050064C3F9 /* CLGeocoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796C7E672431D1050064C3F9 /* CLGeocoder+Extensions.swift */; };
 		798086DC243CA17200C2F3FD /* KetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798086DB243CA17200C2F3FD /* KetchTests.swift */; };
 		798086DE243CA36000C2F3FD /* NetworkEngineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798086DD243CA36000C2F3FD /* NetworkEngineMock.swift */; };
 		798086E2243CA60500C2F3FD /* NetworkTask+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798086E1243CA60500C2F3FD /* NetworkTask+Mock.swift */; };
 		79AE7932242A7357006AFD7D /* Ketch.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 79AE7928242A7357006AFD7D /* Ketch.framework */; };
-		79AE7943242A7441006AFD7D /* Tender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AE7942242A7441006AFD7D /* Tender.swift */; };
+		79AE7943242A7441006AFD7D /* Ketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AE7942242A7441006AFD7D /* Ketch.swift */; };
 		79C0BFB4242BA26F007142B5 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C0BFB3242BA26F007142B5 /* Settings.swift */; };
 		79C0BFBA242BA314007142B5 /* BootstrapConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C0BFB9242BA314007142B5 /* BootstrapConfiguration.swift */; };
 		79C0BFBC242BA369007142B5 /* Organization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C0BFBB242BA369007142B5 /* Organization.swift */; };
@@ -103,7 +103,7 @@
 		796424B824375CB7002AD24F /* URLSessionMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionMock.swift; sourceTree = "<group>"; };
 		796424BA24376697002AD24F /* BootstrapConfiguration+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BootstrapConfiguration+Mock.swift"; sourceTree = "<group>"; };
 		796424BC24376AFF002AD24F /* Configuration+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Configuration+Mock.swift"; sourceTree = "<group>"; };
-		796C7E652431CC230064C3F9 /* TenderError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenderError.swift; sourceTree = "<group>"; };
+		796C7E652431CC230064C3F9 /* KetchError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KetchError.swift; sourceTree = "<group>"; };
 		796C7E672431D1050064C3F9 /* CLGeocoder+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CLGeocoder+Extensions.swift"; sourceTree = "<group>"; };
 		798086DB243CA17200C2F3FD /* KetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KetchTests.swift; sourceTree = "<group>"; };
 		798086DD243CA36000C2F3FD /* NetworkEngineMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkEngineMock.swift; sourceTree = "<group>"; };
@@ -112,7 +112,7 @@
 		79AE792C242A7357006AFD7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		79AE7931242A7357006AFD7D /* KetchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KetchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79AE7938242A7357006AFD7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		79AE7942242A7441006AFD7D /* Tender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tender.swift; sourceTree = "<group>"; };
+		79AE7942242A7441006AFD7D /* Ketch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ketch.swift; sourceTree = "<group>"; };
 		79C0BFB3242BA26F007142B5 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		79C0BFB9242BA314007142B5 /* BootstrapConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapConfiguration.swift; sourceTree = "<group>"; };
 		79C0BFBB242BA369007142B5 /* Organization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Organization.swift; sourceTree = "<group>"; };
@@ -216,7 +216,7 @@
 		796C7E642431CBFA0064C3F9 /* Errors */ = {
 			isa = PBXGroup;
 			children = (
-				796C7E652431CC230064C3F9 /* TenderError.swift */,
+				796C7E652431CC230064C3F9 /* KetchError.swift */,
 			);
 			path = Errors;
 			sourceTree = "<group>";
@@ -249,7 +249,7 @@
 				79C0BFB7242BA2F0007142B5 /* Requests */,
 				79C5E925242E253C00E28FBC /* Extensions */,
 				796C7E642431CBFA0064C3F9 /* Errors */,
-				79AE7942242A7441006AFD7D /* Tender.swift */,
+				79AE7942242A7441006AFD7D /* Ketch.swift */,
 				79AE792C242A7357006AFD7D /* Info.plist */,
 			);
 			path = Ketch;
@@ -509,7 +509,7 @@
 				79C5E933242E2FCB00E28FBC /* GetConsentStatusRequest.swift in Sources */,
 				79C0BFC0242BA42B007142B5 /* Environment.swift in Sources */,
 				79C5E92B242E2AA300E28FBC /* GetLocationValidationError.swift in Sources */,
-				79AE7943242A7441006AFD7D /* Tender.swift in Sources */,
+				79AE7943242A7441006AFD7D /* Ketch.swift in Sources */,
 				79C0BFDD242BAA86007142B5 /* GetLocationResponseHandler.swift in Sources */,
 				79C0BFE5242BAB5A007142B5 /* EmptyResponse.swift in Sources */,
 				79C0BFEF242BB04A007142B5 /* NetworkEngine.swift in Sources */,
@@ -518,7 +518,7 @@
 				79C0BFC8242BA626007142B5 /* Options.swift in Sources */,
 				79C0BFCA242BA674007142B5 /* Location.swift in Sources */,
 				79C976CC242B9352001CF957 /* NetworkTask.swift in Sources */,
-				796C7E662431CC230064C3F9 /* TenderError.swift in Sources */,
+				796C7E662431CC230064C3F9 /* KetchError.swift in Sources */,
 				79C0BFD2242BA954007142B5 /* Right.swift in Sources */,
 				79C0BFB4242BA26F007142B5 /* Settings.swift in Sources */,
 				79C976CD242B9352001CF957 /* ResponseHandler.swift in Sources */,

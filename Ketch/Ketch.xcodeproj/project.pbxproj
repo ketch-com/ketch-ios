@@ -74,6 +74,8 @@
 		9BB3DC2F2577FD02006E6FB9 /* mobile.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC2D2577FD01006E6FB9 /* mobile.pb.swift */; };
 		9BB3DC322577FD0D006E6FB9 /* transponder.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC302577FD0D006E6FB9 /* transponder.grpc.swift */; };
 		9BB3DC332577FD0D006E6FB9 /* transponder.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC312577FD0D006E6FB9 /* transponder.pb.swift */; };
+		9BB3DC38257A3CAE006E6FB9 /* NetworkEngineGRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC37257A3CAE006E6FB9 /* NetworkEngineGRPC.swift */; };
+		9BB3DC3A257D11DB006E6FB9 /* Ketch_gRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB3DC39257D11DB006E6FB9 /* Ketch_gRPC.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -155,6 +157,8 @@
 		9BB3DC2D2577FD01006E6FB9 /* mobile.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mobile.pb.swift; sourceTree = "<group>"; };
 		9BB3DC302577FD0D006E6FB9 /* transponder.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = transponder.grpc.swift; sourceTree = "<group>"; };
 		9BB3DC312577FD0D006E6FB9 /* transponder.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = transponder.pb.swift; sourceTree = "<group>"; };
+		9BB3DC37257A3CAE006E6FB9 /* NetworkEngineGRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkEngineGRPC.swift; sourceTree = "<group>"; };
+		9BB3DC39257D11DB006E6FB9 /* Ketch_gRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ketch_gRPC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -263,6 +267,7 @@
 				79C5E925242E253C00E28FBC /* Extensions */,
 				796C7E642431CBFA0064C3F9 /* Errors */,
 				79AE7942242A7441006AFD7D /* Ketch.swift */,
+				9BB3DC39257D11DB006E6FB9 /* Ketch_gRPC.swift */,
 				79AE792C242A7357006AFD7D /* Info.plist */,
 			);
 			path = Ketch;
@@ -282,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				79C0BFEE242BB04A007142B5 /* NetworkEngine.swift */,
+				9BB3DC37257A3CAE006E6FB9 /* NetworkEngineGRPC.swift */,
 				79C976D3242B93D1001CF957 /* CacheStore.swift */,
 				794F192124334F3C00C2452E /* CacheEngine.swift */,
 			);
@@ -571,6 +577,7 @@
 				794110AB242E3A1000BAA503 /* SetConsentStatusValidationError.swift in Sources */,
 				79C0BFBA242BA314007142B5 /* BootstrapConfiguration.swift in Sources */,
 				79C0BFCC242BA833007142B5 /* Configuration.swift in Sources */,
+				9BB3DC3A257D11DB006E6FB9 /* Ketch_gRPC.swift in Sources */,
 				79C0BFD4242BA999007142B5 /* Purpose.swift in Sources */,
 				79C0BFC6242BA5E9007142B5 /* Services.swift in Sources */,
 				794F192224334F3C00C2452E /* CacheEngine.swift in Sources */,
@@ -582,6 +589,7 @@
 				79C0BFE9242BADA6007142B5 /* ConsentStatus.swift in Sources */,
 				79C976CF242B9352001CF957 /* NetworkRequest.swift in Sources */,
 				79C0BFC4242BA4F4007142B5 /* Identity.swift in Sources */,
+				9BB3DC38257A3CAE006E6FB9 /* NetworkEngineGRPC.swift in Sources */,
 				796C7E682431D1050064C3F9 /* CLGeocoder+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

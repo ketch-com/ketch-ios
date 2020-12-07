@@ -51,4 +51,25 @@ public struct Configuration: Codable {
         case services
         case options
     }
+    
+    init(response: Mobile_GetConfigurationResponse) {
+        organization = Organization(code: response.organization.code)
+        application = Application(code: response.app.code, name: response.app.name, platform: response.app.platform)
+        environment = Environment(code: response.environment.code, pattern: response.environment.pattern, hash: response.environment.hash)
+        //extend maping
+    }
+    
+    func requestConfiguration() -> Mobile_GetConfigurationRequest {
+        // remove hardCode, extend maping
+        let options: Mobile_GetConfigurationRequest = .with {
+            $0.organizationCode = self.organization?.code ?? ""
+            $0.applicationCode = self.application?.code ?? ""
+            $0.applicationEnvironmentCode = self.environment?.code ?? ""
+            $0.countryCode = "US"
+            $0.regionCode = "CA"
+            $0.languageCode = "en"
+        }
+        
+        return options
+    }
 }

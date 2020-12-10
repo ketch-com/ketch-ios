@@ -1,4 +1,0 @@
-framework module Ketch {
-  header "Ketch-Swift.h"
-  requires objc
-}

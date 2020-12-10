@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,6 +22,7 @@
 		79AE78FB242A7227006AFD7D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 79AE78F9242A7227006AFD7D /* Main.storyboard */; };
 		79AE78FD242A7228006AFD7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79AE78FC242A7228006AFD7D /* Assets.xcassets */; };
 		79AE7900242A7228006AFD7D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 79AE78FE242A7228006AFD7D /* LaunchScreen.storyboard */; };
+		9B79D7202582604A0050B768 /* Ketch in Frameworks */ = {isa = PBXBuildFile; productRef = 9B79D71F2582604A0050B768 /* Ketch */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		79AE78FC242A7228006AFD7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		79AE78FF242A7228006AFD7D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		79AE7901242A7228006AFD7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B79D71D25825E880050B768 /* ketch-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ketch-ios"; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B79D7202582604A0050B768 /* Ketch in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +94,8 @@
 			children = (
 				79AE78F2242A7227006AFD7D /* Sample */,
 				79AE78F1242A7227006AFD7D /* Products */,
+				9B79D71D25825E880050B768 /* ketch-ios */,
+				9B79D71E2582604A0050B768 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,6 +123,13 @@
 			path = Sample;
 			sourceTree = "<group>";
 		};
+		9B79D71E2582604A0050B768 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -134,6 +146,9 @@
 			dependencies = (
 			);
 			name = Sample;
+			packageProductDependencies = (
+				9B79D71F2582604A0050B768 /* Ketch */,
+			);
 			productName = Sample;
 			productReference = 79AE78F0242A7227006AFD7D /* Sample.app */;
 			productType = "com.apple.product-type.application";
@@ -398,6 +413,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9B79D71F2582604A0050B768 /* Ketch */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Ketch;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 79AE78E8242A7227006AFD7D /* Project object */;
 }

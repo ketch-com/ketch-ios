@@ -8,6 +8,14 @@
 
 import UIKit
 
+enum ServicesKeys: String {
+    case astrolabe
+    case gangplank
+    case halyard
+    case supercargo
+    case wheelhouse
+}
+
 public struct Services: Codable {
 
     public var astrolabe: String?
@@ -16,3 +24,4 @@ public struct Services: Codable {
     public var supercargo: String?
     public var wheelhouse: String?
 }
+

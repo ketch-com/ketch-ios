@@ -53,23 +53,27 @@ public struct Configuration: Codable {
     }
     
     init(response: Mobile_GetConfigurationResponse) {
+        language = response.language
         organization = Organization(code: response.organization.code)
         application = Application(code: response.app.code, name: response.app.name, platform: response.app.platform)
+        policyScope = PolicyScope(defaultScopeCode: response.policyScope.defaultScopeCode, code: response.policyScope.code)
+        identities = response.identities.mapValues { value in
+            return Identity(type: value.type, variable: value.variable)
+        }
         environment = Environment(code: response.environment.code, pattern: response.environment.pattern, hash: response.environment.hash)
-        //extend maping
+        deployment = Deployment(code: response.deployment.code, version: Int(response.deployment.version))
+        privacyPolicy = Policy(code: response.privacyPolicy.code, version: Int(response.privacyPolicy.version), url: response.privacyPolicy.url)
+        termsOfService = Policy(code: response.termsOfService.code, version: Int(response.termsOfService.version), url: response.termsOfService.url)
+        rights = response.rights.map { right in Right(code: right.code, name: right.name, description: right.description_p)}
+        regulations = response.regulations
+        purposes = response.purposes.map { purpose in Purpose(code: purpose.code, name: purpose.name, description: purpose.description_p, legalBasisCode: purpose.legalBasisCode, requiresPrivacyPolicy: purpose.requiresPrivacyPolicy, requiresOptIn: purpose.requiresOptIn, allowsOptOut: purpose.allowsOptOut)}
+        services = Services(astrolabe: response.services[ServicesKeys.astrolabe.rawValue],
+                            gangplank: response.services[ServicesKeys.gangplank.rawValue],
+                            halyard: response.services[ServicesKeys.halyard.rawValue],
+                            supercargo: response.services[ServicesKeys.supercargo.rawValue],
+                            wheelhouse: response.services[ServicesKeys.wheelhouse.rawValue])
+        options = Options(localStorage: Int(response.options[OptionsKeys.localStorage.rawValue] ?? -1),
+                          migration: Int(response.options[OptionsKeys.migration.rawValue] ?? -1))
     }
     
-    func requestConfiguration() -> Mobile_GetConfigurationRequest {
-        // remove hardCode, extend maping
-        let options: Mobile_GetConfigurationRequest = .with {
-            $0.organizationCode = self.organization?.code ?? ""
-            $0.applicationCode = self.application?.code ?? ""
-            $0.applicationEnvironmentCode = self.environment?.code ?? ""
-            $0.countryCode = "US"
-            $0.regionCode = "CA"
-            $0.languageCode = "en"
-        }
-        
-        return options
-    }
 }

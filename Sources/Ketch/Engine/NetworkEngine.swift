@@ -79,13 +79,13 @@ class NetworkEngineImpl: NetworkEngine {
             organizationCode: settings.organizationCode,
             applicationCode: settings.applicationCode
         )
-        let cacheRetrieve: () -> BootstrapConfiguration? = { [weak self] in
-            return self?.cacheStore.bootstrapConfiguration
-        }
-        let cacheSave: (BootstrapConfiguration) -> () = { [weak self] config in
-            self?.cacheStore.bootstrapConfiguration = config
-        }
-        return createTask(request: request, handler: ResponseHandlerCopyObject(), cacheRetrieve: cacheRetrieve, cacheSave: cacheSave)
+//        let cacheRetrieve: () -> BootstrapConfiguration? = { [weak self] in
+//            return self?.cacheStore.bootstrapConfiguration
+//        }
+//        let cacheSave: (BootstrapConfiguration) -> () = { [weak self] config in
+//            self?.cacheStore.bootstrapConfiguration = config
+//        }
+        return createTask(request: request, handler: ResponseHandlerCopyObject(), cacheRetrieve: nil, cacheSave: nil)
     }
 
     /// Creates tasks for retrieveing Configuration for specific environment and region
@@ -136,13 +136,13 @@ class NetworkEngineImpl: NetworkEngine {
             policyScopeCode: policyScopeCode,
             languageCode: languageCode
         )
-        let cacheRetrieve: () -> Configuration? = { [weak self] in
-            return self?.cacheStore.configuration(environmentCode: usedEnvironmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
-        }
+//        let cacheRetrieve: () -> Configuration? = { [weak self] in
+//            return self?.cacheStore.configuration(environmentCode: usedEnvironmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
+//        }
         let cacheSave: (Configuration) -> () = { [weak self] config in
-            self?.cacheStore.setConfiguration(configuration: config, environmentCode: usedEnvironmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
+//            self?.cacheStore.setConfiguration(configuration: config, environmentCode: usedEnvironmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
         }
-        return createTask(request: request, handler: ResponseHandlerCopyObject(), cacheRetrieve: cacheRetrieve, cacheSave: cacheSave)
+        return createTask(request: request, handler: ResponseHandlerCopyObject(), cacheRetrieve: nil, cacheSave: cacheSave)
     }
 
     /// Creates task for retrieveing location according to sender's IP address

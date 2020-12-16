@@ -8,9 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		7934D7DE243B31A40044A64A /* Step1SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7DD243B31A40044A64A /* Step1SetupViewController.swift */; };
-		7934D7E0243B34250044A64A /* Step2BootstrapConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7DF243B34250044A64A /* Step2BootstrapConfigViewController.swift */; };
 		7934D7E3243B39960044A64A /* NetworkTaskResult+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7E2243B39960044A64A /* NetworkTaskResult+Description.swift */; };
-		7934D7E5243B3BE30044A64A /* Step3FullConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7E4243B3BE30044A64A /* Step3FullConfigViewController.swift */; };
+		7934D7E5243B3BE30044A64A /* Step2FullConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7E4243B3BE30044A64A /* Step2FullConfigViewController.swift */; };
 		7934D7E7243B422D0044A64A /* SetConsentStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7E6243B422D0044A64A /* SetConsentStatusViewController.swift */; };
 		7934D7E9243B42380044A64A /* GetConsentStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7E8243B42380044A64A /* GetConsentStatusViewController.swift */; };
 		7934D7EB243B42430044A64A /* InvokeRightViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7934D7EA243B42430044A64A /* InvokeRightViewController.swift */; };
@@ -27,9 +26,8 @@
 
 /* Begin PBXFileReference section */
 		7934D7DD243B31A40044A64A /* Step1SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step1SetupViewController.swift; sourceTree = "<group>"; };
-		7934D7DF243B34250044A64A /* Step2BootstrapConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step2BootstrapConfigViewController.swift; sourceTree = "<group>"; };
 		7934D7E2243B39960044A64A /* NetworkTaskResult+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NetworkTaskResult+Description.swift"; sourceTree = "<group>"; };
-		7934D7E4243B3BE30044A64A /* Step3FullConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step3FullConfigViewController.swift; sourceTree = "<group>"; };
+		7934D7E4243B3BE30044A64A /* Step2FullConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step2FullConfigViewController.swift; sourceTree = "<group>"; };
 		7934D7E6243B422D0044A64A /* SetConsentStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetConsentStatusViewController.swift; sourceTree = "<group>"; };
 		7934D7E8243B42380044A64A /* GetConsentStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetConsentStatusViewController.swift; sourceTree = "<group>"; };
 		7934D7EA243B42430044A64A /* InvokeRightViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvokeRightViewController.swift; sourceTree = "<group>"; };
@@ -62,8 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				7934D7DD243B31A40044A64A /* Step1SetupViewController.swift */,
-				7934D7DF243B34250044A64A /* Step2BootstrapConfigViewController.swift */,
-				7934D7E4243B3BE30044A64A /* Step3FullConfigViewController.swift */,
+				7934D7E4243B3BE30044A64A /* Step2FullConfigViewController.swift */,
 				7934D7E6243B422D0044A64A /* SetConsentStatusViewController.swift */,
 				7934D7E8243B42380044A64A /* GetConsentStatusViewController.swift */,
 				7934D7EA243B42430044A64A /* InvokeRightViewController.swift */,
@@ -212,9 +209,8 @@
 				79378F30243F3C120024FA9D /* CheckboxLabel.swift in Sources */,
 				7934D7DE243B31A40044A64A /* Step1SetupViewController.swift in Sources */,
 				7934D7EB243B42430044A64A /* InvokeRightViewController.swift in Sources */,
-				7934D7E0243B34250044A64A /* Step2BootstrapConfigViewController.swift in Sources */,
 				79AE78F6242A7227006AFD7D /* SceneDelegate.swift in Sources */,
-				7934D7E5243B3BE30044A64A /* Step3FullConfigViewController.swift in Sources */,
+				7934D7E5243B3BE30044A64A /* Step2FullConfigViewController.swift in Sources */,
 				7934D7E3243B39960044A64A /* NetworkTaskResult+Description.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

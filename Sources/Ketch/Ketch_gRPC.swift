@@ -25,9 +25,9 @@ public class Ketch_gRPC {
         shared = Ketch_gRPC(organizationCode: organizationCode, applicationCode: applicationCode)
     }
     
-    public static func getFullConfiguration(environmentCode: String, languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
+    public static func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
         obtainInstance(completion: completion) {
-            $0.getFullConfiguration(environmentCode: environmentCode, countryCode: "", regionCode: nil, languageCode: languageCode, completion: completion)
+            $0.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, languageCode: languageCode, completion: completion)
         }
     }
     
@@ -44,7 +44,6 @@ public class Ketch_gRPC {
         let printDebugInfo = false // Change to `true` if you need to debug new requests
         let cacheEngine = FileCacheEngine(settings: settings, printDebugInfo: printDebugInfo)
         networkEngine = NetworkEngineGRPCImpl(settings: settings, cachingEngine: cacheEngine, printDebugInfo: printDebugInfo)
-        //(settings: settings, cachingEngine: cacheEngine, printDebugInfo: printDebugInfo)
     }
 
     /// Initializer. Designed to be used ONLY for test purposes!

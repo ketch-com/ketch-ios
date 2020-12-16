@@ -23,23 +23,12 @@ class CacheStore {
 
     // MARK: Public
 
-    /// Saves or retrieves cache of `bootstrapConfiguration`
-    var bootstrapConfiguration: BootstrapConfiguration? {
-        get {
-            engine.retrieve(key: "bootstrapConfiguration")
-        }
-        set {
-            engine.save(key: "bootstrapConfiguration", object: newValue)
-        }
-    }
-
     /// Retrieves cache of `configuration` associated with provided paramers
     /// - Parameter environmentCode: The code of `Environment` associated with `configuration`
-    /// - Parameter policyScopeCode: The code of `PolicyScope` associated with `configuration`
     /// - Parameter languageCode: The short language code associated with `configuration`
     /// - Returns: cached version of `Configuration` or nil if cache is missed
-    func configuration(environmentCode: String, policyScopeCode: String, languageCode: String) -> `Configuration`? {
-        let key = configurationKey(environmentCode: environmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
+    func configuration(environmentCode: String, languageCode: String) -> `Configuration`? {
+        let key = configurationKey(environmentCode: environmentCode, languageCode: languageCode)
         return engine.retrieve(key: key)
     }
 
@@ -48,8 +37,8 @@ class CacheStore {
     /// - Parameter environmentCode: The code of `Environment` associated with `configuration`
     /// - Parameter policyScopeCode: The code of `PolicyScope` associated with `configuration`
     /// - Parameter languageCode: The short language code associated with `configuration`
-    func setConfiguration(configuration: Configuration, environmentCode: String, policyScopeCode: String, languageCode: String) {
-        let key = configurationKey(environmentCode: environmentCode, policyScopeCode: policyScopeCode, languageCode: languageCode)
+    func setConfiguration(configuration: Configuration, environmentCode: String, languageCode: String) {
+        let key = configurationKey(environmentCode: environmentCode, languageCode: languageCode)
         engine.save(key: key, object: configuration)
     }
 
@@ -86,8 +75,8 @@ class CacheStore {
     /// - Parameter policyScopeCode: The code of `PolicyScope` associated with `configuration`
     /// - Parameter languageCode: The short language code associated with `configuration`
     /// - Returns: string key to persist `configuration` associated with provided parameters as SHA256 hash
-    private func configurationKey(environmentCode: String, policyScopeCode: String, languageCode: String) -> String {
-        return "configuration_" + [environmentCode, policyScopeCode, languageCode].joined(separator: ";").sha256
+    private func configurationKey(environmentCode: String, languageCode: String) -> String {
+        return "configuration_" + [environmentCode, languageCode].joined(separator: ";").sha256
     }
 
     /// Convenient func to create a string key to persist `consentStatus` map associated with provided parameters

@@ -24,7 +24,7 @@ class Step1SetupViewController: UIViewController {
         let organizationCode = organizationCodeTextField.text ?? ""
         let applicationCode = applicationCodeTextField.text ?? ""
         setupButton.isEnabled = false
-        try! Ketch.setup(organizationCode: organizationCode, applicationCode: applicationCode)
+        try! Ketch_gRPC.setup(organizationCode: organizationCode, applicationCode: applicationCode)
         performSegue(withIdentifier: "pushStep2", sender: self)
     }
 
@@ -39,7 +39,7 @@ class Step1SetupViewController: UIViewController {
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let vc = segue.destination as? Step2BootstrapConfigViewController {
+        if let vc = segue.destination as? Step2FullConfigViewController {
             vc.organizationCode = organizationCodeTextField.text ?? ""
             vc.applicationCode = applicationCodeTextField.text ?? ""
         }

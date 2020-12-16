@@ -38,7 +38,13 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         self.channel = ClientConnection.secure(group: MultiThreadedEventLoopGroup(numberOfThreads: 1)).connect(host: "mobile.dev.b10s.io", port: 443)
         self.client = Mobile_MobileClient(channel: channel)
     }
-        
+      
+    /// Performs a call for retrieveing Configuration for specific environment and region
+    /// - Parameter environmentCode: The code of requried environment.
+    /// - Parameter countryCode: The code of country needed for configuration
+    /// - Parameter regionCode: The code of USA region needed for configuration
+    /// - Parameter languageCode: The short language code
+    /// - Returns: Network task that provides `Configuration` object or network error as a result
     func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion:@escaping (NetworkTaskResult<Configuration>)->()) {
         
         let options: Mobile_GetConfigurationRequest = .with {
@@ -52,15 +58,18 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         
         let call = client.getConfiguration(options)
         
-        call.response.whenSuccess { configuratoionResponse in
+        call.response.whenSuccess { [weak self] configuratoionResponse in
             let configuration = Configuration(response: configuratoionResponse)
-            // TODO: cache save
+            self?.cacheStore.setConfiguration(configuration: configuration, environmentCode: environmentCode, languageCode: languageCode)
             completion(.success(configuration))
         }
         
-        call.response.whenFailure { error in
-            // TODO: try cache retrive
-            completion(.failure(.serverNotReachable)) // TODO: proper error
+        call.response.whenFailure { [weak self] error in
+            if let configuration = self?.cacheStore.configuration(environmentCode: environmentCode, languageCode: languageCode) {
+                completion(.cache(configuration))
+            } else {
+                completion(.failure(.serverNotReachable))
+            }
         }
     }
     

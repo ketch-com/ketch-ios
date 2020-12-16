@@ -8,6 +8,11 @@
 
 import UIKit
 
+enum OptionsKeys: String {
+    case localStorage
+    case migration
+}
+
 public struct Options: Codable {
 
     public var localStorage: Int?

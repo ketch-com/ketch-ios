@@ -54,7 +54,7 @@ public struct Configuration: Codable {
     
     init(response: Mobile_GetConfigurationResponse) {
         language = response.language
-        organization = Organization(code: response.organization.code)
+        organization = Organization(code: response.organization.code, name: response.organization.name)
         application = Application(code: response.app.code, name: response.app.name, platform: response.app.platform)
         policyScope = PolicyScope(defaultScopeCode: response.policyScope.defaultScopeCode, code: response.policyScope.code)
         identities = response.identities.mapValues { value in

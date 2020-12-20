@@ -284,7 +284,7 @@ class NetworkEngineImpl: NetworkEngine {
         guard let policyScopeCode = configuration.policyScope?.code else {
             return .failed(error: InvokeRightsValidationError.policyScopeCodeNotSpecified)
         }
-
+        
         let request = InvokeRightsRequest(
             session: session,
             gangplankHost: gangplankURL,

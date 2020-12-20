@@ -317,6 +317,387 @@ struct Mobile_GetConfigurationResponse {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
+/// Identity describes the way of identifying a data subject
+struct Mobile_Identity {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// IdentitySpace is the identifier for the identity space
+  var identitySpace: String = String()
+
+  /// IdentityValue is the actual identity value
+  var identityValue: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// DataSubject describes the information required about a data subject
+struct Mobile_DataSubject {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// First is the data subject's first name
+  var first: String = String()
+
+  /// Last is the data subject's last name
+  var last: String = String()
+
+  /// County is the data subject's country code (ISO 3166-2)
+  var country: String = String()
+
+  /// Region is the data subject's region code (ISO 3166-2)
+  var region: String = String()
+
+  /// VerificationMethod specifies how the data subject was verified
+  var verificationMethod: String = String()
+
+  /// VerificationMethod specifies how the data subject was verified
+  var email: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Organization describes the entity who holds the processing permit
+struct Mobile_Organization {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// ID is the identifier of the organization
+  var id: String = String()
+
+  /// Name is the name of the organization
+  var name: String = String()
+
+  /// LogoURL is a valid URL to the logo of the organization
+  var logoURL: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Controller describes a data controller
+struct Mobile_Controller {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// ID is the identifier of the controller in the originating system
+  var id: String = String()
+
+  /// Name is the name of the controller in the originating system
+  var name: String = String()
+
+  /// LogoURL is a valid URL to the logo of the controller
+  var logoURL: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Context provides information to know how a request was collected
+struct Mobile_Context {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// CollectedFrom specifies how the request was received
+  var collectedFrom: String = String()
+
+  /// Application specifies the website or application ID where the request was received
+  var application: String = String()
+
+  /// Environment specifies the environment (production, testing, etc)
+  var environment: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Purpose describes a purpose.
+struct Mobile_Purpose {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Purpose is the code/id/url of the purpose
+  var purpose: String = String()
+
+  /// LegalBasis describes the basis on which the purpose consent has been provided
+  var legalBasis: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Consent represents a consent to a purpose
+struct Mobile_Consent {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Purpose is the consent purpose
+  var purpose: String = String()
+
+  /// LegalBasis is the legal basis appealed to
+  var legalBasis: String = String()
+
+  /// Allowed is true if the purpose is allowed
+  var allowed: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// InvokeRightRequest is the request sent to the service to invoke a right
+struct Mobile_InvokeRightRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// PolicyScope is the policy scope under which this right was invoked
+  var policyScope: String = String()
+
+  /// Right is the actual right being invoked
+  var right: String = String()
+
+  /// DataSubject is the details about the data subject invoking the right.
+  var dataSubject: Mobile_DataSubject {
+    get {return _dataSubject ?? Mobile_DataSubject()}
+    set {_dataSubject = newValue}
+  }
+  /// Returns true if `dataSubject` has been explicitly set.
+  var hasDataSubject: Bool {return self._dataSubject != nil}
+  /// Clears the value of `dataSubject`. Subsequent reads from it will return its default value.
+  mutating func clearDataSubject() {self._dataSubject = nil}
+
+  /// Identities is a list of identities for the data subject.
+  var identities: [Mobile_Identity] = []
+
+  /// Organization describes the entity who holds the processing permit
+  var organization: Mobile_Organization {
+    get {return _organization ?? Mobile_Organization()}
+    set {_organization = newValue}
+  }
+  /// Returns true if `organization` has been explicitly set.
+  var hasOrganization: Bool {return self._organization != nil}
+  /// Clears the value of `organization`. Subsequent reads from it will return its default value.
+  mutating func clearOrganization() {self._organization = nil}
+
+  /// Controller is the details about the controller
+  var controller: Mobile_Controller {
+    get {return _controller ?? Mobile_Controller()}
+    set {_controller = newValue}
+  }
+  /// Returns true if `controller` has been explicitly set.
+  var hasController: Bool {return self._controller != nil}
+  /// Clears the value of `controller`. Subsequent reads from it will return its default value.
+  mutating func clearController() {self._controller = nil}
+
+  /// SubmittedTime is the timestamp when this right was originally invoked.
+  var submittedTime: Int64 = 0
+
+  /// DueTime is the timestamp when this right invocation request should be completed.
+  var dueTime: Int64 = 0
+
+  /// Context provides information about where and how the right invocation was collected.
+  var context: Mobile_Context {
+    get {return _context ?? Mobile_Context()}
+    set {_context = newValue}
+  }
+  /// Returns true if `context` has been explicitly set.
+  var hasContext: Bool {return self._context != nil}
+  /// Clears the value of `context`. Subsequent reads from it will return its default value.
+  mutating func clearContext() {self._context = nil}
+
+  /// Extensions allow vendor-scoped extensions to the protocol
+  var extensions: Dictionary<String,String> = [:]
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _dataSubject: Mobile_DataSubject? = nil
+  fileprivate var _organization: Mobile_Organization? = nil
+  fileprivate var _controller: Mobile_Controller? = nil
+  fileprivate var _context: Mobile_Context? = nil
+}
+
+/// InvokeRightResponse is the response returned from invoking a right
+struct Mobile_InvokeRightResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// ControllerID is the unique identity of the Controller in the Processor’s system.
+  var controllerID: String = String()
+
+  /// ExpectedCompletionTime is the time when the Processor expects to fulfill the request.
+  var expectedCompletionTime: Int64 = 0
+
+  /// ReceivedTime is the time when the Processor received the request.
+  var receivedTime: Int64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// SetConsentRequest is the request sent to the service to set consent
+struct Mobile_SetConsentRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// PolicyScope is the policy scope under which the consent was collected
+  var policyScope: String = String()
+
+  /// Consents is a list of consents
+  var consents: [Mobile_Consent] = []
+
+  /// Identities is a list of identities for the data subject.
+  var identities: [Mobile_Identity] = []
+
+  /// Organization describes the entity who holds the processing permit
+  var organization: Mobile_Organization {
+    get {return _organization ?? Mobile_Organization()}
+    set {_organization = newValue}
+  }
+  /// Returns true if `organization` has been explicitly set.
+  var hasOrganization: Bool {return self._organization != nil}
+  /// Clears the value of `organization`. Subsequent reads from it will return its default value.
+  mutating func clearOrganization() {self._organization = nil}
+
+  /// Controller is the details about the controller
+  var controller: Mobile_Controller {
+    get {return _controller ?? Mobile_Controller()}
+    set {_controller = newValue}
+  }
+  /// Returns true if `controller` has been explicitly set.
+  var hasController: Bool {return self._controller != nil}
+  /// Clears the value of `controller`. Subsequent reads from it will return its default value.
+  mutating func clearController() {self._controller = nil}
+
+  /// CollectedTime is the timestamp when this consent was originally collected
+  var collectedTime: Int64 = 0
+
+  /// ExpiryTime is the timestamp when this consent expires
+  var expiryTime: Int64 = 0
+
+  /// Context provides information about where and how the right invocation was collected
+  var context: Mobile_Context {
+    get {return _context ?? Mobile_Context()}
+    set {_context = newValue}
+  }
+  /// Returns true if `context` has been explicitly set.
+  var hasContext: Bool {return self._context != nil}
+  /// Clears the value of `context`. Subsequent reads from it will return its default value.
+  mutating func clearContext() {self._context = nil}
+
+  /// Extensions allow vendor-scoped extensions to the protocol
+  var extensions: Dictionary<String,String> = [:]
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _organization: Mobile_Organization? = nil
+  fileprivate var _controller: Mobile_Controller? = nil
+  fileprivate var _context: Mobile_Context? = nil
+}
+
+/// SetConsentResponse is the response returned when consent is set
+struct Mobile_SetConsentResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// ReceivedTime is the time when the Processor received the request
+  var receivedTime: Int64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// GetConsentRequest
+struct Mobile_GetConsentRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// Context provides context for how the consent was requested
+  var context: Mobile_Context {
+    get {return _context ?? Mobile_Context()}
+    set {_context = newValue}
+  }
+  /// Returns true if `context` has been explicitly set.
+  var hasContext: Bool {return self._context != nil}
+  /// Clears the value of `context`. Subsequent reads from it will return its default value.
+  mutating func clearContext() {self._context = nil}
+
+  /// Identities is a list of identities
+  var identities: [Mobile_Identity] = []
+
+  /// Purposes is a list of Purpose/Legal bases
+  var purposes: [Mobile_Purpose] = []
+
+  /// OrganizationID is identifier of the entity who holds the processing permit
+  var organizationID: String = String()
+
+  /// ControllerID is the identifier of the data controller
+  var controllerID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _context: Mobile_Context? = nil
+}
+
+/// GetConsentResponse
+struct Mobile_GetConsentResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// RequestID is the unique identifier of the request
+  var requestID: String = String()
+
+  /// Consents is a list of consents available
+  var consents: [Mobile_Consent] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "mobile"
@@ -951,6 +1332,647 @@ extension Mobile_GetConfigurationResponse: SwiftProtobuf.Message, SwiftProtobuf.
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Identity: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Identity"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "identity_space"),
+    2: .standard(proto: "identity_value"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.identitySpace)
+      case 2: try decoder.decodeSingularStringField(value: &self.identityValue)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.identitySpace.isEmpty {
+      try visitor.visitSingularStringField(value: self.identitySpace, fieldNumber: 1)
+    }
+    if !self.identityValue.isEmpty {
+      try visitor.visitSingularStringField(value: self.identityValue, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Identity, rhs: Mobile_Identity) -> Bool {
+    if lhs.identitySpace != rhs.identitySpace {return false}
+    if lhs.identityValue != rhs.identityValue {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_DataSubject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".DataSubject"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "first"),
+    2: .same(proto: "last"),
+    3: .same(proto: "country"),
+    4: .same(proto: "region"),
+    5: .standard(proto: "verification_method"),
+    6: .same(proto: "email"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.first)
+      case 2: try decoder.decodeSingularStringField(value: &self.last)
+      case 3: try decoder.decodeSingularStringField(value: &self.country)
+      case 4: try decoder.decodeSingularStringField(value: &self.region)
+      case 5: try decoder.decodeSingularStringField(value: &self.verificationMethod)
+      case 6: try decoder.decodeSingularStringField(value: &self.email)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.first.isEmpty {
+      try visitor.visitSingularStringField(value: self.first, fieldNumber: 1)
+    }
+    if !self.last.isEmpty {
+      try visitor.visitSingularStringField(value: self.last, fieldNumber: 2)
+    }
+    if !self.country.isEmpty {
+      try visitor.visitSingularStringField(value: self.country, fieldNumber: 3)
+    }
+    if !self.region.isEmpty {
+      try visitor.visitSingularStringField(value: self.region, fieldNumber: 4)
+    }
+    if !self.verificationMethod.isEmpty {
+      try visitor.visitSingularStringField(value: self.verificationMethod, fieldNumber: 5)
+    }
+    if !self.email.isEmpty {
+      try visitor.visitSingularStringField(value: self.email, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_DataSubject, rhs: Mobile_DataSubject) -> Bool {
+    if lhs.first != rhs.first {return false}
+    if lhs.last != rhs.last {return false}
+    if lhs.country != rhs.country {return false}
+    if lhs.region != rhs.region {return false}
+    if lhs.verificationMethod != rhs.verificationMethod {return false}
+    if lhs.email != rhs.email {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Organization: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Organization"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "id"),
+    2: .same(proto: "name"),
+    3: .standard(proto: "logo_url"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.id)
+      case 2: try decoder.decodeSingularStringField(value: &self.name)
+      case 3: try decoder.decodeSingularStringField(value: &self.logoURL)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.id.isEmpty {
+      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    if !self.logoURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.logoURL, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Organization, rhs: Mobile_Organization) -> Bool {
+    if lhs.id != rhs.id {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.logoURL != rhs.logoURL {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Controller: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Controller"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "id"),
+    2: .same(proto: "name"),
+    3: .standard(proto: "logo_url"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.id)
+      case 2: try decoder.decodeSingularStringField(value: &self.name)
+      case 3: try decoder.decodeSingularStringField(value: &self.logoURL)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.id.isEmpty {
+      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    if !self.logoURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.logoURL, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Controller, rhs: Mobile_Controller) -> Bool {
+    if lhs.id != rhs.id {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.logoURL != rhs.logoURL {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Context: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Context"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "collected_from"),
+    2: .same(proto: "application"),
+    3: .same(proto: "environment"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.collectedFrom)
+      case 2: try decoder.decodeSingularStringField(value: &self.application)
+      case 3: try decoder.decodeSingularStringField(value: &self.environment)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.collectedFrom.isEmpty {
+      try visitor.visitSingularStringField(value: self.collectedFrom, fieldNumber: 1)
+    }
+    if !self.application.isEmpty {
+      try visitor.visitSingularStringField(value: self.application, fieldNumber: 2)
+    }
+    if !self.environment.isEmpty {
+      try visitor.visitSingularStringField(value: self.environment, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Context, rhs: Mobile_Context) -> Bool {
+    if lhs.collectedFrom != rhs.collectedFrom {return false}
+    if lhs.application != rhs.application {return false}
+    if lhs.environment != rhs.environment {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Purpose: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Purpose"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "purpose"),
+    2: .standard(proto: "legal_basis"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.purpose)
+      case 2: try decoder.decodeSingularStringField(value: &self.legalBasis)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.purpose.isEmpty {
+      try visitor.visitSingularStringField(value: self.purpose, fieldNumber: 1)
+    }
+    if !self.legalBasis.isEmpty {
+      try visitor.visitSingularStringField(value: self.legalBasis, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Purpose, rhs: Mobile_Purpose) -> Bool {
+    if lhs.purpose != rhs.purpose {return false}
+    if lhs.legalBasis != rhs.legalBasis {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_Consent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Consent"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "purpose"),
+    2: .standard(proto: "legal_basis"),
+    3: .same(proto: "allowed"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.purpose)
+      case 2: try decoder.decodeSingularStringField(value: &self.legalBasis)
+      case 3: try decoder.decodeSingularBoolField(value: &self.allowed)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.purpose.isEmpty {
+      try visitor.visitSingularStringField(value: self.purpose, fieldNumber: 1)
+    }
+    if !self.legalBasis.isEmpty {
+      try visitor.visitSingularStringField(value: self.legalBasis, fieldNumber: 2)
+    }
+    if self.allowed != false {
+      try visitor.visitSingularBoolField(value: self.allowed, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_Consent, rhs: Mobile_Consent) -> Bool {
+    if lhs.purpose != rhs.purpose {return false}
+    if lhs.legalBasis != rhs.legalBasis {return false}
+    if lhs.allowed != rhs.allowed {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_InvokeRightRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".InvokeRightRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    2: .standard(proto: "policy_scope"),
+    3: .same(proto: "right"),
+    4: .standard(proto: "data_subject"),
+    5: .same(proto: "identities"),
+    6: .same(proto: "organization"),
+    7: .same(proto: "controller"),
+    8: .standard(proto: "submitted_time"),
+    9: .standard(proto: "due_time"),
+    10: .same(proto: "context"),
+    100: .same(proto: "extensions"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 2: try decoder.decodeSingularStringField(value: &self.policyScope)
+      case 3: try decoder.decodeSingularStringField(value: &self.right)
+      case 4: try decoder.decodeSingularMessageField(value: &self._dataSubject)
+      case 5: try decoder.decodeRepeatedMessageField(value: &self.identities)
+      case 6: try decoder.decodeSingularMessageField(value: &self._organization)
+      case 7: try decoder.decodeSingularMessageField(value: &self._controller)
+      case 8: try decoder.decodeSingularInt64Field(value: &self.submittedTime)
+      case 9: try decoder.decodeSingularInt64Field(value: &self.dueTime)
+      case 10: try decoder.decodeSingularMessageField(value: &self._context)
+      case 100: try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.extensions)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if !self.policyScope.isEmpty {
+      try visitor.visitSingularStringField(value: self.policyScope, fieldNumber: 2)
+    }
+    if !self.right.isEmpty {
+      try visitor.visitSingularStringField(value: self.right, fieldNumber: 3)
+    }
+    if let v = self._dataSubject {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }
+    if !self.identities.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.identities, fieldNumber: 5)
+    }
+    if let v = self._organization {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }
+    if let v = self._controller {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }
+    if self.submittedTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.submittedTime, fieldNumber: 8)
+    }
+    if self.dueTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.dueTime, fieldNumber: 9)
+    }
+    if let v = self._context {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }
+    if !self.extensions.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.extensions, fieldNumber: 100)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_InvokeRightRequest, rhs: Mobile_InvokeRightRequest) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.policyScope != rhs.policyScope {return false}
+    if lhs.right != rhs.right {return false}
+    if lhs._dataSubject != rhs._dataSubject {return false}
+    if lhs.identities != rhs.identities {return false}
+    if lhs._organization != rhs._organization {return false}
+    if lhs._controller != rhs._controller {return false}
+    if lhs.submittedTime != rhs.submittedTime {return false}
+    if lhs.dueTime != rhs.dueTime {return false}
+    if lhs._context != rhs._context {return false}
+    if lhs.extensions != rhs.extensions {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_InvokeRightResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".InvokeRightResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    2: .standard(proto: "controller_id"),
+    3: .standard(proto: "expected_completion_time"),
+    4: .standard(proto: "received_time"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 2: try decoder.decodeSingularStringField(value: &self.controllerID)
+      case 3: try decoder.decodeSingularInt64Field(value: &self.expectedCompletionTime)
+      case 4: try decoder.decodeSingularInt64Field(value: &self.receivedTime)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if !self.controllerID.isEmpty {
+      try visitor.visitSingularStringField(value: self.controllerID, fieldNumber: 2)
+    }
+    if self.expectedCompletionTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.expectedCompletionTime, fieldNumber: 3)
+    }
+    if self.receivedTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.receivedTime, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_InvokeRightResponse, rhs: Mobile_InvokeRightResponse) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.controllerID != rhs.controllerID {return false}
+    if lhs.expectedCompletionTime != rhs.expectedCompletionTime {return false}
+    if lhs.receivedTime != rhs.receivedTime {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_SetConsentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".SetConsentRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    2: .standard(proto: "policy_scope"),
+    3: .same(proto: "consents"),
+    4: .same(proto: "identities"),
+    5: .same(proto: "organization"),
+    6: .same(proto: "controller"),
+    7: .standard(proto: "collected_time"),
+    8: .standard(proto: "expiry_time"),
+    9: .same(proto: "context"),
+    100: .same(proto: "extensions"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 2: try decoder.decodeSingularStringField(value: &self.policyScope)
+      case 3: try decoder.decodeRepeatedMessageField(value: &self.consents)
+      case 4: try decoder.decodeRepeatedMessageField(value: &self.identities)
+      case 5: try decoder.decodeSingularMessageField(value: &self._organization)
+      case 6: try decoder.decodeSingularMessageField(value: &self._controller)
+      case 7: try decoder.decodeSingularInt64Field(value: &self.collectedTime)
+      case 8: try decoder.decodeSingularInt64Field(value: &self.expiryTime)
+      case 9: try decoder.decodeSingularMessageField(value: &self._context)
+      case 100: try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.extensions)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if !self.policyScope.isEmpty {
+      try visitor.visitSingularStringField(value: self.policyScope, fieldNumber: 2)
+    }
+    if !self.consents.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.consents, fieldNumber: 3)
+    }
+    if !self.identities.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.identities, fieldNumber: 4)
+    }
+    if let v = self._organization {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }
+    if let v = self._controller {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }
+    if self.collectedTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.collectedTime, fieldNumber: 7)
+    }
+    if self.expiryTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.expiryTime, fieldNumber: 8)
+    }
+    if let v = self._context {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }
+    if !self.extensions.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.extensions, fieldNumber: 100)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_SetConsentRequest, rhs: Mobile_SetConsentRequest) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.policyScope != rhs.policyScope {return false}
+    if lhs.consents != rhs.consents {return false}
+    if lhs.identities != rhs.identities {return false}
+    if lhs._organization != rhs._organization {return false}
+    if lhs._controller != rhs._controller {return false}
+    if lhs.collectedTime != rhs.collectedTime {return false}
+    if lhs.expiryTime != rhs.expiryTime {return false}
+    if lhs._context != rhs._context {return false}
+    if lhs.extensions != rhs.extensions {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_SetConsentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".SetConsentResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    3: .standard(proto: "received_time"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 3: try decoder.decodeSingularInt64Field(value: &self.receivedTime)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if self.receivedTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.receivedTime, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_SetConsentResponse, rhs: Mobile_SetConsentResponse) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.receivedTime != rhs.receivedTime {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_GetConsentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetConsentRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    2: .same(proto: "context"),
+    3: .same(proto: "identities"),
+    4: .same(proto: "purposes"),
+    5: .standard(proto: "organization_id"),
+    6: .standard(proto: "controller_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 2: try decoder.decodeSingularMessageField(value: &self._context)
+      case 3: try decoder.decodeRepeatedMessageField(value: &self.identities)
+      case 4: try decoder.decodeRepeatedMessageField(value: &self.purposes)
+      case 5: try decoder.decodeSingularStringField(value: &self.organizationID)
+      case 6: try decoder.decodeSingularStringField(value: &self.controllerID)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if let v = self._context {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }
+    if !self.identities.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.identities, fieldNumber: 3)
+    }
+    if !self.purposes.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.purposes, fieldNumber: 4)
+    }
+    if !self.organizationID.isEmpty {
+      try visitor.visitSingularStringField(value: self.organizationID, fieldNumber: 5)
+    }
+    if !self.controllerID.isEmpty {
+      try visitor.visitSingularStringField(value: self.controllerID, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_GetConsentRequest, rhs: Mobile_GetConsentRequest) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs._context != rhs._context {return false}
+    if lhs.identities != rhs.identities {return false}
+    if lhs.purposes != rhs.purposes {return false}
+    if lhs.organizationID != rhs.organizationID {return false}
+    if lhs.controllerID != rhs.controllerID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Mobile_GetConsentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetConsentResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "request_id"),
+    2: .same(proto: "consents"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.requestID)
+      case 2: try decoder.decodeRepeatedMessageField(value: &self.consents)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if !self.consents.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.consents, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Mobile_GetConsentResponse, rhs: Mobile_GetConsentResponse) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.consents != rhs.consents {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

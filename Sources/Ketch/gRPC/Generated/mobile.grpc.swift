@@ -33,19 +33,19 @@ internal protocol Mobile_MobileClientProtocol: GRPCClient {
   ) -> UnaryCall<Mobile_GetConfigurationRequest, Mobile_GetConfigurationResponse>
 
   func getConsent(
-    _ request: Transponder_GetConsentRequest,
+    _ request: Mobile_GetConsentRequest,
     callOptions: CallOptions?
-  ) -> UnaryCall<Transponder_GetConsentRequest, Transponder_GetConsentResponse>
+  ) -> UnaryCall<Mobile_GetConsentRequest, Mobile_GetConsentResponse>
 
   func setConsent(
-    _ request: Transponder_SetConsentRequest,
+    _ request: Mobile_SetConsentRequest,
     callOptions: CallOptions?
-  ) -> UnaryCall<Transponder_SetConsentRequest, Transponder_SetConsentResponse>
+  ) -> UnaryCall<Mobile_SetConsentRequest, Mobile_SetConsentResponse>
 
   func invokeRight(
-    _ request: Transponder_InvokeRightRequest,
+    _ request: Mobile_InvokeRightRequest,
     callOptions: CallOptions?
-  ) -> UnaryCall<Transponder_InvokeRightRequest, Transponder_InvokeRightResponse>
+  ) -> UnaryCall<Mobile_InvokeRightRequest, Mobile_InvokeRightResponse>
 
 }
 
@@ -75,9 +75,9 @@ extension Mobile_MobileClientProtocol {
   ///   - callOptions: Call options.
   /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
   internal func getConsent(
-    _ request: Transponder_GetConsentRequest,
+    _ request: Mobile_GetConsentRequest,
     callOptions: CallOptions? = nil
-  ) -> UnaryCall<Transponder_GetConsentRequest, Transponder_GetConsentResponse> {
+  ) -> UnaryCall<Mobile_GetConsentRequest, Mobile_GetConsentResponse> {
     return self.makeUnaryCall(
       path: "/mobile.Mobile/GetConsent",
       request: request,
@@ -92,9 +92,9 @@ extension Mobile_MobileClientProtocol {
   ///   - callOptions: Call options.
   /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
   internal func setConsent(
-    _ request: Transponder_SetConsentRequest,
+    _ request: Mobile_SetConsentRequest,
     callOptions: CallOptions? = nil
-  ) -> UnaryCall<Transponder_SetConsentRequest, Transponder_SetConsentResponse> {
+  ) -> UnaryCall<Mobile_SetConsentRequest, Mobile_SetConsentResponse> {
     return self.makeUnaryCall(
       path: "/mobile.Mobile/SetConsent",
       request: request,
@@ -109,9 +109,9 @@ extension Mobile_MobileClientProtocol {
   ///   - callOptions: Call options.
   /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
   internal func invokeRight(
-    _ request: Transponder_InvokeRightRequest,
+    _ request: Mobile_InvokeRightRequest,
     callOptions: CallOptions? = nil
-  ) -> UnaryCall<Transponder_InvokeRightRequest, Transponder_InvokeRightResponse> {
+  ) -> UnaryCall<Mobile_InvokeRightRequest, Mobile_InvokeRightResponse> {
     return self.makeUnaryCall(
       path: "/mobile.Mobile/InvokeRight",
       request: request,
@@ -140,10 +140,10 @@ internal protocol Mobile_MobileProvider: CallHandlerProvider {
   /// Supercargo + Astrolabe
   func getConfiguration(request: Mobile_GetConfigurationRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Mobile_GetConfigurationResponse>
   /// Wheelhouse + Transponder
-  func getConsent(request: Transponder_GetConsentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Transponder_GetConsentResponse>
-  func setConsent(request: Transponder_SetConsentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Transponder_SetConsentResponse>
+  func getConsent(request: Mobile_GetConsentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Mobile_GetConsentResponse>
+  func setConsent(request: Mobile_SetConsentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Mobile_SetConsentResponse>
   /// InvokeRight is used to invoke a right for a data subject
-  func invokeRight(request: Transponder_InvokeRightRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Transponder_InvokeRightResponse>
+  func invokeRight(request: Mobile_InvokeRightRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Mobile_InvokeRightResponse>
 }
 
 extension Mobile_MobileProvider {

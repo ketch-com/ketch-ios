@@ -63,13 +63,15 @@ class SetConsentStatusViewController: UIViewController, UsageViewControllerProto
         }
         let identityKey = identityKeyTextField.text ?? ""
         setStatusButton.isEnabled = false
-        Ketch.setConsentStatus(
+        Ketch_gRPC.setConsentStatus(
             configuration: config!,
             identities: [identityKey: "testValue"],
             consents: consents,
             migrationOption: .always) { [weak self] (result) in
-                self?.setStatusButton.isEnabled = true
-                self?.textView.text = result.description
+                DispatchQueue.main.async {
+                    self?.setStatusButton.isEnabled = true
+                    self?.textView.text = result.description
+                }
         }
     }
 }

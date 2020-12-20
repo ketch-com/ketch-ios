@@ -31,6 +31,34 @@ public class Ketch_gRPC {
         }
     }
     
+    /// Retrieve Consent Statuses from network request or cache if network request failed.
+    /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
+    /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
+    /// - Parameter purposes: The map of purposes in format `[<code>: <legalBasisCode>]`. Each `<code>` must exist in `configuration.purposes`.
+    /// - Parameter completion: The block with map `[<code>: ConsentStatus]` or error called when the request is completed. If `setup` is not called,  completion will be called immediately with `KetchError.haveNotSetupYet` error.
+    public static func getConsentStatus(configuration: Configuration, identities: [String: String], purposes: [String: String], completion: @escaping (NetworkTaskResult<[String: ConsentStatus]>) -> Void) {
+        obtainInstance(completion: completion) {
+            $0.getConsentStatus(configuration: configuration, identities: identities, purposes: purposes, completion: completion)
+        }
+    }
+    
+    /// Updates Consent Statuses on back-end with provided parameters
+    /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
+    /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
+    /// - Parameter consents: The map of consent statuses in format `[<code>: ConsentStatus]`. Each `<code>` must exist in `configuration.purposes`.
+    /// - Parameter completion: The block with void result called when the request is completed. If `setup` is not called,  completion will be called immediately with `KetchError.haveNotSetupYet` error.
+    public static func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult) -> ()) {
+        obtainInstance(completion: completion) {
+            $0.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: completion)
+        }
+    }
+
+    public static func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> Void) {
+        obtainInstance(completion: completion) {
+            $0.invokeRights(configuration: configuration, identities: identities, rights: rights, userData: userData, completion: completion)
+        }
+    }
+    
     // MARK: - Private
 
     // MARK: Initializer
@@ -79,7 +107,19 @@ public class Ketch_gRPC {
     
     private func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
         networkEngine.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, languageCode: languageCode, completion: completion)
-       }
+    }
+    
+    private func getConsentStatus(configuration: Configuration, identities: [String: String], purposes: [String: String], completion: @escaping (NetworkTaskResult<[String: ConsentStatus]>) -> Void) {
+        networkEngine.getConsentStatus(configuration: configuration, identities: identities, purposes: purposes, completion: completion)
+    }
+        
+    private func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult) -> ()) {
+        networkEngine.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: completion)
+    }
+    
+    private func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> Void) {
+        networkEngine.invokeRights(configuration: configuration, identities: identities, rights: rights, userData: userData, completion: completion)
+    }
 
     // MARK: Properties
 

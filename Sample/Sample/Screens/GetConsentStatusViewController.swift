@@ -64,7 +64,7 @@ class GetConsentStatusViewController: UIViewController, UsageViewControllerProto
         }
         let identityKey = identityKeyTextField.text ?? ""
         getStatusButton.isEnabled = false
-        Ketch.getConsentStatus(
+        Ketch_gRPC.getConsentStatus(
             configuration: config!,
             identities: [identityKey: "testValue"],
             purposes: purposes) { [weak self] (result) in

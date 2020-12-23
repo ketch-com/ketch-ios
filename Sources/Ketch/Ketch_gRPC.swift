@@ -53,9 +53,9 @@ public class Ketch_gRPC {
         }
     }
 
-    public static func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> Void) {
+    public static func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult) -> Void) {
         obtainInstance(completion: completion) {
-            $0.invokeRights(configuration: configuration, identities: identities, rights: rights, userData: userData, completion: completion)
+            $0.invokeRight(configuration: configuration, identities: identities, right: right, userData: userData, completion: completion)
         }
     }
     
@@ -117,8 +117,8 @@ public class Ketch_gRPC {
         networkEngine.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: completion)
     }
     
-    private func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> Void) {
-        networkEngine.invokeRights(configuration: configuration, identities: identities, rights: rights, userData: userData, completion: completion)
+    private func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult) -> Void) {
+        networkEngine.invokeRight(configuration: configuration, identities: identities, right: right, userData: userData, completion: completion)
     }
 
     // MARK: Properties

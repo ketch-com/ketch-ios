@@ -32,6 +32,12 @@ public enum SetConsentStatusValidationError: ValidationError {
     /// Processing Activity is not found in provided config.
     case purposeIsNotFoundInConfig(_ code: String)
 
+    /// Organization name is missing in the provided config
+    case organizationNameNotSpecified
+
+    /// Organization code is missing in the provided config
+    case organizationCodeNotSpecified
+
     /// The convenient method to get the reason why validation failed
     public var description: String {
         switch self {
@@ -49,6 +55,10 @@ public enum SetConsentStatusValidationError: ValidationError {
             return "You must provide non-empty consents map."
         case .purposeIsNotFoundInConfig(let code):
             return "Processing Activity \"\(code)\" is not found in provided config."
+        case .organizationNameNotSpecified:
+            return "Organization name is missing in the provided config."
+        case .organizationCodeNotSpecified:
+            return "Organization code is missing in the provided config."
         }
     }
 }

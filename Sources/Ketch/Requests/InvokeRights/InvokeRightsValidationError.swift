@@ -32,6 +32,15 @@ public enum InvokeRightsValidationError: ValidationError {
     /// Right is not found in provided config.
     case rightIsNotFoundInConfig(_ code: String)
 
+    /// Organization name is missing in the provided config
+    case organizationNameNotSpecified
+
+    /// Organization code is missing in the provided config
+    case organizationCodeNotSpecified
+
+    /// Application code is missing in the provided config
+    case applicationCodeNotSpecified
+
     /// The convenient method to get the reason why validation failed
     public var description: String {
         switch self {
@@ -49,6 +58,12 @@ public enum InvokeRightsValidationError: ValidationError {
             return "You must provide non-empty rights array."
         case .rightIsNotFoundInConfig(let code):
             return "Right \"\(code)\" is not found in provided config."
+        case .organizationNameNotSpecified:
+            return "Organization name is missing in the provided config."
+        case .organizationCodeNotSpecified:
+            return "Organization code is missing in the provided config."
+        case .applicationCodeNotSpecified:
+            return "Application code is missing in the provided config"
         }
     }
 }

@@ -54,13 +54,15 @@ class InvokeRightViewController: UIViewController, UsageViewControllerProtocol {
         let right = rights[rightsSegmentedControl.selectedSegmentIndex]
         let identityKey = identityKeyTextField.text ?? ""
         invokeButton.isEnabled = false
-        Ketch.invokeRights(
+        Ketch_gRPC.invokeRight(
             configuration: config!,
             identities: [identityKey: "testValue"],
-            rights: [right.code!],
-            userData: UserData(email: "example@domain.com")) { [weak self] (result) in
+            right: right.code!,
+            userData: UserData(email: "example@domain.com", first: "John", last: "Doe", country: "US", region: "CA")) { [weak self] (result) in
+            DispatchQueue.main.async {
                 self?.invokeButton.isEnabled = true
                 self?.textView.text = result.description
+            }
         }
     }
 

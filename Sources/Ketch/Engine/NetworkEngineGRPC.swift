@@ -32,9 +32,9 @@ protocol NetworkEngineGRPC {
     /// Creates task for invoking rights with provided parameters
     /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
     /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
-    /// - Parameter rights: The array of rights to invoke in format `[<rightCode>]`. Each `<rightCode>` must exist in `configuration.rights`.
+    /// - Parameter right: The right to invoke in format `<rightCode>`. `<rightCode>` must exist in `configuration.rights`.
     /// - Parameter userData: The user's data
-    func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>)->())
+    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult)->())
     
 }
 
@@ -89,14 +89,6 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
     }
     
     func getConsentStatus(configuration: Configuration, identities: [String: String], purposes: [String: String], completion: @escaping (NetworkTaskResult<[String: ConsentStatus]>)->()) {
-        guard let wheelhouseHost = configuration.services?.wheelhouse else {
-            completion(.failure(.validationError(error: GetConsentStatusValidationError.wheelhouseHostNotSpecified)))
-            return
-        }
-        guard let wheelhouseURL = URL(string: wheelhouseHost) else {
-            completion(.failure(.validationError(error: GetConsentStatusValidationError.wheelhouseHostInvalid(wheelhouseHost))))
-            return
-        }
         guard identities.count > 0 else {
             completion(.failure(.validationError(error: GetConsentStatusValidationError.noIdentities)))
             return
@@ -139,36 +131,25 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         
         let call = client.getConsent(options)
         
-        call.response.whenSuccess { [weak self] consents in
-            print(consents)
-//            let configuration = Configuration(response: configuratoionResponse)
-//            self?.cacheStore.setConfiguration(configuration: configuration, environmentCode: environmentCode, languageCode: languageCode)
-//            completion(.success(configuration))
+        call.response.whenSuccess { [weak self] response in
+            let consentStatus = response.consents.reduce(into: [String: ConsentStatus]()) { (result, consent) in
+                result[consent.purpose] = ConsentStatus(allowed: consent.allowed, legalBasisCode: consent.legalBasis)
+            }
+
+            self?.cacheStore.setConsentStatus(consentStatus: consentStatus, environmentCode: environmentCode, identities: identities, purposes: purposes)
+            completion(.success(consentStatus))
         }
         
         call.response.whenFailure { [weak self] error in
-            print(error)
-//            if let configuration = self?.cacheStore.configuration(environmentCode: environmentCode, languageCode: languageCode) {
-//                completion(.cache(configuration))
-//            } else {
-//                completion(.failure(.serverNotReachable))
-//            }
+            if let consents = self?.cacheStore.consentStatus(environmentCode: environmentCode, identities: identities, purposes: purposes) {
+                completion(.cache(consents))
+            } else {
+                completion(.failure(.serverNotReachable))
+            }
         }
-        
-        //            return self?.cacheStore.consentStatus(environmentCode: environmentCode, identities: identities, purposes: purposes)
-        //            self?.cacheStore.setConsentStatus(consentStatus: consentStatus, environmentCode: environmentCode, identities: identities, purposes: purposes)
     }
     
-    
     func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult)->()) {
-        guard let wheelhouseHost = configuration.services?.wheelhouse else {
-            completion(.failure(.validationError(error: SetConsentStatusValidationError.wheelhouseHostNotSpecified)))
-            return
-        }
-        guard let wheelhouseURL = URL(string: wheelhouseHost) else {
-            completion(.failure(.validationError(error: SetConsentStatusValidationError.wheelhouseHostInvalid(wheelhouseHost))))
-            return
-        }
         guard identities.count > 0 else {
             completion(.failure(.validationError(error: SetConsentStatusValidationError.noIdentities)))
             return
@@ -192,8 +173,16 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
             completion(.failure(.validationError(error: SetConsentStatusValidationError.policyScopeCodeNotSpecified)))
             return
         }
+        guard let organizationName = configuration.organization?.name else {
+            completion(.failure(.validationError(error: SetConsentStatusValidationError.organizationNameNotSpecified)))
+            return
+        }
+        guard let organizationCode = configuration.organization?.code else {
+            completion(.failure(.validationError(error: SetConsentStatusValidationError.organizationCodeNotSpecified)))
+            return
+        }
         
-        let options: Mobile_SetConsentRequest = .with{
+        let options: Mobile_SetConsentRequest = .with {
             $0.context = .with {
                 $0.application = settings.applicationCode
                 $0.environment = environmentCode
@@ -213,52 +202,37 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 }
             }
             $0.organization = .with {
-                $0.name = configuration.organization!.name!  //TODO: refactor force unwrapping
-                $0.id = configuration.organization!.code!
+                $0.name = organizationName
+                $0.id = organizationCode
             }
             $0.collectedTime = Int64(Date().timeIntervalSince1970)
         }
         
         let call = client.setConsent(options)
         
-        call.response.whenSuccess { consentResponse in
+        call.response.whenSuccess { response in
             completion(.success)
         }
         
         call.response.whenFailure { error in
             completion(.failure(.serverNotReachable))
         }
-        
     }
     
     /// Creates task for invoking rights with provided parameters
     /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
     /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
-    /// - Parameter rights: The array of rights to invoke in format `[<rightCode>]`. Each `<rightCode>` must exist in `configuration.rights`.
+    /// - Parameter right: The right to invoke in format `<rightCode>`. `<rightCode>` must exist in `configuration.rights`.
     /// - Parameter userData: The user's data
-    func invokeRights(configuration: Configuration, identities: [String: String], rights: [String], userData: UserData, completion: @escaping (NetworkTaskResult<Void>)->()) {
-        guard let gangplankHost = configuration.services?.gangplank else {
-            completion(.failure(.validationError(error: InvokeRightsValidationError.gangplankHostNotSpecified)))
-            return
-        }
-        guard let gangplankURL = URL(string: gangplankHost) else {
-            completion(.failure(.validationError(error: InvokeRightsValidationError.gangplankHostInvalid(gangplankHost))))
-            return
-        }
+    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult)->()) {
         guard identities.count > 0 else {
             completion(.failure(.validationError(error: InvokeRightsValidationError.noIdentities)))
             return
         }
-        guard rights.count > 0 else {
-            completion(.failure(.validationError(error: InvokeRightsValidationError.noRights)))
-            return
-        }
         let configurationRights = configuration.rights ?? []
-        for code in rights {
-            guard configurationRights.contains(where: { $0.code == code }) else {
-                completion(.failure(.validationError(error: InvokeRightsValidationError.rightIsNotFoundInConfig(code))))
-                return
-            }
+        guard configurationRights.contains(where: { $0.code == right }) else {
+            completion(.failure(.validationError(error: InvokeRightsValidationError.rightIsNotFoundInConfig(right))))
+            return
         }
         guard let environmentCode = configuration.environment?.code else {
             completion(.failure(.validationError(error: InvokeRightsValidationError.environmentCodeNotSpecified)))
@@ -268,19 +242,57 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
             completion(.failure(.validationError(error: InvokeRightsValidationError.policyScopeCodeNotSpecified)))
             return
         }
-        
-        //        let request = InvokeRightsRequest(
-        //            session: session,
-        //            gangplankHost: gangplankURL,
-        //            organizationCode: settings.organizationCode,
-        //            applicationCode: settings.applicationCode,
-        //            environmentCode: environmentCode,
-        //            policyScopeCode: policyScopeCode,
-        //            identities: identities,
-        //            rights: rights,
-        //            userData: userData
-        //        )
-        //        return createTask(request: request, handler: nil)
+        guard let organizationName = configuration.organization?.name else {
+            completion(.failure(.validationError(error: InvokeRightsValidationError.organizationNameNotSpecified)))
+            return
+        }
+        guard let organizationCode = configuration.organization?.code else {
+            completion(.failure(.validationError(error: InvokeRightsValidationError.organizationCodeNotSpecified)))
+            return
+        }
+        guard let applicationCode = configuration.application?.code else {
+            completion(.failure(.validationError(error: InvokeRightsValidationError.applicationCodeNotSpecified)))
+            return
+        }
+
+        let options: Mobile_InvokeRightRequest = .with {
+            $0.policyScope = policyScopeCode
+            $0.right = right
+
+            $0.identities = identities.map { dict in
+                return .with {
+                    $0.identitySpace = dict.key
+                    $0.identityValue = dict.value
+                }
+            }
+            $0.dataSubject = .with {
+                $0.first = userData.first
+                $0.last = userData.last
+                $0.country = userData.country
+                $0.region = userData.region
+                $0.email = userData.email
+            }
+            $0.organization = .with {
+                $0.name = organizationName
+                $0.id = organizationCode
+            }
+            $0.submittedTime = Int64(Date().timeIntervalSince1970)
+            $0.context = .with {
+                $0.collectedFrom = "phone"
+                $0.application = applicationCode
+                $0.environment = environmentCode
+            }
+        }
+
+        let call = client.invokeRight(options)
+
+        call.response.whenSuccess { response in
+            completion(.success)
+        }
+
+        call.response.whenFailure { error in
+            completion(.failure(.serverNotReachable))
+        }
     }
     
     // MARK: Private

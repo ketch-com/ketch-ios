@@ -43,12 +43,10 @@ class Step2FullConfigViewController: UIViewController {
         environmentTextField.text = environment
         getFullConfigButton.isEnabled = false
         Ketch_gRPC.getFullConfiguration(environmentCode: environment, countryCode: countryCode, regionCode: regionCode) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.getFullConfigButton.isEnabled = true
-                self?.configuration = result.object
-                self?.textView.text = result.description
-                self?.usageStackView.isHidden = result.object == nil
-            }
+            self?.getFullConfigButton.isEnabled = true
+            self?.configuration = result.object
+            self?.textView.text = result.description
+            self?.usageStackView.isHidden = result.object == nil
         }
     }
 

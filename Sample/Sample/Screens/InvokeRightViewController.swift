@@ -59,10 +59,8 @@ class InvokeRightViewController: UIViewController, UsageViewControllerProtocol {
             identities: [identityKey: "testValue"],
             right: right.code!,
             userData: UserData(email: "example@domain.com", first: "John", last: "Doe", country: "US", region: "CA")) { [weak self] (result) in
-            DispatchQueue.main.async {
-                self?.invokeButton.isEnabled = true
-                self?.textView.text = result.description
-            }
+            self?.invokeButton.isEnabled = true
+            self?.textView.text = result.description
         }
     }
 

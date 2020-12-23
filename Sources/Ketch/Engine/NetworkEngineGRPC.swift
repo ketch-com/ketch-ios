@@ -76,14 +76,20 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         call.response.whenSuccess { [weak self] configuratoionResponse in
             let configuration = Configuration(response: configuratoionResponse)
             self?.cacheStore.setConfiguration(configuration: configuration, environmentCode: environmentCode, languageCode: languageCode)
-            completion(.success(configuration))
+            DispatchQueue.main.async {
+                completion(.success(configuration))
+            }
         }
         
         call.response.whenFailure { [weak self] error in
             if let configuration = self?.cacheStore.configuration(environmentCode: environmentCode, languageCode: languageCode) {
-                completion(.cache(configuration))
+                DispatchQueue.main.async {
+                    completion(.cache(configuration))
+                }
             } else {
-                completion(.failure(.serverNotReachable))
+                DispatchQueue.main.async {
+                    completion(.failure(.serverNotReachable))
+                }
             }
         }
     }
@@ -137,14 +143,20 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
             }
 
             self?.cacheStore.setConsentStatus(consentStatus: consentStatus, environmentCode: environmentCode, identities: identities, purposes: purposes)
-            completion(.success(consentStatus))
+            DispatchQueue.main.async {
+                completion(.success(consentStatus))
+            }
         }
         
         call.response.whenFailure { [weak self] error in
             if let consents = self?.cacheStore.consentStatus(environmentCode: environmentCode, identities: identities, purposes: purposes) {
-                completion(.cache(consents))
+                DispatchQueue.main.async {
+                    completion(.cache(consents))
+                }
             } else {
-                completion(.failure(.serverNotReachable))
+                DispatchQueue.main.async {
+                    completion(.failure(.serverNotReachable))
+                }
             }
         }
     }
@@ -211,11 +223,15 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         let call = client.setConsent(options)
         
         call.response.whenSuccess { response in
-            completion(.success)
+            DispatchQueue.main.async {
+                completion(.success)
+            }
         }
         
         call.response.whenFailure { error in
-            completion(.failure(.serverNotReachable))
+            DispatchQueue.main.async {
+                completion(.failure(.serverNotReachable))
+            }
         }
     }
     
@@ -287,11 +303,15 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         let call = client.invokeRight(options)
 
         call.response.whenSuccess { response in
-            completion(.success)
+            DispatchQueue.main.async {
+                completion(.success)
+            }
         }
 
         call.response.whenFailure { error in
-            completion(.failure(.serverNotReachable))
+            DispatchQueue.main.async {
+                completion(.failure(.serverNotReachable))
+            }
         }
     }
     

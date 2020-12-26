@@ -27,7 +27,7 @@ public enum InvokeRightsValidationError: ValidationError {
     case noIdentities
 
     /// Provided empty consents map.
-    case noRights
+    case noRights                               // TODO: drop
 
     /// Right is not found in provided config.
     case rightIsNotFoundInConfig(_ code: String)

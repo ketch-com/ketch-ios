@@ -12,10 +12,10 @@ import Foundation
 public enum GetConsentStatusValidationError: ValidationError {
 
     /// wheelhouse host missed in configuration or equal to nil
-    case wheelhouseHostNotSpecified
+    case wheelhouseHostNotSpecified                                         // TODO: drop?
 
     /// wheelhouse host value cannot be used to create an URL
-    case wheelhouseHostInvalid(_ host: String)
+    case wheelhouseHostInvalid(_ host: String)                              // TODO: drop?
 
     /// `Environment code` is not specified in the provided config
     case environmentCodeNotSpecified

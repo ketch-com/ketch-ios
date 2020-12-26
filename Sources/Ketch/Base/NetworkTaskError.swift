@@ -22,22 +22,28 @@ public enum NetworkTaskError: Error {
     case invalidStatusCode(_ code: Int)
 
     /// The status code belongs to 5XX
-    case serverNotReachable
+    case serverNotReachable             // TODO: drop
 
     /// The request failed with some error
-    case requestError(Error?)
+    case requestError(Error?)           // TODO: drop
 
     /// The provided data cannot be decoded
-    case decodeError(Error?)
+    case decodeError(Error?)            // TODO: drop
 
     /// The error occured during handling the response
-    case handleError(Error?)
+    case handleError(Error?)            // TODO: drop
 
     /// The error occured during validating input parameters
     case validationError(error: ValidationError)
 
+    /// Other error
+    case other(Error)
+
+    /// gRPC error with statuc code and message
+    case grpc(statusCode: Int, message: String?)
+
     /// Unknown error
-    case unknown
+    case unknown                        // TODO: drop
 
     public var description: String {
         switch self {
@@ -51,6 +57,10 @@ public enum NetworkTaskError: Error {
             return "Cannot handle the response."
         case .validationError(let error):
             return error.description
+        case .grpc(let code, let message):
+            return "gRPC error. Status code: \(code), message: \(message)."
+        case .other(let error):
+            return error.localizedDescription
         default:
             return "Unknown error. Please try again."
         }

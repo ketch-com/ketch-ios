@@ -53,6 +53,14 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         self.channel = ClientConnection.secure(group: MultiThreadedEventLoopGroup(numberOfThreads: 1)).connect(host: "mobile.dev.b10s.io", port: 443)
         self.client = Mobile_MobileClient(channel: channel)
     }
+
+    init(settings: Settings, cachingEngine: CacheEngine, printDebugInfo: Bool = false, client: Mobile_MobileClientProtocol) {
+        self.settings = settings
+        self.cacheStore = CacheStore(settings: settings, engine: cachingEngine)
+        self.printDebugInfo = printDebugInfo
+        self.channel = ClientConnection.secure(group: MultiThreadedEventLoopGroup(numberOfThreads: 1)).connect(host: "mobile.dev.b10s.io", port: 443)
+        self.client = client
+    }
     
     /// Performs a call for retrieveing Configuration for specific environment and region
     /// - Parameter environmentCode: The code of requried environment.
@@ -88,7 +96,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 }
             } else {
                 DispatchQueue.main.async {
-                    completion(.failure(.serverNotReachable))
+                    completion(.failure(error.networkTaskError))
                 }
             }
         }
@@ -155,7 +163,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 }
             } else {
                 DispatchQueue.main.async {
-                    completion(.failure(.serverNotReachable))
+                    completion(.failure(error.networkTaskError))
                 }
             }
         }
@@ -227,10 +235,10 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 completion(.success)
             }
         }
-        
+
         call.response.whenFailure { error in
             DispatchQueue.main.async {
-                completion(.failure(.serverNotReachable))
+                completion(.failure(error.networkTaskError))
             }
         }
     }
@@ -289,7 +297,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 $0.email = userData.email
             }
             $0.organization = .with {
-                $0.name = organizationName
+                $0.name = organizationName // TODO: Make optional?
                 $0.id = organizationCode
             }
             $0.submittedTime = Int64(Date().timeIntervalSince1970)
@@ -310,7 +318,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
 
         call.response.whenFailure { error in
             DispatchQueue.main.async {
-                completion(.failure(.serverNotReachable))
+                completion(.failure(error.networkTaskError))
             }
         }
     }
@@ -321,7 +329,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
     private let channel: GRPCChannel
     
     /// Client object generated for sending gRPC requests
-    private let client: Mobile_MobileClient!
+    private let client: Mobile_MobileClientProtocol!
     
     /// Settings for API which contains `organizationId` and `applicationId`
     private let settings: Settings
@@ -338,4 +346,14 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
     /// Property to print debug info.
     private let printDebugInfo: Bool
     
+}
+
+fileprivate extension Error {
+    var networkTaskError: NetworkTaskError {
+        if let grpcStatus = self as? GRPCStatus {
+            return .grpc(statusCode: grpcStatus.code.rawValue, message: grpcStatus.message)
+        } else {
+            return .other(self)
+        }
+    }
 }

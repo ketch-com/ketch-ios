@@ -159,7 +159,7 @@ class NetworkEngineTests: XCTestCase {
         let stream = client.makeGetConfigurationResponseStream()
         let cachingEngine = InMemoryCacheEngine()
         let engine = makeNetworkEngine(client: client, cacheEngine: cachingEngine)
-        let response = Configuration.mock().raw
+        let response = Configuration.mock().rawResponse
 
         let expectation = self.expectation(description: "response")
 

@@ -49,7 +49,7 @@ class KetchTests: XCTestCase {
         XCTAssertEqual(networkEngine.fullConfigurationLanguageCode, "EN")
         XCTAssertEqual(networkEngine.fullConfigurationIP, "194.156.251.41")
 
-        Ketch.reset()
+        Ketch_gRPC.reset()
         Ketch_gRPC.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, ip: "") { result in
             guard case .failure(let error) = result,
                 case .validationError(let validationError) = error,

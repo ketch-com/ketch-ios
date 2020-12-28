@@ -11,12 +11,6 @@ import Foundation
 /// Possible errors may occur during creating `GetConsentStatus` request
 public enum GetConsentStatusValidationError: ValidationError {
 
-    /// wheelhouse host missed in configuration or equal to nil
-    case wheelhouseHostNotSpecified                                         // TODO: drop?
-
-    /// wheelhouse host value cannot be used to create an URL
-    case wheelhouseHostInvalid(_ host: String)                              // TODO: drop?
-
     /// `Environment code` is not specified in the provided config
     case environmentCodeNotSpecified
 
@@ -32,10 +26,6 @@ public enum GetConsentStatusValidationError: ValidationError {
     /// The convenient method to get the reason why validation failed
     public var description: String {
         switch self {
-        case .wheelhouseHostNotSpecified:
-            return "Wheelhouse host is not specified."
-        case .wheelhouseHostInvalid(let host):
-            return "Wheelhouse host is invalid: \"\(host)\"."
         case .environmentCodeNotSpecified:
             return "Environment code is missed in the provided config."
         case .noIdentities:

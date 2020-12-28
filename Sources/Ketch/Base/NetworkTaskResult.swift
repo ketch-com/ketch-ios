@@ -23,6 +23,12 @@ public enum NetworkTaskResult<ResultType> {
     case failure(NetworkTaskError)
 }
 
+public extension NetworkTaskResult where ResultType == Void {
+    static var success: NetworkTaskResult {
+        return .success(())
+    }
+}
+
 // MARK: -
 
 extension NetworkTaskResult {

@@ -40,15 +40,17 @@ class KetchTests: XCTestCase {
         let environmentCode = "abcd"
         let countryCode = "US"
         let regionCode = "CA"
-        Ketch_gRPC.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode) { _ in }
+        let ip = "194.156.251.41"
+        Ketch_gRPC.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, ip: ip) { _ in }
         XCTAssertTrue(networkEngine.fullConfigurationCalled)
         XCTAssertEqual(networkEngine.fullConfigurationEnvironmentCode, environmentCode)
         XCTAssertEqual(networkEngine.fullConfigurationCountryCode, "US")
         XCTAssertEqual(networkEngine.fullConfigurationRegionCode, "CA")
         XCTAssertEqual(networkEngine.fullConfigurationLanguageCode, "EN")
+        XCTAssertEqual(networkEngine.fullConfigurationIP, "194.156.251.41")
 
         Ketch.reset()
-        Ketch_gRPC.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode) { result in
+        Ketch_gRPC.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, ip: "") { result in
             guard case .failure(let error) = result,
                 case .validationError(let validationError) = error,
                 let ketchError = validationError as? KetchError,

@@ -19,7 +19,7 @@ public protocol ValidationError: Error {
 public enum NetworkTaskError: Error {
 
     /// The status code belongs to 3XX or 4XX
-    case invalidStatusCode(_ code: Int)
+    case invalidStatusCode(_ code: Int) // TODO: drop
 
     /// The status code belongs to 5XX
     case serverNotReachable             // TODO: drop
@@ -58,7 +58,7 @@ public enum NetworkTaskError: Error {
         case .validationError(let error):
             return error.description
         case .grpc(let code, let message):
-            return "gRPC error. Status code: \(code), message: \(message)."
+            return "gRPC error. Status code: \(code), message: \(message ?? "nil")."
         case .other(let error):
             return error.localizedDescription
         default:

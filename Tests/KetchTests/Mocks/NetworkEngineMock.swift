@@ -24,12 +24,14 @@ class NetworkEngineMock: NetworkEngineGRPC {
     var fullConfigurationCountryCode: String?
     var fullConfigurationRegionCode: String?
     var fullConfigurationLanguageCode: String?
-    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion: @escaping (NetworkTaskResult<Configuration>) -> ()) {
+    var fullConfigurationIP: String?
+    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, ip: String, languageCode: String, completion: @escaping (NetworkTaskResult<Configuration>) -> ()) {
         fullConfigurationCalled = true
         fullConfigurationEnvironmentCode = environmentCode
         fullConfigurationCountryCode = countryCode
         fullConfigurationRegionCode = regionCode
         fullConfigurationLanguageCode = languageCode
+        fullConfigurationIP = ip
     }
 
     var consentStatusCalled = false
@@ -48,7 +50,7 @@ class NetworkEngineMock: NetworkEngineGRPC {
     var setConsentStatusIdentities: [String : String]?
     var setConsentStatusConsents: [String : ConsentStatus]?
     var setConsentStatusMigrationOption: MigrationOption?
-    func setConsentStatus(configuration: Configuration, identities: [String : String], consents: [String : ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult) -> ()) {
+    func setConsentStatus(configuration: Configuration, identities: [String : String], consents: [String : ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskResult<Void>) -> ()) {
         setConsentStatusCalled = true
         setConsentStatusConfig = configuration
         setConsentStatusIdentities = identities
@@ -61,7 +63,7 @@ class NetworkEngineMock: NetworkEngineGRPC {
     var invokeRightsIdentities: [String : String]?
     var invokeRightsRight: String?
     var invokeRightsUserData: UserData?
-    func invokeRight(configuration: Configuration, identities: [String : String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult) -> ()) {
+    func invokeRight(configuration: Configuration, identities: [String : String], right: String, userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> ()) {
         invokeRightsCalled = true
         invokeRightsConfig = configuration
         invokeRightsIdentities = identities

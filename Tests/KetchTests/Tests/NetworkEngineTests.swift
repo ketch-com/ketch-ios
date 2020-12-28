@@ -33,7 +33,7 @@ class NetworkEngineTests: XCTestCase {
 
         let expectation = self.expectation(description: "response")
 
-        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "NY", languageCode: "") { (result) in
+        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "NY", ip: "", languageCode: "") { (result) in
             defer {
                 expectation.fulfill()
             }
@@ -64,7 +64,7 @@ class NetworkEngineTests: XCTestCase {
 
         let expectation = self.expectation(description: "response")
 
-        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "NY", languageCode: "") { (result) in
+        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "NY", ip: "", languageCode: "") { (result) in
             defer {
                 expectation.fulfill()
             }
@@ -97,7 +97,7 @@ class NetworkEngineTests: XCTestCase {
 
         let expectation = self.expectation(description: "response")
 
-        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "OO", languageCode: "BAR") { (result) in
+        engine.getFullConfiguration(environmentCode: "123", countryCode: "US", regionCode: "OO", ip: "", languageCode: "BAR") { (result) in
             defer {
                 expectation.fulfill()
             }
@@ -107,7 +107,6 @@ class NetworkEngineTests: XCTestCase {
             }
 
             // Validate Cache
-            XCTAssertEqual(config.version, 1)
             XCTAssertEqual(config.language, "en-US")
             XCTAssertEqual(config.organization?.code, "habu")
             XCTAssertEqual(config.application?.code, "sublimedaily")
@@ -164,7 +163,7 @@ class NetworkEngineTests: XCTestCase {
 
         let expectation = self.expectation(description: "response")
 
-        engine.getFullConfiguration(environmentCode: "123", countryCode: "countryCode", regionCode: "regionCode", languageCode: "BAR") { (result) in
+        engine.getFullConfiguration(environmentCode: "123", countryCode: "countryCode", regionCode: "regionCode", ip: "", languageCode: "BAR") { (result) in
             defer {
                 expectation.fulfill()
             }

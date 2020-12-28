@@ -24,23 +24,17 @@ public class Ketch_gRPC {
         }
         shared = Ketch_gRPC(organizationCode: organizationCode, applicationCode: applicationCode)
     }
-    
-    public static func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
-        obtainInstance(completion: completion) {
-            $0.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, languageCode: languageCode, completion: completion)
-        }
-    }
 
     /// Retrieve `Configuration` from network request or cache if network request failed.
-    /// The configuration is associated with `policyScope` associated with provided `coordinate`
-    /// - Parameter bootstrapConfiguration: The configuration that was retrieved by `getBootstrapConfiguration()` task
-    /// - Parameter environmentCode: The code of requried environment. The environment must exist in provided `bootstrapConfiguration`
-    /// - Parameter coordinate: The geographic coordinate of the user
+    /// - Parameter environmentCode: The code of requried environment.
+    /// - Parameter countryCode: The code of country needed for configuration.
+    /// - Parameter regionCode: The code of USA region needed for configuration
+    /// - Parameter ip: The `ip` address of the user. The alternative way to `countyCode` + `regionCode` for retrieving configuration.
     /// - Parameter languageCode: The short language code. By default used iOS language code from current locale
     /// - Parameter completion: The block with `Configuration` or error called when the request is completed. If `setup` is not called,  completion will be called immediately with `KetchError.haveNotSetupYet` error.
-    public static func getFullConfiguration(bootstrapConfiguration: BootstrapConfiguration, environmentCode: String, coordinate: CLLocationCoordinate2D, languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
+    public static func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, ip: String = "", languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
         obtainInstance(completion: completion) {
-            $0.getFullConfiguration(environmentCode: environmentCode, coordinate: coordinate, languageCode: languageCode, completion: completion)
+            $0.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, ip: ip, languageCode: languageCode, completion: completion)
         }
     }
     
@@ -62,13 +56,19 @@ public class Ketch_gRPC {
     /// - Parameter completion: The block with void result called when the request is completed. If `setup` is not called,  completion will be called immediately with `KetchError.haveNotSetupYet` error.
     public static func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult) -> ()) {
         obtainInstance(completion: completion) {
-            $0.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: completion)
+            $0.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: { completion($0.toVoidResult()) })
         }
     }
 
+    /// Invokes rights on back-end with provided parameters
+    /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
+    /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
+    /// - Parameter rights: The array of rights to invoke in format `[<rightCode>]`. Each `<rightCode>` must exist in `configuration.rights`.
+    /// - Parameter userData: The user's data
+    /// - Parameter completion: The block with void result called when the request is completed. If `setup` is not called,  completion will be called immediately with `KetchError.haveNotSetupYet` error.
     public static func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult) -> Void) {
         obtainInstance(completion: completion) {
-            $0.invokeRight(configuration: configuration, identities: identities, right: right, userData: userData, completion: completion)
+            $0.invokeRight(configuration: configuration, identities: identities, right: right, userData: userData, completion: { completion($0.toVoidResult()) })
         }
     }
     
@@ -79,7 +79,6 @@ public class Ketch_gRPC {
     /// Initializer
     /// - Parameter organizationCode: The code of organization
     /// - Parameter applicationCode: The code of application
-    /// - Parameter session: URLSession used to send network requests
     private init(organizationCode: String, applicationCode: String) {
         settings = Settings(organizationCode: organizationCode, applicationCode: applicationCode)
         let printDebugInfo = false // Change to `true` if you need to debug new requests
@@ -99,7 +98,7 @@ public class Ketch_gRPC {
     /// The method is designed to be called ONLY for test purposes!
     /// - Parameter organizationCode: The code of organization
     /// - Parameter applicationCode: The code of application
-    /// - Parameter session: The URLSession used to send network requests. By defult, shared session is used.
+    /// - Parameter networkEngine: The networking engine
     /// - Throws: `KetchError` in case if `setup` failed or called more than once
     internal static func setup(organizationCode: String, applicationCode: String, networkEngine: NetworkEngineGRPC) throws {
         guard shared == nil else {
@@ -139,29 +138,19 @@ public class Ketch_gRPC {
         block(shared)
     }
     
-    private func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
-        networkEngine.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, languageCode: languageCode, completion: completion)
-    }
-
-    private func getFullConfiguration(environmentCode: String, coordinate: CLLocationCoordinate2D, languageCode: String = NSLocale.preferredLanguages.first!.uppercased(), completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
-        geoCoder.reverseCoordinate(coordinate) { [weak self] (location, error) in
-            guard let self = self, let location = location else {
-                completion(.failure(.validationError(error: GetFullConfigurationValidationError.cannotRetrieveLocation(error))))
-                return
-            }
-            self.getFullConfiguration(environmentCode: environmentCode, countryCode: location.countryCode, regionCode: location.regionCode, languageCode: languageCode, completion: completion)
-        }
+    private func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, ip: String, languageCode: String, completion: @escaping (NetworkTaskResult<Configuration>) -> Void) {
+        networkEngine.getFullConfiguration(environmentCode: environmentCode, countryCode: countryCode, regionCode: regionCode, ip: ip, languageCode: languageCode, completion: completion)
     }
     
     private func getConsentStatus(configuration: Configuration, identities: [String: String], purposes: [String: String], completion: @escaping (NetworkTaskResult<[String: ConsentStatus]>) -> Void) {
         networkEngine.getConsentStatus(configuration: configuration, identities: identities, purposes: purposes, completion: completion)
     }
         
-    private func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult) -> ()) {
+    private func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskResult<Void>) -> ()) {
         networkEngine.setConsentStatus(configuration: configuration, identities: identities, consents: consents, migrationOption: migrationOption, completion: completion)
     }
     
-    private func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult) -> Void) {
+    private func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskResult<Void>) -> Void) {
         networkEngine.invokeRight(configuration: configuration, identities: identities, right: right, userData: userData, completion: completion)
     }
 
@@ -172,9 +161,6 @@ public class Ketch_gRPC {
 
     /// Engine used to create and hold network tasks
     private let networkEngine: NetworkEngineGRPC
-
-    /// Engine used to geocode coordinate to `Location` instance
-    private let geoCoder = CLGeocoder()
 
     /// Lock used to access to shared instace of the framework
     private static let lock = NSLock()

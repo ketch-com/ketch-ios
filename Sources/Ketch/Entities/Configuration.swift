@@ -16,7 +16,6 @@ public struct Configuration: Codable {
         public var code: String?
     }
 
-    public var version: Int?                    // TODO: Remove
     public var language: String?
     public var organization: Organization?
     public var application: Application?
@@ -34,7 +33,6 @@ public struct Configuration: Codable {
     public var options: Options?
 
     enum CodingKeys: String, CodingKey {
-        case version = "v"
         case language
         case organization
         case application = "app"

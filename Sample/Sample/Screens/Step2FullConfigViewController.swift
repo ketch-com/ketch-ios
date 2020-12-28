@@ -42,7 +42,7 @@ class Step2FullConfigViewController: UIViewController {
         let environment = environmentTextField.text ?? "production"
         environmentTextField.text = environment
         getFullConfigButton.isEnabled = false
-        Ketch_gRPC.getFullConfiguration(environmentCode: environment, countryCode: countryCode, regionCode: regionCode) { [weak self] result in
+        Ketch_gRPC.getFullConfiguration(environmentCode: environment, countryCode: countryCode, regionCode: regionCode, ip: "") { [weak self] result in
             self?.getFullConfigButton.isEnabled = true
             self?.configuration = result.object
             self?.textView.text = result.description

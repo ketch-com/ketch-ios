@@ -13,28 +13,35 @@ import NIO
 protocol NetworkEngineGRPC {
     
     /// Creates tasks for retrieveing Configuration for specific environment and region
-    /// - Parameter bootstrapConfiguration: The configuration that was retrieved by `getBootstrapConfiguration()` task
     /// - Parameter environmentCode: The code of requried environment. The environment must exist in provided `bootstrapConfiguration`
-    /// - Parameter countryCode: The code of country needed for configuration, will be used to find appropriate `policyScopeCode` in `bootstrapConfiguration`
-    /// - Parameter regionCode: The code of USA region needed for configuration, will be used to find appropriate `policyScopeCode` in `bootstrapConfiguration`
+    /// - Parameter countryCode: The code of country needed for configuration
+    /// - Parameter regionCode: The code of USA region needed for configuration
+    /// - Parameter ip: The `ip` address of the user. The alternative to `countyCode` + `regionCode` for retrieving configuration.
     /// - Parameter languageCode: The short language code
-    /// - Returns: Network task that provides `Configuration` object or network error as a result
-    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion:@escaping (NetworkTaskResult<Configuration>)->())
-    
+    /// - Parameter completion: The block with `Configuration` or error called when the request is completed.
+    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, ip: String, languageCode: String, completion:@escaping (NetworkTaskResult<Configuration>)->())
+
+    /// Creates task for retrieveing Consent Statuses for provided parameters
+    /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
+    /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
+    /// - Parameter purposes: The map of purposes in format `[<code>: <legalBasisCode>]`. Each `<code>` must exist in `configuration.purposes`.
+    /// - Parameter completion: The block with map `[<code>: ConsentStatus]` or error called when the request is completed.
     func getConsentStatus(configuration: Configuration, identities: [String: String], purposes: [String: String], completion: @escaping (NetworkTaskResult<[String: ConsentStatus]>)->())
     
     /// Creates task for settings Consent Statuses with provided parameters
     /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
     /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
     /// - Parameter consents: The map of consent statuses in format `[<code>: ConsentStatus]`. Each `<code>` must exist in `configuration.purposes`.
-    func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult)->())
+    /// - Parameter completion: The block with void result called when the request is completed.
+    func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskResult<Void>)->())
     
     /// Creates task for invoking rights with provided parameters
     /// - Parameter configuration: The configuration that was retrieved by `getFullConfiguration()` task
     /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
     /// - Parameter right: The right to invoke in format `<rightCode>`. `<rightCode>` must exist in `configuration.rights`.
     /// - Parameter userData: The user's data
-    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult)->())
+    /// - Parameter completion: The block with void result called when the request is completed.
+    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskResult<Void>)->())
     
 }
 
@@ -66,9 +73,10 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
     /// - Parameter environmentCode: The code of requried environment.
     /// - Parameter countryCode: The code of country needed for configuration
     /// - Parameter regionCode: The code of USA region needed for configuration
+    /// - Parameter ip: The IP address of the user. The alternative to `countyCode` + `regionCode` for retrieving configuration.
     /// - Parameter languageCode: The short language code
     /// - Returns: Network task that provides `Configuration` object or network error as a result
-    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, languageCode: String, completion:@escaping (NetworkTaskResult<Configuration>)->()) {
+    func getFullConfiguration(environmentCode: String, countryCode: String, regionCode: String?, ip: String, languageCode: String, completion:@escaping (NetworkTaskResult<Configuration>)->()) {
         
         let options: Mobile_GetConfigurationRequest = .with {
             $0.organizationCode = self.settings.organizationCode
@@ -77,25 +85,28 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
             $0.countryCode = countryCode
             $0.regionCode = regionCode ?? ""
             $0.languageCode = languageCode
+            $0.ip = ip
         }
         
         let call = client.getConfiguration(options)
         
-        call.response.whenSuccess { [weak self] configuratoionResponse in
-            let configuration = Configuration(response: configuratoionResponse)
-            self?.cacheStore.setConfiguration(configuration: configuration, environmentCode: environmentCode, languageCode: languageCode)
+        call.response.whenSuccess { [weak self] configurationResponse in
+            self?.printDebugInfoIfNeeded(configurationResponse)
+
             DispatchQueue.main.async {
+                let configuration = Configuration(response: configurationResponse)
+                self?.cacheStore.setConfiguration(configuration: configuration, environmentCode: environmentCode, languageCode: languageCode)
                 completion(.success(configuration))
             }
         }
         
         call.response.whenFailure { [weak self] error in
-            if let configuration = self?.cacheStore.configuration(environmentCode: environmentCode, languageCode: languageCode) {
-                DispatchQueue.main.async {
+            self?.printDebugInfoIfNeeded(error)
+
+            DispatchQueue.main.async {
+                if let configuration = self?.cacheStore.configuration(environmentCode: environmentCode, languageCode: languageCode) {
                     completion(.cache(configuration))
-                }
-            } else {
-                DispatchQueue.main.async {
+                } else {
                     completion(.failure(error.networkTaskError))
                 }
             }
@@ -146,30 +157,32 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         let call = client.getConsent(options)
         
         call.response.whenSuccess { [weak self] response in
+            self?.printDebugInfoIfNeeded(response)
+
             let consentStatus = response.consents.reduce(into: [String: ConsentStatus]()) { (result, consent) in
                 result[consent.purpose] = ConsentStatus(allowed: consent.allowed, legalBasisCode: consent.legalBasis)
             }
 
-            self?.cacheStore.setConsentStatus(consentStatus: consentStatus, environmentCode: environmentCode, identities: identities, purposes: purposes)
             DispatchQueue.main.async {
+                self?.cacheStore.setConsentStatus(consentStatus: consentStatus, environmentCode: environmentCode, identities: identities, purposes: purposes)
                 completion(.success(consentStatus))
             }
         }
         
         call.response.whenFailure { [weak self] error in
-            if let consents = self?.cacheStore.consentStatus(environmentCode: environmentCode, identities: identities, purposes: purposes) {
-                DispatchQueue.main.async {
+            self?.printDebugInfoIfNeeded(error)
+
+            DispatchQueue.main.async {
+                if let consents = self?.cacheStore.consentStatus(environmentCode: environmentCode, identities: identities, purposes: purposes) {
                     completion(.cache(consents))
-                }
-            } else {
-                DispatchQueue.main.async {
+                } else {
                     completion(.failure(error.networkTaskError))
                 }
             }
         }
     }
     
-    func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskVoidResult)->()) {
+    func setConsentStatus(configuration: Configuration, identities: [String: String], consents: [String: ConsentStatus], migrationOption: MigrationOption, completion: @escaping (NetworkTaskResult<Void>)->()) {
         guard identities.count > 0 else {
             completion(.failure(.validationError(error: SetConsentStatusValidationError.noIdentities)))
             return
@@ -191,10 +204,6 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         }
         guard let policyScopeCode = configuration.policyScope?.code else {
             completion(.failure(.validationError(error: SetConsentStatusValidationError.policyScopeCodeNotSpecified)))
-            return
-        }
-        guard let organizationName = configuration.organization?.name else {
-            completion(.failure(.validationError(error: SetConsentStatusValidationError.organizationNameNotSpecified)))
             return
         }
         guard let organizationCode = configuration.organization?.code else {
@@ -222,7 +231,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 }
             }
             $0.organization = .with {
-                $0.name = organizationName
+                $0.name = configuration.organization?.name ?? ""
                 $0.id = organizationCode
             }
             $0.collectedTime = Int64(Date().timeIntervalSince1970)
@@ -230,13 +239,17 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         
         let call = client.setConsent(options)
         
-        call.response.whenSuccess { response in
+        call.response.whenSuccess { [weak self] response in
+            self?.printDebugInfoIfNeeded(response)
+
             DispatchQueue.main.async {
                 completion(.success)
             }
         }
 
-        call.response.whenFailure { error in
+        call.response.whenFailure { [weak self] error in
+            self?.printDebugInfoIfNeeded(error)
+
             DispatchQueue.main.async {
                 completion(.failure(error.networkTaskError))
             }
@@ -248,7 +261,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
     /// - Parameter identities: The map of identities in format `[<identitySpaceCode>, <identityValue>]`. Must be not empty
     /// - Parameter right: The right to invoke in format `<rightCode>`. `<rightCode>` must exist in `configuration.rights`.
     /// - Parameter userData: The user's data
-    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskVoidResult)->()) {
+    func invokeRight(configuration: Configuration, identities: [String: String], right: String, userData: UserData, completion: @escaping (NetworkTaskResult<Void>)->()) {
         guard identities.count > 0 else {
             completion(.failure(.validationError(error: InvokeRightsValidationError.noIdentities)))
             return
@@ -264,10 +277,6 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
         }
         guard let policyScopeCode = configuration.policyScope?.code else {
             completion(.failure(.validationError(error: InvokeRightsValidationError.policyScopeCodeNotSpecified)))
-            return
-        }
-        guard let organizationName = configuration.organization?.name else {
-            completion(.failure(.validationError(error: InvokeRightsValidationError.organizationNameNotSpecified)))
             return
         }
         guard let organizationCode = configuration.organization?.code else {
@@ -297,7 +306,7 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
                 $0.email = userData.email
             }
             $0.organization = .with {
-                $0.name = organizationName // TODO: Make optional?
+                $0.name = configuration.organization?.name ?? ""
                 $0.id = organizationCode
             }
             $0.submittedTime = Int64(Date().timeIntervalSince1970)
@@ -310,16 +319,26 @@ class NetworkEngineGRPCImpl: NetworkEngineGRPC {
 
         let call = client.invokeRight(options)
 
-        call.response.whenSuccess { response in
+        call.response.whenSuccess { [weak self] response in
+            self?.printDebugInfoIfNeeded(response)
+
             DispatchQueue.main.async {
                 completion(.success)
             }
         }
 
-        call.response.whenFailure { error in
+        call.response.whenFailure { [weak self] error in
+            self?.printDebugInfoIfNeeded(error)
+
             DispatchQueue.main.async {
                 completion(.failure(error.networkTaskError))
             }
+        }
+    }
+
+    private func printDebugInfoIfNeeded(_ item: Any) {
+        if printDebugInfo {
+            print(item)
         }
     }
     

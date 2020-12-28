@@ -10,7 +10,7 @@ import UIKit
 
 @testable import Ketch
 
-class NetworkEngineMock: NetworkEngineGRPC {
+class NetworkEngineMock: NetworkEngine {
 
     enum Error: ValidationError {
         case didNotProvideMock

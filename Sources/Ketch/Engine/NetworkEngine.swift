@@ -1,5 +1,5 @@
 //
-//  NetworkEngineGRPC.swift
+//  NetworkEngine.swift
 //  Ketch
 //
 //  Created by Andrii Andreiev on 04.12.2020.
@@ -10,7 +10,7 @@ import Foundation
 import GRPC
 import NIO
 
-protocol NetworkEngineGRPC {
+protocol NetworkEngine {
     
     /// Creates tasks for retrieveing Configuration for specific environment and region
     /// - Parameter environmentCode: The code of requried environment. The environment must exist in provided `bootstrapConfiguration`
@@ -45,7 +45,7 @@ protocol NetworkEngineGRPC {
     
 }
 
-class NetworkEngineGRPCImpl: NetworkEngineGRPC {
+class NetworkEngineImpl: NetworkEngine {
     
     // MARK: Initializer
     

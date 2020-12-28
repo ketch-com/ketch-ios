@@ -1,5 +1,5 @@
 //
-//  Ketch_gRPC.swift
+//  Ketch.swift
 //  Ketch
 //
 //  Created by Andrii Andreiev on 06.12.2020.
@@ -9,7 +9,7 @@
 import Foundation
 import CoreLocation
 
-public class Ketch_gRPC {
+public class Ketch {
     
     // MARK: - Public
 
@@ -22,7 +22,7 @@ public class Ketch_gRPC {
         guard shared == nil else {
             throw KetchError.alreadySetup
         }
-        shared = Ketch_gRPC(organizationCode: organizationCode, applicationCode: applicationCode)
+        shared = Ketch(organizationCode: organizationCode, applicationCode: applicationCode)
     }
 
     /// Retrieve `Configuration` from network request or cache if network request failed.
@@ -83,11 +83,11 @@ public class Ketch_gRPC {
         settings = Settings(organizationCode: organizationCode, applicationCode: applicationCode)
         let printDebugInfo = false // Change to `true` if you need to debug new requests
         let cacheEngine = FileCacheEngine(settings: settings, printDebugInfo: printDebugInfo)
-        networkEngine = NetworkEngineGRPCImpl(settings: settings, cachingEngine: cacheEngine, printDebugInfo: printDebugInfo)
+        networkEngine = NetworkEngineImpl(settings: settings, cachingEngine: cacheEngine, printDebugInfo: printDebugInfo)
     }
 
     /// Initializer. Designed to be used ONLY for test purposes!
-    private init(organizationCode: String, applicationCode: String, networkEngine: NetworkEngineGRPC) {
+    private init(organizationCode: String, applicationCode: String, networkEngine: NetworkEngine) {
         self.settings = Settings(organizationCode: organizationCode, applicationCode: applicationCode)
         self.networkEngine = networkEngine
     }
@@ -100,11 +100,11 @@ public class Ketch_gRPC {
     /// - Parameter applicationCode: The code of application
     /// - Parameter networkEngine: The networking engine
     /// - Throws: `KetchError` in case if `setup` failed or called more than once
-    internal static func setup(organizationCode: String, applicationCode: String, networkEngine: NetworkEngineGRPC) throws {
+    internal static func setup(organizationCode: String, applicationCode: String, networkEngine: NetworkEngine) throws {
         guard shared == nil else {
             throw KetchError.alreadySetup
         }
-        shared = Ketch_gRPC(organizationCode: organizationCode, applicationCode: applicationCode, networkEngine: networkEngine)
+        shared = Ketch(organizationCode: organizationCode, applicationCode: applicationCode, networkEngine: networkEngine)
     }
 
     /// Reset shared instance.
@@ -116,21 +116,21 @@ public class Ketch_gRPC {
     // MARK: - Methods
     
     /// Convenient method to obtain shared instance for executing `NetworkTaskResult` with result`NetworkTaskResult<T>`
-    private static func obtainInstance<T>(completion: @escaping (NetworkTaskResult<T>) -> Void, _ block: (Ketch_gRPC) -> Void) {
+    private static func obtainInstance<T>(completion: @escaping (NetworkTaskResult<T>) -> Void, _ block: (Ketch) -> Void) {
         obtainInstance(failure: { (error) in
             completion(.failure(.validationError(error: error)))
         }, block)
     }
 
     /// Convenient method to obtain shared instance for executing `NetworkTaskResult` with result`NetworkTaskVoidResult`
-    private static func obtainInstance(completion: @escaping (NetworkTaskVoidResult) -> Void, _ block: (Ketch_gRPC) -> Void) {
+    private static func obtainInstance(completion: @escaping (NetworkTaskVoidResult) -> Void, _ block: (Ketch) -> Void) {
         obtainInstance(failure: { (error) in
             completion(.failure(.validationError(error: error)))
         }, block)
     }
 
     /// Convenient method to obtain shared instance with providing all the validation logic inside
-    private static func obtainInstance(failure: (KetchError) -> Void, _ block: (Ketch_gRPC) -> Void) {
+    private static func obtainInstance(failure: (KetchError) -> Void, _ block: (Ketch) -> Void) {
         guard let shared = shared else {
             failure(.haveNotSetupYet)
             return
@@ -160,16 +160,16 @@ public class Ketch_gRPC {
     private let settings: Settings
 
     /// Engine used to create and hold network tasks
-    private let networkEngine: NetworkEngineGRPC
+    private let networkEngine: NetworkEngine
 
     /// Lock used to access to shared instace of the framework
     private static let lock = NSLock()
 
     /// Not thread-safe shared instance of the framework
-    private static var _shared: Ketch_gRPC?
+    private static var _shared: Ketch?
 
     /// Thread-safe shared instance of the framework
-    private static var shared: Ketch_gRPC? {
+    private static var shared: Ketch? {
         get {
             lock.lock()
             let value = _shared

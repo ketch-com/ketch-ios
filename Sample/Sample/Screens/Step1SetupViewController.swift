@@ -24,7 +24,7 @@ class Step1SetupViewController: UIViewController {
         let organizationCode = organizationCodeTextField.text ?? ""
         let applicationCode = applicationCodeTextField.text ?? ""
         setupButton.isEnabled = false
-        try! Ketch_gRPC.setup(organizationCode: organizationCode, applicationCode: applicationCode)
+        try! Ketch.setup(organizationCode: organizationCode, applicationCode: applicationCode)
         performSegue(withIdentifier: "pushStep2", sender: self)
     }
 

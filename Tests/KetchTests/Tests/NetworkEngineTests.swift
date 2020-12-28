@@ -19,9 +19,9 @@ class NetworkEngineTests: XCTestCase {
 
     private struct StubError: Error {}
 
-    private func makeNetworkEngine(client: Mobile_MobileClientProtocol, cacheEngine: CacheEngine = InMemoryCacheEngine()) -> NetworkEngineGRPC {
+    private func makeNetworkEngine(client: Mobile_MobileClientProtocol, cacheEngine: CacheEngine = InMemoryCacheEngine()) -> NetworkEngine {
         let settings = Settings(organizationCode: organizationCode, applicationCode: applicationCode)
-        return NetworkEngineGRPCImpl(settings: settings, cachingEngine: cacheEngine, client: client)
+        return NetworkEngineImpl(settings: settings, cachingEngine: cacheEngine, client: client)
     }
 
     // MARK: - Configuration

@@ -588,7 +588,7 @@ class NetworkEngineTests: XCTestCase {
         let client = Mobile_MobileTestClient()
         let engine = makeNetworkEngine(client: client)
         let configuration = Configuration.mock()
-        let userData = UserData(email: "a@b.c", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "a@b.c", firstName: "first", lastName: "last", country: "country", region: "region")
 
         engine.invokeRight(configuration: configuration, identities: [:], right: "rightCode", userData: userData) { (result) in
             guard case .failure(let error) = result else {
@@ -612,7 +612,7 @@ class NetworkEngineTests: XCTestCase {
         let client = Mobile_MobileTestClient()
         let engine = makeNetworkEngine(client: client)
         let configuration = Configuration.mock()
-        let userData = UserData(email: "a@b.c", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "a@b.c", firstName: "first", lastName: "last", country: "country", region: "region")
 
         engine.invokeRight(configuration: configuration, identities: ["1":"2"], right: "abc", userData: userData) { (result) in
             guard case .failure(let error) = result else {
@@ -644,7 +644,7 @@ class NetworkEngineTests: XCTestCase {
             Right(code: "abc", name: "AbC", description: "")
         ]
 
-        let userData = UserData(email: "a@b.c", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "a@b.c", firstName: "first", lastName: "last", country: "country", region: "region")
 
         engine.invokeRight(configuration: configuration, identities: ["1":"2"], right: "abc", userData: userData) { (result) in
             guard case .failure(let error) = result else {
@@ -675,7 +675,7 @@ class NetworkEngineTests: XCTestCase {
             Right(code: "abc", name: "AbC", description: "")
         ]
 
-        let userData = UserData(email: "a@b.c", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "a@b.c", firstName: "first", lastName: "last", country: "country", region: "region")
 
         engine.invokeRight(configuration: configuration, identities: ["1":"2"], right: "abc", userData: userData) { (result) in
             guard case .failure(let error) = result else {
@@ -710,7 +710,7 @@ class NetworkEngineTests: XCTestCase {
         ]
 
         let response = Mobile_InvokeRightResponse.with { _ in }
-        let userData = UserData(email: "a@b.c", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "a@b.c", firstName: "first", lastName: "last", country: "country", region: "region")
 
         let expectation = self.expectation(description: "response")
         engine.invokeRight(configuration: configuration, identities: ["1":"2"], right: "abc", userData: userData) { (result) in

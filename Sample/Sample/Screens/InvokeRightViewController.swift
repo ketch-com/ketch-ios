@@ -58,7 +58,7 @@ class InvokeRightViewController: UIViewController, UsageViewControllerProtocol {
             configuration: config!,
             identities: [identityKey: "testValue"],
             right: right.code!,
-            userData: UserData(email: "example@domain.com", first: "John", last: "Doe", country: "US", region: "CA")) { [weak self] (result) in
+            userData: UserData(email: "example@domain.com", firstName: "John", lastName: "Doe", country: "US", region: "CA")) { [weak self] (result) in
             self?.invokeButton.isEnabled = true
             self?.textView.text = result.description
         }

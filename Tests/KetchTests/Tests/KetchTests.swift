@@ -112,7 +112,7 @@ class KetchTests: XCTestCase {
         let config = Configuration.mock()
         let identities = ["abc": "def"]
         let right = "123"
-        let userData = UserData(email: "abc@domain.com", first: "first", last: "last", country: "country", region: "region")
+        let userData = UserData(email: "abc@domain.com", firstName: "first", lastName: "last", country: "country", region: "region")
         Ketch.invokeRight(configuration: config, identities: identities, right: right, userData: userData, completion: { _ in })
         XCTAssertTrue(networkEngine.invokeRightsCalled)
         XCTAssertEqual(networkEngine.invokeRightsIdentities, identities)

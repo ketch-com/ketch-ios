@@ -16,10 +16,10 @@ public struct UserData {
     public var country: String
     public var region: String
 
-    public init(email: String, first: String, last: String, country: String, region: String) {
+    public init(email: String, firstName: String, lastName: String, country: String, region: String) {
         self.email = email
-        self.first = first
-        self.last = last
+        self.first = firstName
+        self.last = lastName
         self.country = country
         self.region = region
     }

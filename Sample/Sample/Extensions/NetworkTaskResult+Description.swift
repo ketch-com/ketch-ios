@@ -30,6 +30,20 @@ extension NetworkTaskResult where ResultType: Codable {
     }
 }
 
+extension NetworkTaskResult where ResultType == Void {
+    var description: String {
+        switch self {
+        case .success:
+            return "Success:\n\n{}"
+        case .failure(let error):
+            return "Failure:\n\n\(error.description)"
+        case .cache(_):
+            return "Cache:\n\n{}"
+        }
+    }
+}
+
+
 extension NetworkTaskVoidResult {
 
     var description: String {

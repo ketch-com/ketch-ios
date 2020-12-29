@@ -68,8 +68,8 @@ class GetConsentStatusViewController: UIViewController, UsageViewControllerProto
             configuration: config!,
             identities: [identityKey: "testValue"],
             purposes: purposes) { [weak self] (result) in
-                self?.getStatusButton.isEnabled = true
-                self?.textView.text = result.description
+            self?.getStatusButton.isEnabled = true
+            self?.textView.text = result.description
         }
     }
 

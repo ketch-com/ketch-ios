@@ -39,7 +39,7 @@ class Step1SetupViewController: UIViewController {
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let vc = segue.destination as? Step2BootstrapConfigViewController {
+        if let vc = segue.destination as? Step2FullConfigViewController {
             vc.organizationCode = organizationCodeTextField.text ?? ""
             vc.applicationCode = applicationCodeTextField.text ?? ""
         }

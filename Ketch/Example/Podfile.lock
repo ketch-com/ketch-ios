@@ -1,22 +1,16 @@
 PODS:
-  - Alamofire (5.6.2)
-  - KetchSDK (0.1.0):
-    - Alamofire
+  - KetchSDK (0.1.0)
 
 DEPENDENCIES:
-  - Alamofire
-  - KetchSDK
+  - KetchSDK (from `../`)
 
-SPEC REPOS:
-  https://ketch.jfrog.io/artifactory/api/pods/ios:
-    - KetchSDK
-  trunk:
-    - Alamofire
+EXTERNAL SOURCES:
+  KetchSDK:
+    :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: d368e1ff8a298e6dde360e35a3e68e6c610e7204
-  KetchSDK: 13e50f661ac2a1b3de9dd4f0fe61e97266438f9d
+  KetchSDK: df9a1eb5ffab6c9cc3524b0f532e10f4291f2894
 
-PODFILE CHECKSUM: ae58ab1a51f945e8865b13a3f625e87be42d9fce
+PODFILE CHECKSUM: 8b6007f814664285df9e85411e158bcbbb450fb2
 
 COCOAPODS: 1.11.3

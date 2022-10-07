@@ -10,11 +10,12 @@ import UIKit
 import KetchSDK
 
 class ViewController: UIViewController {
+    private var ketch = KetchSDK()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        KetchSDK().config()
+        ketch.config()
     }
 }
 

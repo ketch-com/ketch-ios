@@ -15,7 +15,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        ketch.config()
+        ketch.getConfig()
+
     }
 }
 

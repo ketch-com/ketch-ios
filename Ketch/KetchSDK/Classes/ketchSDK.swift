@@ -19,10 +19,13 @@ public class KetchSDK: KetchSDK_Protocol {
     }
 
     public func config() {
-        KetchApiRequest
+        KetchApiRequest()
             .fetchConfig()
-            .sink { error in
-                print(error)
+            .sink { completion in
+                switch completion {
+                case .failure(let error): print(error)
+                case .finished: break
+                }
             } receiveValue: { config in
                 print(config)
             }
@@ -30,10 +33,13 @@ public class KetchSDK: KetchSDK_Protocol {
     }
 
     public func bootConfig() {
-        KetchApiRequest
+        KetchApiRequest()
             .fetchBootConfig()
-            .sink { error in
-                print(error)
+            .sink { completion in
+                switch completion {
+                case .failure(let error): print(error)
+                case .finished: break
+                }
             } receiveValue: { config in
                 print(config)
             }
@@ -41,7 +47,7 @@ public class KetchSDK: KetchSDK_Protocol {
     }
 
     public func setConsent() {
-        KetchApiRequest
+        KetchApiRequest()
             .updateConsent(
                 update: ConsentUpdate(
                     organizationCode: "transcenda",
@@ -63,16 +69,19 @@ public class KetchSDK: KetchSDK_Protocol {
                     vendors: nil
                 )
             )
-            .sink { error in
-                print(error)
+            .sink { completion in
+                switch completion {
+                case .failure(let error): print(error)
+                case .finished: break
+                }
             } receiveValue: { config in
                 print(config)
             }
             .store(in: &subscriptions)
     }
 
-    public func getConfig() {
-        KetchApiRequest
+    public func getConsent() {
+        KetchApiRequest()
             .getConsent(
                 config: ConsentConfig(
                     organizationCode: "transcenda",
@@ -91,8 +100,11 @@ public class KetchSDK: KetchSDK_Protocol {
                     ]
                 )
             )
-            .sink { error in
-                print(error)
+            .sink { completion in
+                switch completion {
+                case .failure(let error): print(error)
+                case .finished: break
+                }
             } receiveValue: { config in
                 print(config)
             }
@@ -100,7 +112,7 @@ public class KetchSDK: KetchSDK_Protocol {
     }
 
     public func invokeRights() {
-        KetchApiRequest
+        KetchApiRequest()
             .invokeRights(
                 config: InvokeRightConfig(
                     organizationCode: "transcenda",
@@ -125,8 +137,11 @@ public class KetchSDK: KetchSDK_Protocol {
                     )
                 )
             )
-            .sink { error in
-                print(error)
+            .sink { completion in
+                switch completion {
+                case .failure(let error): print(error)
+                case .finished: break
+                }
             } receiveValue: { config in
                 print(config)
             }

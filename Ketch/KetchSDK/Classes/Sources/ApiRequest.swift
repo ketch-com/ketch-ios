@@ -37,15 +37,19 @@ extension ApiRequest {
     }
 }
 
-enum ApiClient {
-    enum ApiClientError: Error {
-        case requestURLError
-        case sessionError(error: KetchApiError)
-        case unknownError
-    }
+protocol ApiClient {
+    func execute(request: ApiRequest) -> AnyPublisher<Data, ApiClientError>
+}
 
-    static func execute<T: Codable>(request: ApiRequest) -> AnyPublisher<T, ApiClientError> {
-        guard let request = urlRequest(with: request) else {
+enum ApiClientError: Error {
+    case requestURLError
+    case sessionError(error: KetchApiError)
+    case unknownError
+}
+
+class DefaultApiClient: ApiClient {
+    func execute(request: ApiRequest) -> AnyPublisher<Data, ApiClientError> {
+        guard let request = Self.urlRequest(with: request) else {
             return Fail(error: ApiClientError.requestURLError).eraseToAnyPublisher()
         }
 
@@ -60,13 +64,12 @@ enum ApiClient {
                     throw ApiClientError.sessionError(error: error)
                 }
 
-                if let responseData = bootstrapFunctionData(with: output.data) {
+                if let responseData = Self.bootstrapFunctionData(with: output.data) {
                     return responseData
                 }
 
                 return output.data
             }
-            .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 error as? ApiClientError ?? .unknownError
             }
@@ -86,10 +89,8 @@ enum ApiClient {
 
         return model?.data(using: .utf8)
     }
-}
 
-extension ApiClient {
-    static func urlRequest(with request: ApiRequest) -> URLRequest? {
+    private static func urlRequest(with request: ApiRequest) -> URLRequest? {
         guard let url = URL(string: request.endPoint) else { return nil }
 
         var urlRequest = URLRequest(url: url)

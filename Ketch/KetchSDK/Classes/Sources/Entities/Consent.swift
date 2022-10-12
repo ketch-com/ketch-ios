@@ -20,22 +20,24 @@ public struct ConsentUpdate: Codable {
     public let vendors: [String]?
 }
 
-public enum MigrationOption: String, Codable {
-    case migrateDefault = "MIGRATE_DEFAULT"
-    case migrateNever = "MIGRATE_NEVER"
-    case migrateFromAllow = "MIGRATE_FROM_ALLOW"
-    case migrateFromDeny = "MIGRATE_FROM_DENY"
-    case migrateAlways = "MIGRATE_ALWAYS"
-}
+extension ConsentUpdate {
+    public enum MigrationOption: String, Codable {
+        case migrateDefault = "MIGRATE_DEFAULT"
+        case migrateNever = "MIGRATE_NEVER"
+        case migrateFromAllow = "MIGRATE_FROM_ALLOW"
+        case migrateFromDeny = "MIGRATE_FROM_DENY"
+        case migrateAlways = "MIGRATE_ALWAYS"
+    }
 
-public struct PurposeAllowedLegalBasis: Codable {
-    public let allowed: Bool
-    public let legalBasisCode: String
+    public struct PurposeAllowedLegalBasis: Codable {
+        public let allowed: Bool
+        public let legalBasisCode: String
 
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      try container.encode(allowed.description, forKey: .allowed)
-      try container.encode(legalBasisCode, forKey: .legalBasisCode)
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(allowed.description, forKey: .allowed)
+            try container.encode(legalBasisCode, forKey: .legalBasisCode)
+        }
     }
 }
 
@@ -49,8 +51,10 @@ public struct ConsentConfig: Codable {
     public let purposes: [String: PurposeLegalBasis]
 }
 
-public struct PurposeLegalBasis: Codable {
-    public let legalBasisCode: String
+extension ConsentConfig {
+    public struct PurposeLegalBasis: Codable {
+        public let legalBasisCode: String
+    }
 }
 
 public struct ConsentStatus: Codable {

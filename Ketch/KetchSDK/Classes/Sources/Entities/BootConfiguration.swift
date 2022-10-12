@@ -23,13 +23,20 @@ public struct BootConfiguration: Codable {
     public let jurisdiction: PolicyScope?
 }
 
-public struct PolicyScope: Codable {
-    public let defaultScopeCode: String?
-    public let scopes: [String: String]?
-}
+extension BootConfiguration {
+    public typealias Organization = Configuration.Organization
+    public typealias Property = Configuration.Property
+    public typealias Environment = Configuration.Environment
+    public typealias Identity = Configuration.Identity
 
-public struct Language: Codable {
-    public let code: String?
-    public let englishName: String?
-    public let nativeName: String?
+    public struct PolicyScope: Codable {
+        public let defaultScopeCode: String?
+        public let scopes: [String: String]?
+    }
+
+    public struct Language: Codable {
+        public let code: String?
+        public let englishName: String?
+        public let nativeName: String?
+    }
 }

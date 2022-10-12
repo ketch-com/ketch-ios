@@ -53,12 +53,12 @@ public class KetchSDK: KetchSDK_Protocol {
                     jurisdictionCode: "default",
                     migrationOption: .migrateDefault,
                     purposes: [
-                        "essential_services": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "analytics": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "behavioral_advertising": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "email_marketing": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "tcf.purpose_1": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin"),
-                        "somepurpose_key": PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin")
+                        "essential_services": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
+                        "analytics": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
+                        "behavioral_advertising": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
+                        "email_marketing": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
+                        "tcf.purpose_1": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin"),
+                        "somepurpose_key": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin")
                     ],
                     vendors: nil
                 )
@@ -82,13 +82,47 @@ public class KetchSDK: KetchSDK_Protocol {
                     jurisdictionCode: "default",
                     identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
                     purposes: [
-                        "essential_services": PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "analytics": PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "behavioral_advertising": PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "email_marketing": PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "tcf.purpose_1": PurposeLegalBasis(legalBasisCode: "consent_optin"),
-                        "somepurpose_key": PurposeLegalBasis(legalBasisCode: "consent_optin")
+                        "essential_services": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
+                        "analytics": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
+                        "behavioral_advertising": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
+                        "email_marketing": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
+                        "tcf.purpose_1": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin"),
+                        "somepurpose_key": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin")
                     ]
+                )
+            )
+            .sink { error in
+                print(error)
+            } receiveValue: { config in
+                print(config)
+            }
+            .store(in: &subscriptions)
+    }
+
+    public func invokeRights() {
+        KetchApiRequest
+            .invokeRights(
+                config: InvokeRightConfig(
+                    organizationCode: "transcenda",
+                    controllerCode: "my_controller",
+                    propertyCode: "website_smart_tag",
+                    environmentCode: "production",
+                    identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
+                    invokedAt: nil,
+                    jurisdictionCode: "default",
+                    rightCode: "gdpr_portability",
+                    user: InvokeRightConfig.User(
+                        email: "user@email.com",
+                        first: "FirstName",
+                        last: "LastName",
+                        country: nil,
+                        stateRegion: nil,
+                        description: nil,
+                        phone: nil,
+                        postalCode: nil,
+                        addressLine1: nil,
+                        addressLine2: nil
+                    )
                 )
             )
             .sink { error in

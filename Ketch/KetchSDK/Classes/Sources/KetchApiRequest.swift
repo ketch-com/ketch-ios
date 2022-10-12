@@ -53,6 +53,19 @@ enum KetchApiRequest {
         .mapError(KetchError.init)
         .eraseToAnyPublisher()
     }
+
+    static func invokeRights(config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
+        ApiClient.execute(
+            request: ApiRequest(
+                endPoint: "https://global.ketchcdn.com/web/v2/rights/transcenda/invoke",
+                method: .post,
+                body: try? JSONEncoder().encode(config)
+            )
+        )
+        .map { (_: [String: String]) -> Void in }
+        .mapError(KetchError.init)
+        .eraseToAnyPublisher()
+    }
 }
 
 extension KetchApiRequest {

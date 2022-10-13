@@ -21,20 +21,18 @@ class KetchApiRequest {
                 endPoint: "https://global.ketchcdn.com/web/v2/config/transcenda/website_smart_tag/production/13171895563553497268/default/en/config.json"
             )
         )
-        .mapError(KetchError.init)
         .decode(type: Configuration.self, decoder: JSONDecoder())
         .mapError(KetchError.init)
         .eraseToAnyPublisher()
     }
 
-    func fetchBootConfig() -> AnyPublisher<BootConfiguration, KetchError> {
+    func fetchBootConfig() -> AnyPublisher<Configuration, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/config/transcenda/website_smart_tag/boot.js"
+                endPoint: "https://global.ketchcdn.com/web/v2/config/transcenda/website_smart_tag/config.json"
             )
         )
-        .mapError(KetchError.init)
-        .decode(type: BootConfiguration.self, decoder: JSONDecoder())
+        .decode(type: Configuration.self, decoder: JSONDecoder())
         .mapError(KetchError.init)
         .eraseToAnyPublisher()
     }

@@ -4,12 +4,12 @@ import Combine
 
 class Tests: XCTestCase {
     var sut: KetchApiRequest!
-    var ketchApiRequestPublisher = PassthroughSubject<[String: Any], ApiClientError>()
+    var ketchApiRequestPublisher = PassthroughSubject<[String: Any],
+                         ApiClientError>()
     var subscriptions = Set<AnyCancellable>()
 
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
 
         sut = KetchApiRequest(apiClient: ApiClientMock(publisher: ketchApiRequestPublisher))
     }
@@ -149,189 +149,513 @@ class Tests: XCTestCase {
         }
         .store(in: &subscriptions)
 
-        ketchApiRequestPublisher.send(
-            [
-                "v": 1,
-                "organization": [
-                    "code": "transcenda"
-                ],
-                "app": [
-                    "code": "website_smart_tag",
-                    "name": "Website Smart Tag",
-                    "platform": "WEB"
-                ],
-                "environments": [
-                    [
-                        "code": "production",
-                        "pattern": "Lio=",
-                        "hash": "13742211039722691379"
-                    ]
-                ],
-                "policyScope": [
-                    "defaultScopeCode": "default",
-                    "scopes": [
-                        "DK": "gdpr",
-                        "GG": "gdpr",
-                        "GP": "gdpr",
-                        "US-CA": "ccpa",
-                        "IE": "gdpr",
-                        "IS": "gdpr",
-                        "GB": "gdpr",
-                        "MF": "gdpr",
-                        "YT": "gdpr",
-                        "SE": "gdpr",
-                        "BE": "gdpr",
-                        "BG": "gdpr",
-                        "NO": "gdpr",
-                        "LI": "gdpr",
-                        "NL": "gdpr",
-                        "SJ": "gdpr",
-                        "RE": "gdpr",
-                        "JE": "gdpr",
-                        "GF": "gdpr",
-                        "SK": "gdpr",
-                        "LV": "gdpr",
-                        "AT": "gdpr",
-                        "GR": "gdpr",
-                        "FI": "gdpr",
-                        "HU": "gdpr",
-                        "HR": "gdpr",
-                        "RO": "gdpr",
-                        "ES": "gdpr",
-                        "FR": "gdpr",
-                        "UA": "gdpr",
-                        "IT": "gdpr",
-                        "PT": "gdpr",
-                        "PL": "gdpr",
-                        "LT": "gdpr",
-                        "MT": "gdpr",
-                        "LU": "gdpr",
-                        "FO": "gdpr",
-                        "IM": "gdpr",
-                        "EE": "gdpr",
-                        "MQ": "gdpr",
-                        "DE": "gdpr",
-                        "CZ": "gdpr",
-                        "SI": "gdpr",
-                        "CY": "gdpr"
-                    ]
-                ],
-                "identities": [
-                    "swb_website_smart_tag": [
-                        "type": "managedCookie",
-                        "variable": "_swb",
-                        "jwtKey": nil,
-                        "jwtLocation": nil
-                    ]
-                ],
-                "scripts": [
-                    "https://global.ketchcdn.com/transom/route/switchbit/semaphore/transcenda/semaphore.js",
-                    "https://global.ketchcdn.com/transom/route/switchbit/tcf/transcenda/tcf.js",
-                    "https://global.ketchcdn.com/transom/route/switchbit/ccpa/transcenda/ccpa.js"
-                ],
-                "languages": [
-                    [
-                        "code": "uk",
-                        "englishName": "Ukrainian (uk)",
-                        "nativeName": nil
-                    ],
-                    [
-                        "code": "en",
-                        "englishName": "English",
-                        "nativeName": "English"
-                    ]
-                ],
-                "services": [
-                    "shoreline": "https://global.ketchcdn.com/web/v2/",
-                    "lanyard": "https://global.ketchcdn.com/transom/route/switchbit/lanyard/transcenda/lanyard.js"
-                ],
-                "options": [
-                    "migration": 1,
-                    "localStorage": 1
-                ],
-                "optionsNew": [
-                    "localStorage": "1",
-                    "migration": "1",
-                    "appDivs": "hubspot-messages-iframe-container"
-                ],
-                "property": [
-                    "code": "website_smart_tag",
-                    "name": "Website Smart Tag",
-                    "platform": "WEB"
-                ],
-                "jurisdiction": [
-                    "defaultScopeCode": "default",
-                    "scopes": [
-                        "LU": "gdpr",
-                        "MT": "gdpr",
-                        "CZ": "gdpr",
-                        "NL": "gdpr",
-                        "YT": "gdpr",
-                        "LV": "gdpr",
-                        "GR": "gdpr",
-                        "IT": "gdpr",
-                        "GF": "gdpr",
-                        "BG": "gdpr",
-                        "UA": "gdpr",
-                        "IS": "gdpr",
-                        "DK": "gdpr",
-                        "FR": "gdpr",
-                        "JE": "gdpr",
-                        "ES": "gdpr",
-                        "HU": "gdpr",
-                        "MF": "gdpr",
-                        "IM": "gdpr",
-                        "US-CA": "ccpa",
-                        "SE": "gdpr",
-                        "MQ": "gdpr",
-                        "IE": "gdpr",
-                        "SJ": "gdpr",
-                        "NO": "gdpr",
-                        "SK": "gdpr",
-                        "GB": "gdpr",
-                        "EE": "gdpr",
-                        "GG": "gdpr",
-                        "BE": "gdpr",
-                        "SI": "gdpr",
-                        "FO": "gdpr",
-                        "LI": "gdpr",
-                        "PL": "gdpr",
-                        "CY": "gdpr",
-                        "RO": "gdpr",
-                        "GP": "gdpr",
-                        "HR": "gdpr",
-                        "LT": "gdpr",
-                        "FI": "gdpr",
-                        "AT": "gdpr",
-                        "PT": "gdpr",
-                        "RE": "gdpr",
-                        "DE": "gdpr"
-                    ]
-                ]
-            ]
-        )
+        ketchApiRequestPublisher.send(testConfig)
 
         waitForExpectations(timeout: 0.1)
     }
 
-//    func testFetchConfig() {
-//        let expectation = expectation(description: "")
-//
-//        sut.fetchConfig()
-//        .sink { error in
-//
-//        } receiveValue: { value in
-//            expectation.fulfill()
-//        }
-//        .store(in: &subscriptions)
-//
-//        ketchApiRequestPublisher.send(
-//            [
-//                language: "en",
-//                organization: KetchSDK.Configuration.Organization(code: "transcenda"))), property: KetchSDK.Configuration.Property(code: "website_smart_tag"), name: "Website Smart Tag"), platform: "WEB"))), environments: [KetchSDK.Configuration.Environment(code: "production"), pattern: nil, hash: "13742211039722691379"))]), jurisdiction: KetchSDK.Configuration.Jurisdiction(code: "default"), defaultJurisdictionCode: "default"), variable: nil, jurisdictions: nil)), identities: ["swb_website_smart_tag": KetchSDK.Configuration.Identity(type: "managedCookie"), variable: "_swb"), jwtKey: nil, jwtLocation: nil)]), scripts: nil, environment: KetchSDK.Configuration.Environment(code: "production"), pattern: nil, hash: "13742211039722691379"))), deployment: KetchSDK.Configuration.Deployment(code: "default_deployment_plan"), version: 1662711181))), privacyPolicy: KetchSDK.Configuration.Policy(code: nil, version: nil, url: nil)), termsOfService: KetchSDK.Configuration.Policy(code: nil, version: nil, url: nil)), rights: [KetchSDK.Configuration.Right(code: "cmn_delete"), name: "Data Deletion"), description: "Right to have data deleted")), KetchSDK.Configuration.Right(code: "cmn_access"), name: "Data Access"), description: "Right to be provided with a copy of data")), KetchSDK.Configuration.Right(code: "cmn_port"), name: "Data Portability"), description: "Right to obtain and request transfer of data")), KetchSDK.Configuration.Right(code: "cmn_correction"), name: "Data Correction"), description: "Right to have inaccurate personal information corrected"))]), regulations: ["default"]), theme: KetchSDK.Configuration.Theme(code: "default"), name: "Default"), description: "Ketch default theme"), bannerBackgroundColor: "#01090E"), lightboxRibbonColor: nil, formHeaderColor: nil, statusColor: nil, highlightColor: nil, feedbackColor: nil, font: nil, buttonBorderRadius: 5), bannerContentColor: "#ffffff"), bannerButtonColor: "#ffffff"), modalHeaderBackgroundColor: "#f6f6f6"), modalHeaderContentColor: nil, modalContentColor: "#071a24"), modalButtonColor: "#071a24"), formHeaderBackgroundColor: "#071a24"), formHeaderContentColor: nil, formContentColor: "#071a24"), formButtonColor: "#071a24"), bannerPosition: 1), modalPosition: 1))), experience: nil, purposes: [KetchSDK.Configuration.Purpose(code: "essential_services", name: "Essential Services"), description: "Collection and processing of personal data to enable functionality that is essential to providing our services, including security activities, debugging, authentication, and fraud prevention, as well as contacting you with information related to products/services you have used or purchased; we may set essential cookies or other trackers for these purposes."), legalBasisCode: "disclosure", requiresPrivacyPolicy: true), requiresOptIn: nil, allowsOptOut: nil, requiresDisplay: true), categories: nil, tcfType: nil, tcfID: nil, canonicalPurposeCode: "essential_services"), legalBasisName: "Disclosure"), legalBasisDescription: "Data subject has been provided with adequate disclosure regarding the processing")), KetchSDK.Configuration.Purpose(code: "analytics", name: "Analytics"), description: "Collection and analysis of personal data to further our business goals; for example, analysis of behavior of website visitors, creation of target lists for marketing and sales, and measurement of advertising performance."), legalBasisCode: "disclosure", requiresPrivacyPolicy: true), requiresOptIn: nil, allowsOptOut: nil, requiresDisplay: true), categories: nil, tcfType: nil, tcfID: nil, canonicalPurposeCode: "analytics"), legalBasisName: "Disclosure"), legalBasisDescription: "Data subject has been provided with adequate disclosure regarding the processing")), KetchSDK.Configuration.Purpose(code: "behavioral_advertising", name: "Behavioral Advertising"), description: "Creation and activation of advertisements based on a profile informed by the collection and analysis of behavioral and personal characteristics; we may set cookies or other trackers for this purpose."), legalBasisCode: "disclosure", requiresPrivacyPolicy: true), requiresOptIn: nil, allowsOptOut: nil, requiresDisplay: true), categories: nil, tcfType: nil, tcfID: nil, canonicalPurposeCode: "behavioral_advertising"), legalBasisName: "Disclosure"), legalBasisDescription: "Data subject has been provided with adequate disclosure regarding the processing")), KetchSDK.Configuration.Purpose(code: "email_marketing", name: "Email Marketing"), description: "Marketing of our products/services to customers by email."), legalBasisCode: "disclosure", requiresPrivacyPolicy: true), requiresOptIn: nil, allowsOptOut: nil, requiresDisplay: true), categories: nil, tcfType: nil, tcfID: nil, canonicalPurposeCode: "email_mktg"), legalBasisName: "Disclosure"), legalBasisDescription: "Data subject has been provided with adequate disclosure regarding the processing")), KetchSDK.Configuration.Purpose(code: "tcf.purpose_1", name: "Store and/or access information on a device"), description: "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you."), legalBasisCode: "consent_optin", requiresPrivacyPolicy: true), requiresOptIn: true), allowsOptOut: true), requiresDisplay: true), categories: nil, tcfType: "purpose"), tcfID: "1"), canonicalPurposeCode: "analytics"), legalBasisName: "Consent - Opt In"), legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes")), KetchSDK.Configuration.Purpose(code: "somepurpose_key", name: "Some Purpose"), description: "Description"), legalBasisCode: "consent_optin", requiresPrivacyPolicy: true), requiresOptIn: true), allowsOptOut: true), requiresDisplay: true), categories: nil, tcfType: nil, tcfID: nil, canonicalPurposeCode: "analytics"), legalBasisName: "Consent - Opt In"), legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"))]), canonicalPurposes: ["analytics": KetchSDK.Configuration.CanonicalPurpose(code: "analytics"), name: "analytics"), purposeCodes: ["analytics", "tcf.purpose_1", "somepurpose_key"])), "behavioral_advertising": KetchSDK.Configuration.CanonicalPurpose(code: "behavioral_advertising"), name: "behavioral_advertising"), purposeCodes: ["behavioral_advertising"])), "email_mktg": KetchSDK.Configuration.CanonicalPurpose(code: "email_mktg"), name: "email_mktg"), purposeCodes: ["email_marketing"])), "essential_services": KetchSDK.Configuration.CanonicalPurpose(code: "essential_services"), name: "essential_services"), purposeCodes: ["essential_services"]))]), services: ["lanyard": "https://global.ketchcdn.com/transom/route/switchbit/lanyard/transcenda/lanyard.js", "shoreline": "https://global.ketchcdn.com/web/v2/"]), options: ["appDivs": "hubspot-messages-iframe-container", "migration": "1", "localStorage": "1"]), legalBases: nil, vendors: nil
-//            ]
-//        )
-//
-//        waitForExpectations(timeout: 0.1)
-//    }
+    func testFetchConfig() {
+        let expectation = expectation(description: "")
+
+        sut.fetchConfig()
+        .sink { error in
+
+        } receiveValue: { value in
+            expectation.fulfill()
+        }
+        .store(in: &subscriptions)
+
+        ketchApiRequestPublisher.send(testConfig)
+
+        waitForExpectations(timeout: 0.1)
+    }
+
+    private var testConfig: [String: Any] {
+        [
+            "canonicalPurposes": [
+                "analytics": [
+                    "code": "analytics",
+                    "name": "analytics",
+                    "purposeCodes": [
+                        "analytics",
+                        "tcf.purpose_1",
+                        "somepurpose_key"
+                    ]
+                ],
+                "behavioral_advertising": [
+                    "code": "behavioral_advertising",
+                    "name": "behavioral_advertising",
+                    "purposeCodes": [
+                        "behavioral_advertising"
+                    ]
+                ],
+                "email_mktg": [
+                    "code": "email_mktg",
+                    "name": "email_mktg",
+                    "purposeCodes": [
+                        "email_marketing"
+                    ]
+                ],
+                "essential_services": [
+                    "code": "essential_services",
+                    "name": "essential_services",
+                    "purposeCodes": [
+                        "essential_services"
+                    ]
+                ]
+            ],
+            "deployment": [
+                "code": "default_deployment_plan",
+                "version": 1662711181
+            ],
+            "environment": [
+                "code": "production",
+                "hash": "10131461971991911401"
+            ],
+            "environments": [
+                [
+                    "code": "production",
+                    "hash": "10131461971991911401"
+                ]
+            ],
+            "experiences": [
+                "consent": [
+                    "banner": [
+                        "buttonText": "I understand",
+                        "footerDescription": "Welcome! We’re glad you’re here and want you to know that we respect your privacy and your right to control how we collect, use, and share your personal data.",
+                        "primaryButtonAction": 1,
+                        "secondaryButtonDestination": 2,
+                        "title": "Your Privacy"
+                    ],
+                    "code": "default_consent___disclosure",
+                    "experienceDefault": 1,
+                    "jit": [
+                        "acceptButtonText": "Save choices",
+                        "bodyDescription": "Please indicate whether you consent to our collection and use of your data in order to perform the operation(s) you’ve requested.",
+                        "declineButtonText": "Cancel",
+                        "moreInfoDestination": 1,
+                        "title": "Your Privacy"
+                    ],
+                    "modal": [
+                        "bodyDescription": "Welcome! We’re glad you're here and want you to know that we respect your privacy and your right to control how we collect, use, and share your personal data. Listed below are the purposes for which we process your data--please indicate whether you consent to such processing.",
+                        "buttonText": "Save choices",
+                        "title": "Your Privacy"
+                    ],
+                    "version": 1663598228
+                ],
+                "preference": [
+                    "code": "default_preference_management",
+                    "consents": [
+                        "bodyDescription": "We collect and use data--including, where applicable, your personal data--for the purposes listed below. Please indicate whether or not that's ok with you by toggling the switches below.",
+                        "bodyTitle": "Choose how we use your data",
+                        "buttonText": "Submit",
+                        "tabName": "Preferences"
+                    ],
+                    "overview": [
+                        "bodyDescription": "Welcome! We're glad you're here and want you to know that we respect your privacy and your right to control how we collect, use, and store your personal data.",
+                        "tabName": "Overview"
+                    ],
+                    "rights": [
+                        "bodyDescription": "Applicable privacy laws give you certain rights with respect to our collection, use, and storage of your personal data, and we welcome your exercise of those rights. Please complete the form below so that we can validate and fulfill your request.",
+                        "bodyTitle": "Exercise your rights",
+                        "buttonText": "Submit",
+                        "tabName": "Your Rights"
+                    ],
+                    "title": "Your Privacy",
+                    "version": 1662711180
+                ]
+            ],
+            "identities": [
+                "swb_website_smart_tag": [
+                    "type": "managedCookie",
+                    "variable": "_swb"
+                ]
+            ],
+            "jurisdiction": [
+                "code": "gdpr",
+                "defaultJurisdictionCode": "default"
+            ],
+            "language": "en",
+            "options": [
+                "appDivs": "hubspot-messages-iframe-container",
+                "localStorage": "1",
+                "migration": "1"
+            ],
+            "organization": [
+                "code": "transcenda"
+            ],
+            "privacyPolicy": [:],
+            "property": [
+                "code": "website_smart_tag",
+                "name": "Website Smart Tag",
+                "platform": "WEB"
+            ],
+            "purposes": [
+                [
+                    "canonicalPurposeCode": "essential_services",
+                    "code": "essential_services",
+                    "description": "Collection and processing of personal data to enable functionality that is essential to providing our services, including security activities, debugging, authentication, and fraud prevention, as well as contacting you with information related to products/services you have used or purchased; we may set essential cookies or other trackers for these purposes.",
+                    "legalBasisCode": "legitimateinterest",
+                    "legalBasisDescription": "Necessary for the purposes of the legitimate interests pursued by the controller or by a third party, except where such interests are overridden by the interests or fundamental rights and freedoms of the data subject",
+                    "legalBasisName": "Legitimate Interest - Non-Objectable",
+                    "name": "Essential Services",
+                    "requiresDisplay": true,
+                    "requiresPrivacyPolicy": true
+                ],
+                [
+                    "allowsOptOut": true,
+                    "canonicalPurposeCode": "analytics",
+                    "code": "analytics",
+                    "description": "Collection and analysis of personal data to further our business goals; for example, analysis of behavior of website visitors, creation of target lists for marketing and sales, and measurement of advertising performance.",
+                    "legalBasisCode": "consent_optin",
+                    "legalBasisDescription": "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                    "legalBasisName": "Consent - Opt In",
+                    "name": "Analytics",
+                    "requiresDisplay": true,
+                    "requiresOptIn": true,
+                    "requiresPrivacyPolicy": true
+                ],
+                [
+                    "allowsOptOut": true,
+                    "canonicalPurposeCode": "behavioral_advertising",
+                    "code": "behavioral_advertising",
+                    "description": "Creation and activation of advertisements based on a profile informed by the collection and analysis of behavioral and personal characteristics; we may set cookies or other trackers for this purpose.",
+                    "legalBasisCode": "consent_optin",
+                    "legalBasisDescription": "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                    "legalBasisName": "Consent - Opt In",
+                    "name": "Behavioral Advertising",
+                    "requiresDisplay": true,
+                    "requiresOptIn": true,
+                    "requiresPrivacyPolicy": true
+                ],
+                [
+                    "allowsOptOut": true,
+                    "canonicalPurposeCode": "email_mktg",
+                    "code": "email_marketing",
+                    "description": "Marketing of our products/services to customers by email.",
+                    "legalBasisCode": "consent_optin",
+                    "legalBasisDescription": "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                    "legalBasisName": "Consent - Opt In",
+                    "name": "Email Marketing",
+                    "requiresDisplay": true,
+                    "requiresOptIn": true,
+                    "requiresPrivacyPolicy": true
+                ],
+                [
+                    "allowsOptOut": true,
+                    "canonicalPurposeCode": "analytics",
+                    "code": "tcf.purpose_1",
+                    "description": "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
+                    "legalBasisCode": "consent_optin",
+                    "legalBasisDescription": "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                    "legalBasisName": "Consent - Opt In",
+                    "name": "Store and/or access information on a device",
+                    "requiresDisplay": true,
+                    "requiresOptIn": true,
+                    "requiresPrivacyPolicy": true,
+                    "tcfID": "1",
+                    "tcfType": "purpose"
+                ],
+                [
+                    "allowsOptOut": true,
+                    "canonicalPurposeCode": "analytics",
+                    "code": "somepurpose_key",
+                    "description": "Description",
+                    "legalBasisCode": "consent_optin",
+                    "legalBasisDescription": "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                    "legalBasisName": "Consent - Opt In",
+                    "name": "Some Purpose",
+                    "requiresDisplay": true,
+                    "requiresOptIn": true,
+                    "requiresPrivacyPolicy": true
+                ]
+            ],
+            "regulations": [
+                "gdpreu",
+                "eprivacy"
+            ],
+            "rights": [
+                [
+                    "code": "gdpr_access",
+                    "description": "Right to be provided with a copy of personal data (and certain other information) being processed",
+                    "name": "Right of Access (GDPR)"
+                ],
+                [
+                    "code": "gdpr_rectification",
+                    "description": "Right to have inaccurate personal data rectified or, in certain cases, completed",
+                    "name": "Right to Rectification (GDPR)"
+                ],
+                [
+                    "code": "gdpr_delete",
+                    "description": "Right to have personal data erased",
+                    "name": "Right to Erasure (GDPR)"
+                ],
+                [
+                    "code": "gdpr_restrictprocessing",
+                    "description": "Right to limit the way a controller uses personal data",
+                    "name": "Right to Restrict Processing (GDPR)"
+                ],
+                [
+                    "code": "gdpr_portability",
+                    "description": "Right to obtain and request transfer of personal data in a structured, commonly used, and machine-readable format",
+                    "name": "Right to Data Portability (GDPR)"
+                ],
+                [
+                    "code": "gdpr_object",
+                    "description": "Right to stop the processing of personal data, including an absolute right where the use is direct marketing",
+                    "name": "Right to Object (GDPR)"
+                ]
+            ],
+            "services": [
+                "lanyard": "https://global.ketchcdn.com/transom/route/switchbit/lanyard/transcenda/lanyard.js",
+                "shoreline": "https://global.ketchcdn.com/web/v2/"
+            ],
+            "termsOfService": [:],
+            "theme": [
+                "bannerBackgroundColor": "#01090E",
+                "bannerButtonColor": "#ffffff",
+                "bannerContentColor": "#ffffff",
+                "bannerPosition": 1,
+                "buttonBorderRadius": 5,
+                "code": "default",
+                "description": "Ketch default theme",
+                "formButtonColor": "#071a24",
+                "formContentColor": "#071a24",
+                "formHeaderBackgroundColor": "#071a24",
+                "modalButtonColor": "#071a24",
+                "modalContentColor": "#071a24",
+                "modalHeaderBackgroundColor": "#f6f6f6",
+                "modalPosition": 1,
+                "name": "Default"
+            ],
+            "vendors": [
+                [
+                    "cookieMaxAgeSeconds": 34164000,
+                    "features": [
+                        [
+                            "legalBasis": "Disclosure",
+                            "name": "Receive and use automatically-sent device characteristics for identification"
+                        ]
+                    ],
+                    "id": "1000",
+                    "name": "NETILUM (AFFILAE)",
+                    "policyUrl": "https://affilae.com/en/privacy-cookie-policy",
+                    "purposes": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Store and/or access information on a device"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Measure ad performance"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Measure content performance"
+                        ]
+                    ],
+                    "specialFeatures": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Actively scan device characteristics for identification"
+                        ]
+                    ],
+                    "usesCookies": true
+                ],
+                [
+                    "features": [
+                        [
+                            "legalBasis": "Disclosure",
+                            "name": "Match and combine offline data sources"
+                        ]
+                    ],
+                    "id": "1001",
+                    "name": "wetter.com GmbH",
+                    "policyUrl": "https://www.wetter.com/internal/news/datenschutzhinweise_aid_607698849b8ecf79e21584fa.html",
+                    "purposes": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Store and/or access information on a device"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Select basic ads"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Create a personalised ads profile"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Select personalised ads"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Create a personalised content profile"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Select personalised content"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Measure ad performance"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Measure content performance"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Apply market research to generate audience insights"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Develop and improve products"
+                        ]
+                    ],
+                    "specialFeatures": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Use precise geolocation data"
+                        ]
+                    ],
+                    "usesCookies": true,
+                    "usesNonCookieAccess": true
+                ],
+                [
+                    "cookieMaxAgeSeconds": 63072000,
+                    "features": [
+                        [
+                            "legalBasis": "Disclosure",
+                            "name": "Link different devices"
+                        ]
+                    ],
+                    "id": "1002",
+                    "name": "Extreme Reach, Inc",
+                    "policyUrl": "https://extremereach.com/privacy-policies/",
+                    "purposes": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Store and/or access information on a device"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Select basic ads"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Measure ad performance"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Develop and improve products"
+                        ]
+                    ],
+                    "usesCookies": true
+                ],
+                [
+                    "id": "1003",
+                    "name": "Mobility-Ads GmbH",
+                    "policyUrl": "https://mobility-ads.de/datenschutz/",
+                    "purposes": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Store and/or access information on a device"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Measure ad performance"
+                        ]
+                    ],
+                    "specialPurposes": [
+                        [
+                            "legalBasis": "Legitimate Interest - Non-Objectable",
+                            "name": "Ensure security, prevent fraud, and debug"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Non-Objectable",
+                            "name": "Technically deliver ads or content"
+                        ]
+                    ]
+                ],
+                [
+                    "cookieMaxAgeSeconds": 31536000,
+                    "features": [
+                        [
+                            "legalBasis": "Disclosure",
+                            "name": "Link different devices"
+                        ],
+                        [
+                            "legalBasis": "Disclosure",
+                            "name": "Receive and use automatically-sent device characteristics for identification"
+                        ]
+                    ],
+                    "id": "1004",
+                    "name": "VUUKLE DMCC",
+                    "policyUrl": "https://docs.vuukle.com/privacy-and-policy/",
+                    "purposes": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Store and/or access information on a device"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Select basic ads"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Select personalised ads"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Create a personalised content profile"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Select personalised content"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Measure ad performance"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Measure content performance"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Apply market research to generate audience insights"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Objectable",
+                            "name": "Develop and improve products"
+                        ]
+                    ],
+                    "specialFeatures": [
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Use precise geolocation data"
+                        ],
+                        [
+                            "legalBasis": "Consent - Opt In",
+                            "name": "Actively scan device characteristics for identification"
+                        ]
+                    ],
+                    "specialPurposes": [
+                        [
+                            "legalBasis": "Legitimate Interest - Non-Objectable",
+                            "name": "Ensure security, prevent fraud, and debug"
+                        ],
+                        [
+                            "legalBasis": "Legitimate Interest - Non-Objectable",
+                            "name": "Technically deliver ads or content"
+                        ]
+                    ],
+                    "usesCookies": true,
+                    "usesNonCookieAccess": true
+                ]
+            ]
+        ]
+    }
 }

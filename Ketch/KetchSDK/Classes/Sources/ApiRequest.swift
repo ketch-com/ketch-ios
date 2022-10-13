@@ -64,30 +64,12 @@ class DefaultApiClient: ApiClient {
                     throw ApiClientError.sessionError(error: error)
                 }
 
-                if let responseData = Self.bootstrapFunctionData(with: output.data) {
-                    return responseData
-                }
-
                 return output.data
             }
             .mapError { error in
                 error as? ApiClientError ?? .unknownError
             }
             .eraseToAnyPublisher()
-    }
-
-    private static func bootstrapFunctionData(with responseData: Data) -> Data? {
-        let jsFuncPrefix = "!function(){var n='semaphore',a="
-
-        guard
-            var string = String(data: responseData, encoding: .utf8),
-            string.hasPrefix(jsFuncPrefix)
-        else { return nil }
-
-        string.removeFirst(jsFuncPrefix.count)
-        let model = string.components(separatedBy: ";").first
-
-        return model?.data(using: .utf8)
     }
 
     private static func urlRequest(with request: ApiRequest) -> URLRequest? {

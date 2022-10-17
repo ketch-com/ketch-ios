@@ -7,19 +7,21 @@
 
 import Foundation
 
-public struct InvokeRightConfig: Codable {
-  public let organizationCode: String
-  public let controllerCode: String?
-  public let propertyCode: String
-  public let environmentCode: String
-  public let identities: [String: String]
-  public let invokedAt: Int?
-  public let jurisdictionCode: String
-  public let rightCode: String
-  public let user: User
+extension KetchSDK {
+    public struct InvokeRightConfig: Codable {
+        public let organizationCode: String
+        public let controllerCode: String?
+        public let propertyCode: String
+        public let environmentCode: String
+        public let identities: [String: String]
+        public let invokedAt: Int?
+        public let jurisdictionCode: String
+        public let rightCode: String
+        public let user: User
+    }
 }
 
-extension InvokeRightConfig {
+extension KetchSDK.InvokeRightConfig {
     public struct User: Codable {
         public let email: String
         public let first: String

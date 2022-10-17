@@ -7,31 +7,33 @@
 
 import Foundation
 
-public struct Configuration: Codable {
-    public let language: String?
-    public let organization: Organization?
-    public let property: Property?
-    public let environments: [Environment]?
-    public let jurisdiction: Jurisdiction?
-    public let identities: [String: Identity]?
-    public let scripts: [String]?
-    public let environment: Environment?
-    public let deployment: Deployment?
-    public let privacyPolicy: Policy?
-    public let termsOfService: Policy?
-    public let rights: [Right]?
-    public let regulations: [String]?
-    public let theme: Theme?
-    public let experience: Experience?
-    public let purposes: [Purpose]?
-    public let canonicalPurposes: [String: CanonicalPurpose]?
-    public let services: [String: String]?
-    public let options: [String: String]?
-    public let legalBases: [LegalBase]?
-    public let vendors: [Vendor]?
+extension KetchSDK {
+    public struct Configuration: Codable {
+        public let language: String?
+        public let organization: Organization?
+        public let property: Property?
+        public let environments: [Environment]?
+        public let jurisdiction: Jurisdiction?
+        public let identities: [String: Identity]?
+        public let scripts: [String]?
+        public let environment: Environment?
+        public let deployment: Deployment?
+        public let privacyPolicy: Policy?
+        public let termsOfService: Policy?
+        public let rights: [Right]?
+        public let regulations: [String]?
+        public let theme: Theme?
+        public let experience: Experience?
+        public let purposes: [Purpose]?
+        public let canonicalPurposes: [String: CanonicalPurpose]?
+        public let services: [String: String]?
+        public let options: [String: String]?
+        public let legalBases: [LegalBase]?
+        public let vendors: [Vendor]?
+    }
 }
 
-extension Configuration {
+extension KetchSDK.Configuration {
     public struct Organization: Codable {
         public let code: String?
     }

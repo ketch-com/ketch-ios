@@ -9,6 +9,13 @@ import Foundation
 import Combine
 
 class KetchApiRequest {
+    typealias KetchError = KetchSDK.KetchError
+    typealias Configuration = KetchSDK.Configuration
+    typealias ConsentStatus = KetchSDK.ConsentStatus
+    typealias ConsentConfig = KetchSDK.ConsentConfig
+    typealias ConsentUpdate = KetchSDK.ConsentUpdate
+    typealias InvokeRightConfig = KetchSDK.InvokeRightConfig
+
     private let apiClient: ApiClient
 
     init(apiClient: ApiClient = DefaultApiClient()) {
@@ -77,25 +84,18 @@ class KetchApiRequest {
     }
 }
 
-extension KetchApiRequest {
-    enum KetchError: Error {
-        case responseError(message: String)
-        case requestError
-        case decodingError(message: String)
-
-        init(with error: Error) {
-            if let apiError = error as? ApiClientError {
-                switch apiError {
-                case .requestURLError: self = .requestError
-                case .sessionError(let error): self = .responseError(message: error.error.message)
-                case .unknownError: self = .responseError(message: "Unknown response error")
-                }
-            } else if let decodingError = error as? DecodingError {
-                self = .decodingError(message: decodingError.localizedDescription)
-            } else {
-                self = .responseError(message: "Unknown error")
+extension KetchSDK.KetchError {
+    init(with error: Error) {
+        if let apiError = error as? ApiClientError {
+            switch apiError {
+            case .requestURLError: self = .requestError
+            case .sessionError(let error): self = .responseError(message: error.error.message)
+            case .unknownError: self = .responseError(message: "Unknown response error")
             }
+        } else if let decodingError = error as? DecodingError {
+            self = .decodingError(message: decodingError.localizedDescription)
+        } else {
+            self = .responseError(message: "Unknown error")
         }
     }
 }
-

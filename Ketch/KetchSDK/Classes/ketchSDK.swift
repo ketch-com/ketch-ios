@@ -7,143 +7,119 @@
 
 import Combine
 
-public protocol KetchSDK_Protocol {
-    func config()
-}
+//public protocol KetchSDK_Protocol {
+//    func config()
+//}
 
-public class KetchSDK: KetchSDK_Protocol {
+public class KetchSDK {
     private var subscriptions = Set<AnyCancellable>()
 
-    public init() {
-        
-    }
+    public init() { }
+}
 
-    public func config() {
+extension KetchSDK {
+    public func config() -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest()
             .fetchConfig()
-            .sink { completion in
-                switch completion {
-                case .failure(let error): print(error)
-                case .finished: break
-                }
-            } receiveValue: { config in
-                print(config)
-            }
-            .store(in: &subscriptions)
+            .eraseToAnyPublisher()
     }
 
-    public func bootConfig() {
+    public func bootConfig() -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest()
             .fetchBootConfig()
-            .sink { completion in
-                switch completion {
-                case .failure(let error): print(error)
-                case .finished: break
+            .eraseToAnyPublisher()
+    }
+
+    public func getConsent(consentConfig: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        KetchApiRequest()
+            .getConsent(config: consentConfig)
+            .eraseToAnyPublisher()
+    }
+
+    public func setConsent(consentUpdate: ConsentUpdate) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest()
+            .updateConsent(update: consentUpdate)
+            .eraseToAnyPublisher()
+    }
+
+    public func invokeRights(config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest()
+            .invokeRights(config: config)
+            .eraseToAnyPublisher()
+    }
+}
+
+extension KetchSDK {
+    public func fetchConfig(completion: @escaping (Result<Configuration, KetchError>) -> Void) {
+        KetchApiRequest()
+            .fetchConfig()
+            .sink { result in
+                if case .failure(let error) = result {
+                    completion(.failure(error))
                 }
-            } receiveValue: { config in
-                print(config)
+            } receiveValue: { configuration in
+                completion(.success(configuration))
             }
             .store(in: &subscriptions)
     }
 
-    public func setConsent() {
+    public func fetchBootConfig(completion: @escaping (Result<Configuration, KetchError>) -> Void) {
         KetchApiRequest()
-            .updateConsent(
-                update: ConsentUpdate(
-                    organizationCode: "transcenda",
-                    controllerCode: "my_controller",
-                    propertyCode: "website_smart_tag",
-                    environmentCode: "production",
-                    identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
-                    collectedAt: nil,
-                    jurisdictionCode: "default",
-                    migrationOption: .migrateDefault,
-                    purposes: [
-                        "essential_services": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "analytics": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "behavioral_advertising": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "email_marketing": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                        "tcf.purpose_1": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin"),
-                        "somepurpose_key": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin")
-                    ],
-                    vendors: nil
-                )
-            )
-            .sink { completion in
-                switch completion {
-                case .failure(let error): print(error)
-                case .finished: break
+            .fetchBootConfig()
+            .sink { result in
+                if case .failure(let error) = result {
+                    completion(.failure(error))
                 }
-            } receiveValue: { config in
-                print(config)
+            } receiveValue: { configuration in
+                completion(.success(configuration))
             }
             .store(in: &subscriptions)
     }
 
-    public func getConsent() {
+    public func fetchGetConsent(
+        consentConfig: ConsentConfig,
+        completion: @escaping (Result<ConsentStatus, KetchError>) -> Void
+    ) {
         KetchApiRequest()
-            .getConsent(
-                config: ConsentConfig(
-                    organizationCode: "transcenda",
-                    controllerCode: "my_controller",
-                    propertyCode: "website_smart_tag",
-                    environmentCode: "production",
-                    jurisdictionCode: "default",
-                    identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
-                    purposes: [
-                        "essential_services": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "analytics": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "behavioral_advertising": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "email_marketing": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                        "tcf.purpose_1": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin"),
-                        "somepurpose_key": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin")
-                    ]
-                )
-            )
-            .sink { completion in
-                switch completion {
-                case .failure(let error): print(error)
-                case .finished: break
+            .getConsent(config: consentConfig)
+            .sink { result in
+                if case .failure(let error) = result {
+                    completion(.failure(error))
                 }
-            } receiveValue: { config in
-                print(config)
+            } receiveValue: { consentStatus in
+                completion(.success(consentStatus))
             }
             .store(in: &subscriptions)
     }
 
-    public func invokeRights() {
+    public func fetchSetConsent(
+        consentUpdate: ConsentUpdate,
+        completion: @escaping (Result<Void, KetchError>) -> Void
+    ) {
         KetchApiRequest()
-            .invokeRights(
-                config: InvokeRightConfig(
-                    organizationCode: "transcenda",
-                    controllerCode: "my_controller",
-                    propertyCode: "website_smart_tag",
-                    environmentCode: "production",
-                    identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
-                    invokedAt: nil,
-                    jurisdictionCode: "default",
-                    rightCode: "gdpr_portability",
-                    user: InvokeRightConfig.User(
-                        email: "user@email.com",
-                        first: "FirstName",
-                        last: "LastName",
-                        country: nil,
-                        stateRegion: nil,
-                        description: nil,
-                        phone: nil,
-                        postalCode: nil,
-                        addressLine1: nil,
-                        addressLine2: nil
-                    )
-                )
-            )
-            .sink { completion in
-                switch completion {
-                case .failure(let error): print(error)
-                case .finished: break
+            .updateConsent(update: consentUpdate)
+            .sink { result in
+                if case .failure(let error) = result {
+                    completion(.failure(error))
                 }
-            } receiveValue: { config in
-                print(config)
+            } receiveValue: {
+                completion(.success(()))
+            }
+            .store(in: &subscriptions)
+    }
+
+    public func fetchInvokeRights(
+        config: InvokeRightConfig,
+        completion: @escaping (Result<Void, KetchError>) -> Void
+    ) {
+        KetchApiRequest()
+            .invokeRights(config: config)
+            .sink { result in
+                if case .failure(let error) = result {
+                    completion(.failure(error))
+                }
+            } receiveValue: {
+                completion(.success(()))
             }
             .store(in: &subscriptions)
     }

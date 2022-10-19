@@ -8,12 +8,70 @@
 import Foundation
 import Combine
 
+struct EndPoint {
+    private static let defaultScheme = "https"
+    private static let ketchHost = "global.ketchcdn.com"
+    private static let ketchApi = "web"
+    private static let ketchApiVersion = "v2"
+
+    let scheme: String
+    let host: String
+    let path: String
+    let queryItems: [URLQueryItem]
+
+    static func config(organization: String, property: String) -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: [ketchApi, ketchApiVersion, "config", organization, property].joined(separator: "/"),
+            queryItems: []
+        )
+    }
+
+    static func getConsent() -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: "/web/v2/consent/transcenda/get",
+            queryItems: []
+        )
+    }
+
+    static func updateConsent() -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: "/web/v2/consent/transcenda/update",
+            queryItems: []
+        )
+    }
+
+    static func invokeRights() -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: "/web/v2/rights/transcenda/invoke",
+            queryItems: []
+        )
+    }
+
+    var url: URL? {
+        var components = URLComponents()
+        components.scheme = scheme
+        components.host = host
+        components.path = path
+        components.queryItems = queryItems
+
+        return components.url
+    }
+}
+
 struct ApiRequest {
-    let endPoint: String
+    let endPoint: EndPoint
     let method: Method
     let body: Data?
 
-    init(endPoint: String, method: Method = .get, body: Data? = nil) {
+    init(endPoint: EndPoint, method: Method = .get, body: Data? = nil) {
         self.endPoint = endPoint
         self.method = method
         self.body = body
@@ -73,7 +131,7 @@ class DefaultApiClient: ApiClient {
     }
 
     private static func urlRequest(with request: ApiRequest) -> URLRequest? {
-        guard let url = URL(string: request.endPoint) else { return nil }
+        guard let url = request.endPoint.url else { return nil }
 
         var urlRequest = URLRequest(url: url)
 

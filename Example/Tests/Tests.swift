@@ -23,7 +23,7 @@ class Tests: XCTestCase {
         let expectation = expectation(description: "")
 
         sut.invokeRights(
-            config: InvokeRightConfig(
+            config: .init(
                 organizationCode: "transcenda",
                 controllerCode: "my_controller",
                 propertyCode: "website_smart_tag",
@@ -32,7 +32,7 @@ class Tests: XCTestCase {
                 invokedAt: nil,
                 jurisdictionCode: "default",
                 rightCode: "gdpr_portability",
-                user: InvokeRightConfig.User(
+                user: .init(
                     email: "user@email.com",
                     first: "FirstName",
                     last: "LastName",
@@ -62,7 +62,7 @@ class Tests: XCTestCase {
         let expectation = expectation(description: "")
 
         sut.updateConsent(
-            update: ConsentUpdate(
+            update: .init(
                 organizationCode: "transcenda",
                 controllerCode: "my_controller",
                 propertyCode: "website_smart_tag",
@@ -72,12 +72,12 @@ class Tests: XCTestCase {
                 jurisdictionCode: "default",
                 migrationOption: .migrateDefault,
                 purposes: [
-                    "essential_services": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                    "analytics": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                    "behavioral_advertising": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                    "email_marketing": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "disclosure"),
-                    "tcf.purpose_1": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin"),
-                    "somepurpose_key": ConsentUpdate.PurposeAllowedLegalBasis(allowed: true, legalBasisCode: "consent_optin")
+                    "essential_services": .init(allowed: true, legalBasisCode: "disclosure"),
+                    "analytics": .init(allowed: true, legalBasisCode: "disclosure"),
+                    "behavioral_advertising": .init(allowed: true, legalBasisCode: "disclosure"),
+                    "email_marketing": .init(allowed: true, legalBasisCode: "disclosure"),
+                    "tcf.purpose_1": .init(allowed: true, legalBasisCode: "consent_optin"),
+                    "somepurpose_key": .init(allowed: true, legalBasisCode: "consent_optin")
                 ],
                 vendors: nil
             )
@@ -98,7 +98,7 @@ class Tests: XCTestCase {
         let expectation = expectation(description: "")
 
         sut.getConsent(
-            config: ConsentConfig(
+            config: .init(
                 organizationCode: "transcenda",
                 controllerCode: "my_controller",
                 propertyCode: "website_smart_tag",
@@ -106,12 +106,12 @@ class Tests: XCTestCase {
                 jurisdictionCode: "default",
                 identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
                 purposes: [
-                    "essential_services": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                    "analytics": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                    "behavioral_advertising": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                    "email_marketing": ConsentConfig.PurposeLegalBasis(legalBasisCode: "disclosure"),
-                    "tcf.purpose_1": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin"),
-                    "somepurpose_key": ConsentConfig.PurposeLegalBasis(legalBasisCode: "consent_optin")
+                    "essential_services": .init(legalBasisCode: "disclosure"),
+                    "analytics": .init(legalBasisCode: "disclosure"),
+                    "behavioral_advertising": .init(legalBasisCode: "disclosure"),
+                    "email_marketing": .init(legalBasisCode: "disclosure"),
+                    "tcf.purpose_1": .init(legalBasisCode: "consent_optin"),
+                    "somepurpose_key": .init(legalBasisCode: "consent_optin")
                 ]
             )
         )
@@ -138,26 +138,10 @@ class Tests: XCTestCase {
         waitForExpectations(timeout: 0.1)
     }
 
-    func testFetchBootConfig() {
-        let expectation = expectation(description: "")
-
-        sut.fetchBootConfig()
-        .sink { error in
-
-        } receiveValue: { value in
-            expectation.fulfill()
-        }
-        .store(in: &subscriptions)
-
-        ketchApiRequestPublisher.send(testConfig)
-
-        waitForExpectations(timeout: 0.1)
-    }
-
     func testFetchConfig() {
         let expectation = expectation(description: "")
 
-        sut.fetchConfig()
+        sut.fetchConfig(organization: "transcenda", property: "website_smart_tag")
         .sink { error in
 
         } receiveValue: { value in

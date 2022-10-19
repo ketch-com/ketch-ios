@@ -22,21 +22,10 @@ class KetchApiRequest {
         self.apiClient = apiClient
     }
 
-    func fetchConfig() -> AnyPublisher<Configuration, KetchError> {
+    func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/config/transcenda/website_smart_tag/production/13171895563553497268/default/en/config.json"
-            )
-        )
-        .decode(type: Configuration.self, decoder: JSONDecoder())
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
-    }
-
-    func fetchBootConfig() -> AnyPublisher<Configuration, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/config/transcenda/website_smart_tag/config.json"
+                endPoint: .config(organization: organization, property: organization)
             )
         )
         .decode(type: Configuration.self, decoder: JSONDecoder())
@@ -47,7 +36,7 @@ class KetchApiRequest {
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/consent/transcenda/get",
+                endPoint: .getConsent(),
                 method: .post,
                 body: try? JSONEncoder().encode(config)
             )
@@ -60,7 +49,7 @@ class KetchApiRequest {
     func updateConsent(update: ConsentUpdate) -> AnyPublisher<Void, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/consent/transcenda/update",
+                endPoint: .updateConsent(),
                 method: .post,
                 body: try? JSONEncoder().encode(update)
             )
@@ -73,7 +62,7 @@ class KetchApiRequest {
     func invokeRights(config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: "https://global.ketchcdn.com/web/v2/rights/transcenda/invoke",
+                endPoint: .invokeRights(),
                 method: .post,
                 body: try? JSONEncoder().encode(config)
             )

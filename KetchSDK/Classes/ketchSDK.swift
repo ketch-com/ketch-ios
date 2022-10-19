@@ -7,26 +7,18 @@
 
 import Combine
 
-//public protocol KetchSDK_Protocol {
-//    func config()
-//}
-
 public class KetchSDK {
+    public static let shared = KetchSDK()
+
     private var subscriptions = Set<AnyCancellable>()
 
-    public init() { }
+    private init() { }
 }
 
 extension KetchSDK {
-    public func config() -> AnyPublisher<Configuration, KetchError> {
+    public func config(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest()
-            .fetchConfig()
-            .eraseToAnyPublisher()
-    }
-
-    public func bootConfig() -> AnyPublisher<Configuration, KetchError> {
-        KetchApiRequest()
-            .fetchBootConfig()
+            .fetchConfig(organization: organization, property: organization)
             .eraseToAnyPublisher()
     }
 
@@ -50,22 +42,13 @@ extension KetchSDK {
 }
 
 extension KetchSDK {
-    public func fetchConfig(completion: @escaping (Result<Configuration, KetchError>) -> Void) {
+    public func fetchConfig(
+        organization: String,
+        property: String,
+        completion: @escaping (Result<Configuration, KetchError>
+    ) -> Void) {
         KetchApiRequest()
-            .fetchConfig()
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: { configuration in
-                completion(.success(configuration))
-            }
-            .store(in: &subscriptions)
-    }
-
-    public func fetchBootConfig(completion: @escaping (Result<Configuration, KetchError>) -> Void) {
-        KetchApiRequest()
-            .fetchBootConfig()
+            .fetchConfig(organization: organization, property: organization)
             .sink { result in
                 if case .failure(let error) = result {
                     completion(.failure(error))

@@ -84,12 +84,36 @@ extension KetchSDK {
         public let jurisdictionCode: String
         public let identities: [String: String]
         public let purposes: [String: PurposeLegalBasis]
+
+        public init(
+            organizationCode: String,
+            controllerCode: String?,
+            propertyCode: String,
+            environmentCode: String,
+            jurisdictionCode: String,
+            identities: [String: String],
+            purposes: [String: PurposeLegalBasis]
+        ) {
+            self.organizationCode = organizationCode
+            self.controllerCode = controllerCode
+            self.propertyCode = propertyCode
+            self.environmentCode = environmentCode
+            self.jurisdictionCode = jurisdictionCode
+            self.identities = identities
+            self.purposes = purposes
+        }
     }
 }
 
 extension KetchSDK.ConsentConfig {
     public struct PurposeLegalBasis: Codable {
         public let legalBasisCode: String
+
+        public init(
+            legalBasisCode: String
+        ) {
+            self.legalBasisCode = legalBasisCode
+        }
     }
 }
 

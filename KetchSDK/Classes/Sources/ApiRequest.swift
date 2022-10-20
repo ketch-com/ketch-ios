@@ -23,34 +23,34 @@ struct EndPoint {
         EndPoint(
             scheme: defaultScheme,
             host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "config", organization, property].joined(separator: "/"),
+            path: [ketchApi, ketchApiVersion, "config", organization, property, "config.json"].joined(separator: "/"),
             queryItems: []
         )
     }
 
-    static func getConsent() -> EndPoint {
+    static func getConsent(organization: String) -> EndPoint {
         EndPoint(
             scheme: defaultScheme,
             host: ketchHost,
-            path: "/web/v2/consent/transcenda/get",
+            path: [ketchApi, ketchApiVersion, "consent", organization, "get"].joined(separator: "/"),
             queryItems: []
         )
     }
 
-    static func updateConsent() -> EndPoint {
+    static func updateConsent(organization: String) -> EndPoint {
         EndPoint(
             scheme: defaultScheme,
             host: ketchHost,
-            path: "/web/v2/consent/transcenda/update",
+            path: [ketchApi, ketchApiVersion, "consent", organization, "update"].joined(separator: "/"),
             queryItems: []
         )
     }
 
-    static func invokeRights() -> EndPoint {
+    static func invokeRights(organization: String) -> EndPoint {
         EndPoint(
             scheme: defaultScheme,
             host: ketchHost,
-            path: "/web/v2/rights/transcenda/invoke",
+            path: [ketchApi, ketchApiVersion, "rights", organization, "invoke"].joined(separator: "/"),
             queryItems: []
         )
     }

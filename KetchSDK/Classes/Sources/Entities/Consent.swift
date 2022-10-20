@@ -10,7 +10,7 @@ import Foundation
 extension KetchSDK {
     public struct ConsentUpdate: Codable {
         public let organizationCode: String
-        public let controllerCode: String?
+        public let controllerCode: String
         public let propertyCode: String
         public let environmentCode: String
         public let identities: [String: String]
@@ -22,7 +22,7 @@ extension KetchSDK {
 
         public init(
             organizationCode: String,
-            controllerCode: String?,
+            controllerCode: String,
             propertyCode: String,
             environmentCode: String,
             identities: [String: String],
@@ -78,7 +78,7 @@ extension KetchSDK.ConsentUpdate {
 extension KetchSDK {
     public struct ConsentConfig: Codable {
         public let organizationCode: String
-        public let controllerCode: String?
+        public let controllerCode: String
         public let propertyCode: String
         public let environmentCode: String
         public let jurisdictionCode: String
@@ -87,7 +87,7 @@ extension KetchSDK {
 
         public init(
             organizationCode: String,
-            controllerCode: String?,
+            controllerCode: String,
             propertyCode: String,
             environmentCode: String,
             jurisdictionCode: String,

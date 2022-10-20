@@ -36,7 +36,7 @@ class KetchApiRequest {
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: .getConsent(),
+                endPoint: .getConsent(organization: config.organizationCode),
                 method: .post,
                 body: try? JSONEncoder().encode(config)
             )
@@ -49,7 +49,7 @@ class KetchApiRequest {
     func updateConsent(update: ConsentUpdate) -> AnyPublisher<Void, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: .updateConsent(),
+                endPoint: .updateConsent(organization: update.organizationCode),
                 method: .post,
                 body: try? JSONEncoder().encode(update)
             )
@@ -62,7 +62,7 @@ class KetchApiRequest {
     func invokeRights(config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: .invokeRights(),
+                endPoint: .invokeRights(organization: config.organizationCode),
                 method: .post,
                 body: try? JSONEncoder().encode(config)
             )

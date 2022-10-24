@@ -11,7 +11,7 @@ import Combine
 struct EndPoint {
     private static let defaultScheme = "https"
     private static let ketchHost = "global.ketchcdn.com"
-    private static let ketchApi = "web"
+    private static let ketchApi = "/web"
     private static let ketchApiVersion = "v2"
 
     let scheme: String
@@ -51,6 +51,15 @@ struct EndPoint {
             scheme: defaultScheme,
             host: ketchHost,
             path: [ketchApi, ketchApiVersion, "rights", organization, "invoke"].joined(separator: "/"),
+            queryItems: []
+        )
+    }
+
+    static func getVendors() -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: [ketchApi, ketchApiVersion, "gvl", "vendor-list.json"].joined(separator: "/"),
             queryItems: []
         )
     }

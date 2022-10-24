@@ -26,7 +26,7 @@ extension KetchSDK {
         property: String
     ) -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest()
-            .fetchConfig(organization: organization, property: organization)
+            .fetchConfig(organization: organization, property: property)
             .eraseToAnyPublisher()
     }
 
@@ -144,6 +144,12 @@ extension KetchSDK {
                     user: user
                 )
             )
+            .eraseToAnyPublisher()
+    }
+
+    public func getVendors() -> AnyPublisher<Vendors, KetchError> {
+        KetchApiRequest()
+            .getVendors()
             .eraseToAnyPublisher()
     }
 }

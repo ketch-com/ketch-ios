@@ -231,6 +231,46 @@ class ViewController: UIViewController {
                 case .success: break
                 }
             }
+
+        KetchSDK
+            .shared
+            .config(
+                organization: "transcenda",
+                property: "website_smart_tag"
+            )
+            .combineLatest(
+                KetchSDK
+                    .shared
+                    .getVendors()
+            )
+            .sink { completion in
+                switch completion {
+                case .failure(let error):
+                    print(error)
+
+                case .finished:
+                    break
+                }
+            } receiveValue: { config, vendors in
+                print(config, vendors)
+
+                let consentStringBuilder = ConsentStringBuilder()
+                let str = try? consentStringBuilder.build(
+                    created: Date(),
+                    updated: Date(),
+                    cmpId: 2,
+                    cmpVersion: 1,
+                    consentScreenId: 0,
+                    consentLanguage: "EN",
+                    allowedPurposes: .all,
+                    vendorListVersion: vendors.vendorListVersion,
+                    maxVendorId: 1004,
+                    defaultConsent: true,
+                    allowedVendorIds: [1000, 1001, 1002, 1003, 1004]
+                )
+
+            }
+            .store(in: &subscriptions)
     }
 }
 

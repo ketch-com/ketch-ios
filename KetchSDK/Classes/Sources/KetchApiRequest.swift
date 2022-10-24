@@ -15,6 +15,7 @@ class KetchApiRequest {
     typealias ConsentConfig = KetchSDK.ConsentConfig
     typealias ConsentUpdate = KetchSDK.ConsentUpdate
     typealias InvokeRightConfig = KetchSDK.InvokeRightConfig
+    typealias Vendors = KetchSDK.Vendors
 
     private let apiClient: ApiClient
 
@@ -25,7 +26,7 @@ class KetchApiRequest {
     func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: .config(organization: organization, property: organization)
+                endPoint: .config(organization: organization, property: property)
             )
         )
         .decode(type: Configuration.self, decoder: JSONDecoder())
@@ -68,6 +69,18 @@ class KetchApiRequest {
             )
         )
         .map { _ in }
+        .mapError(KetchError.init)
+        .eraseToAnyPublisher()
+    }
+
+    func getVendors() -> AnyPublisher<Vendors, KetchError> {
+        apiClient.execute(
+            request: ApiRequest(
+                endPoint: .getVendors(),
+                method: .get
+            )
+        )
+        .decode(type: Vendors.self, decoder: JSONDecoder())
         .mapError(KetchError.init)
         .eraseToAnyPublisher()
     }

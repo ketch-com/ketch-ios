@@ -8,13 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		0AEB17C29B26F8F516F70EFF /* Pods_KetchSDK_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEAA5A79766122CB0484671F /* Pods_KetchSDK_Example.framework */; };
+		3A63EA5B29080301004B1421 /* CCPA_Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A63EA5A29080301004B1421 /* CCPA_Test.swift */; };
 		3A89296A28F7139700C5EC6C /* ApiClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A89296928F7139700C5EC6C /* ApiClientMock.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
-		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
+		607FACEC1AFB9204008FA782 /* KetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* KetchTests.swift */; };
 		BC105428E6F10FD01E503F58 /* Pods_KetchSDK_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 920CE3FE66754CCFC72F5CAB /* Pods_KetchSDK_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 		202904CFF8E24AFBFC8ED74C /* Pods-KetchSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KetchSDK_Example.release.xcconfig"; path = "Target Support Files/Pods-KetchSDK_Example/Pods-KetchSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 		21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = KetchSDK.podspec; path = ../KetchSDK.podspec; sourceTree = "<group>"; };
 		3A4424A428EE46AE00F197A0 /* KetchSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; name = KetchSDK.podspec; path = "../../../../.cocoapods/repos-art/ios/Specs/KetchSDK/0.1.0/KetchSDK.podspec"; sourceTree = "<group>"; };
+		3A63EA5A29080301004B1421 /* CCPA_Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCPA_Test.swift; sourceTree = "<group>"; };
 		3A89296928F7139700C5EC6C /* ApiClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientMock.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* KetchSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KetchSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -43,7 +45,7 @@
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		607FACE51AFB9204008FA782 /* KetchSDK_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KetchSDK_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		607FACEB1AFB9204008FA782 /* KetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KetchTests.swift; sourceTree = "<group>"; };
 		83DC959CFA4687296338D17C /* Pods-KetchSDK_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KetchSDK_Tests.release.xcconfig"; path = "Target Support Files/Pods-KetchSDK_Tests/Pods-KetchSDK_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		920CE3FE66754CCFC72F5CAB /* Pods_KetchSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KetchSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEAA5A79766122CB0484671F /* Pods_KetchSDK_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KetchSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,7 +120,8 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				607FACEB1AFB9204008FA782 /* Tests.swift */,
+				607FACEB1AFB9204008FA782 /* KetchTests.swift */,
+				3A63EA5A29080301004B1421 /* CCPA_Test.swift */,
 				3A89296928F7139700C5EC6C /* ApiClientMock.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -345,7 +348,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				607FACEC1AFB9204008FA782 /* Tests.swift in Sources */,
+				3A63EA5B29080301004B1421 /* CCPA_Test.swift in Sources */,
+				607FACEC1AFB9204008FA782 /* KetchTests.swift in Sources */,
 				3A89296A28F7139700C5EC6C /* ApiClientMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

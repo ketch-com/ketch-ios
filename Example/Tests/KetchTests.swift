@@ -2,7 +2,7 @@ import XCTest
 import Combine
 @testable import KetchSDK
 
-class Tests: XCTestCase {
+class KetchTests: XCTestCase {
     var sut: KetchApiRequest!
     var ketchApiRequestPublisher = PassthroughSubject<[String: Any],
                          ApiClientError>()

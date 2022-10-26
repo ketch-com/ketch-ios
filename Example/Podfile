@@ -7,11 +7,8 @@ platform :ios, '13.0'
 #]
 
 target 'KetchSDK_Example' do
-  pod 'KetchSDK', :path => '../'
-#  pod 'consentmanager'
-#  pod 'UsercentricsUI', '2.7.4'
-#  pod 'KetchSDK'
-#  pod 'Alamofire'
+  pod 'KetchSDK/CCPA', :path => '../'
+  pod 'KetchSDK/TCF', :path => '../'
 
   target 'KetchSDK_Tests' do
     inherit! :search_paths

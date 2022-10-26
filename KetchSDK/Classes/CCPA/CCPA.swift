@@ -1,5 +1,5 @@
 //
-//  PolicyProtocol.swift
+//  CCPA.swift
 //  KetchSDK
 //
 //  Created by Anton Lyfar on 25.10.2022.
@@ -7,25 +7,43 @@
 
 import Foundation
 
-public protocol PolicyProtocol {
-    static func isApplicable(for configuration: KetchSDK.Configuration) -> Bool
-}
 
-public typealias CCPA_String = String
+private let USPrivacy_String_Key = "IABUSPrivacy_String"
+private let USPrivacy_Applied_Key = "IABUSPrivacy_Applied"
 
-public enum CCPA {
-    public static func encode(
+private let TCF_TCString_Key = "IABTCF_TCString"
+private let TCF_gdprApplies_Key = "IABTCF_gdprApplies"
+
+public class CCPA: PolicyPlugin {
+    public typealias CCPA_String = String
+
+    let notice = false
+    let lspa = false
+
+    override init(
         with configuration: KetchSDK.Configuration,
-        consent: KetchSDK.ConsentStatus,
+        userDefaults: UserDefaults = .standard
+    ) throws {
+        guard configuration.regulations?.contains(Constants.CCPACA) == true else {
+            throw PolicyPluginError.notApplicableToConfig
+        }
+
+        try super.init(with: configuration, userDefaults: userDefaults)
+    }
+
+    public override func consentChanged(consent: KetchSDK.ConsentStatus) {
+        let encodedString = encode(with: consent, notice: notice, lspa: lspa)
+
+        save(encodedString, forKey: USPrivacy_String_Key)
+        save(true , forKey: USPrivacy_Applied_Key)
+    }
+
+    public func encode(
+        with consent: KetchSDK.ConsentStatus,
         notice: Bool,
         lspa: Bool
     ) -> CCPA_String {
         let defaultResult = "\(Constants.API_VERSION)---"
-
-        guard isApplicable(for: configuration) else {
-            print("CCPA is not applied")
-            return defaultResult
-        }
 
         guard
             let canonicalPurposes = configuration.canonicalPurposes,
@@ -70,11 +88,5 @@ extension CCPA {
         static let ANALYTICS = "analytics"
         static let BEHAVIORAL_ADVERTISING = "behavioral_advertising"
         static let DATA_BROKING = "data_broking"
-    }
-}
-
-extension CCPA: PolicyProtocol {
-    public static func isApplicable(for configuration: KetchSDK.Configuration) -> Bool {
-        configuration.regulations?.contains(Constants.CCPACA) == true
     }
 }

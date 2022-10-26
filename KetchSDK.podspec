@@ -25,22 +25,23 @@ TODO: Add long description of the pod here.
   # s.screenshots    = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Anton Lyfar' => 'alyfar@transcenda.com' }
-  s.source           = {
-    :http => "https://ketch.jfrog.io/artifactory/ios/KetchSDK/ketchSDK.tar.gz"
-  }
-
-  # s.source           = { :git => 'https://github.com/ketch-sdk/ketch-ios.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  # s.source         = { :http => "https://ketch.jfrog.io/artifactory/ios/KetchSDK/ketchSDK.tar.gz" }
+  s.source           = { :git => 'https://github.com/ketch-sdk/ketch-ios.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '13.0'
-
   s.swift_version = '5.0'
-  s.source_files = 'KetchSDK/Classes/**/*.{swift}'
 
-  # s.resource_bundles = {
-  #   'KetchSDK' => ['KetchSDK/Assets/*.png']
-  # }
+  s.subspec 'Core' do |core|
+    core.source_files = 'KetchSDK/Classes/Core/**/*.{swift}'
+  end
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
+  s.subspec 'CCPA' do |ccpa|
+    ccpa.source_files = 'KetchSDK/Classes/CCPA/**/*.{swift}'
+    ccpa.dependency 'KetchSDK/Core'
+  end
+
+  s.subspec 'TCF' do |tcf|
+    tcf.source_files = 'KetchSDK/Classes/TCF/**/*.{swift}'
+    tcf.dependency 'KetchSDK/Core'
+  end
 end

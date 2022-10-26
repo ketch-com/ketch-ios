@@ -12,32 +12,32 @@ import KetchSDK
 
 class ViewController: UIViewController {
     private var subscriptions = Set<AnyCancellable>()
-    let consentStringBuilder = ConsentStringBuilder()
+//    let consentStringBuilder = ConsentStringBuilder()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         loadData()
-
-        let str = try? consentStringBuilder.build(
-                created: Date(),
-                updated: Date(),
-                cmpId: 2,
-                cmpVersion: 1,
-                consentScreenId: 0,
-                consentLanguage: "EN",
-                allowedPurposes: .all,
-                vendorListVersion: 128,
-                maxVendorId: 1004,
-                defaultConsent: true,
-                allowedVendorIds: [1000, 1001, 1002, 1003, 1004]
-            )
-
-        print("dbg", str)
-
-        let str2 = try? consentStringBuilder.build(created: Date(timeIntervalSince1970: 1510082155.4), updated: Date(timeIntervalSince1970: 1510082155.4), cmpId: 2, cmpVersion: 1, consentScreenId: 0, consentLanguage: "EN", allowedPurposes: .all, vendorListVersion: 1, maxVendorId: 100, defaultConsent: false, allowedVendorIds: [1,2,51,99,100])
-
-        print("dbg", str2)
+//
+//        let str = try? consentStringBuilder.build(
+//                created: Date(),
+//                updated: Date(),
+//                cmpId: 2,
+//                cmpVersion: 1,
+//                consentScreenId: 0,
+//                consentLanguage: "EN",
+//                allowedPurposes: .all,
+//                vendorListVersion: 128,
+//                maxVendorId: 1004,
+//                defaultConsent: true,
+//                allowedVendorIds: [1000, 1001, 1002, 1003, 1004]
+//            )
+//
+//        print("dbg", str)
+//
+//        let str2 = try? consentStringBuilder.build(created: Date(timeIntervalSince1970: 1510082155.4), updated: Date(timeIntervalSince1970: 1510082155.4), cmpId: 2, cmpVersion: 1, consentScreenId: 0, consentLanguage: "EN", allowedPurposes: .all, vendorListVersion: 1, maxVendorId: 100, defaultConsent: false, allowedVendorIds: [1,2,51,99,100])
+//
+//        print("dbg", str2)
 
     }
 
@@ -276,22 +276,22 @@ class ViewController: UIViewController {
             } receiveValue: { config, vendors in
                 print(config, vendors)
 
-                let consentStringBuilder = ConsentStringBuilder()
-                let str = try? consentStringBuilder.build(
-                    created: Date(),
-                    updated: Date(),
-                    cmpId: 2,
-                    cmpVersion: 1,
-                    consentScreenId: 0,
-                    consentLanguage: "EN",
-                    allowedPurposes: .all,
-                    vendorListVersion: vendors.vendorListVersion,
-                    maxVendorId: 1004,
-                    defaultConsent: false,
-                    allowedVendorIds: [1000, 1001, 1002, 1003, 1004]
-                )
-
-                print(str)
+//                let consentStringBuilder = ConsentStringBuilder()
+//                let str = try? consentStringBuilder.build(
+//                    created: Date(),
+//                    updated: Date(),
+//                    cmpId: 2,
+//                    cmpVersion: 1,
+//                    consentScreenId: 0,
+//                    consentLanguage: "EN",
+//                    allowedPurposes: .all,
+//                    vendorListVersion: vendors.vendorListVersion,
+//                    maxVendorId: 1004,
+//                    defaultConsent: false,
+//                    allowedVendorIds: [1000, 1001, 1002, 1003, 1004]
+//                )
+//
+//                print(str)
 
             }
             .store(in: &subscriptions)

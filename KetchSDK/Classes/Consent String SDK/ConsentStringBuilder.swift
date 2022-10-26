@@ -14,7 +14,7 @@ public class ConsentStringBuilder: ConsentStringBuilding {
         case invalidLanguageCode(String)
     }
 
-    private let version: Int = 1
+    private let version: Int = 2
     private let asciiOffset: UInt8 = 65
 
     public init() {}

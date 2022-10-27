@@ -185,6 +185,15 @@ class CCPA_Test: XCTestCase {
 
         XCTAssertEqual(encodedString, "1YYY")
     }
+
+    func test_TCF_encoding() {
+        let tcf = try? TCF(with: Self.testConfiguration, vendorListVersion: 128)
+        XCTAssertNotNil(tcf)
+
+        let encodedString = tcf?.encode(with: Self.testConsent)
+
+        XCTAssertEqual(encodedString, "1YYY")
+    }
 }
 
 private extension KetchSDK.ConsentStatus {
@@ -211,7 +220,7 @@ extension CCPA_Test {
         privacyPolicy: .init(code: nil, version: 0, url: nil),
         termsOfService: .init(code: nil, version: 0, url: nil),
         rights: nil,
-        regulations: ["ccpaca", "some_other"],
+        regulations: ["gdpreu", "ccpaca", "some_other"],
         theme: nil,
         experience: nil,
         purposes: [

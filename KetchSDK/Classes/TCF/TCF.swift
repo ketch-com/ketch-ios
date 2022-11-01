@@ -67,7 +67,7 @@ public class TCF: PolicyPlugin {
             consent.vendors?.contains(vendor.id) ?? false
         } ?? []
 
-        let vendorsConsent = vendors.compactMap { vendor in Int(vendor.id) }
+        let vendorsConsent = vendors.compactMap { vendor in Int16(vendor.id) }
         let vendorLegitimateInterest = vendorsConsent
 
         let encoder = TCStringEncoderV2(
@@ -77,15 +77,15 @@ public class TCF: PolicyPlugin {
             consentLanguage: configuration.language,
             vendorListVersion: vendorListVersion,
             purposesConsent: purposesConsent,
-            vendorsConsent: vendorsConsent,
+            vendorsConsent: Set(vendorsConsent),
             isServiceSpecific: Constants.IS_SERVICE_SPECIFIC,
             useNonStandardStacks: Constants.USE_NON_STANDART_STACKS,
             specialFeatureOptIns: specialFeatureOptIns,
             purposesLITransparency: purposesLITransparency,
-            vendorLegitimateInterest: vendorLegitimateInterest
+            vendorLegitimateInterest: Set(vendorLegitimateInterest)
         )
 
-        return try! encoder.encode()
+        return try! encoder.encode().trimmedWebSafeBase64EncodedString()
     }
 }
 
@@ -117,7 +117,7 @@ struct TCStringEncoderV2 {
     let consentLanguage: String
     let vendorListVersion: Int
     let purposesConsent: [Int]
-    let vendorsConsent: [Int]
+    let vendorsConsent: Set<Int16>
     let tcfPolicyVersion: Int
     let isServiceSpecific: Bool
     let useNonStandardStacks: Bool
@@ -125,7 +125,7 @@ struct TCStringEncoderV2 {
     let purposesLITransparency: [Int]
     let purposeOneTreatment: Bool
     let publisherCC: String
-    let vendorLegitimateInterest: [Int]
+    let vendorLegitimateInterest: Set<Int16>
     let disclosedVendors: [Int]
     let allowedVendors: [Int]
     let pubPurposesConsent: [Int]
@@ -145,7 +145,7 @@ struct TCStringEncoderV2 {
         consentLanguage: String? = Default.consentLanguage,
         vendorListVersion: Int = Default.vendorListVersion,
         purposesConsent: [Int] = [],
-        vendorsConsent: [Int] = [],
+        vendorsConsent: Set<Int16> = [],
         tcfPolicyVersion: Int = Default.tcfPolicyVersion,
         isServiceSpecific: Bool = Default.isServiceSpecific,
         useNonStandardStacks: Bool = Default.useNonStandardStacks,
@@ -153,7 +153,7 @@ struct TCStringEncoderV2 {
         purposesLITransparency: [Int] = [],
         purposeOneTreatment: Bool = Default.purposeOneTreatment,
         publisherCC: String = Default.publisherCC,
-        vendorLegitimateInterest: [Int] = [],
+        vendorLegitimateInterest: Set<Int16> = [],
         disclosedVendors: [Int] = [],
         allowedVendors: [Int] = [],
         pubPurposesConsent: [Int] = [],
@@ -194,7 +194,7 @@ struct TCStringEncoderV2 {
     struct PublisherRestrictionEntry {
         let purposeId: Int
         let restrictionType: RestrictionType
-        let vendors: [Int]
+        let vendors: [Int16]
     }
 
     enum RestrictionType: Int {
@@ -228,7 +228,11 @@ struct TCStringEncoderV2 {
     }
 }
 
-extension TCStringEncoderV2 {
+protocol TCFEncoder {
+    func encode() throws -> String
+}
+
+extension TCStringEncoderV2: TCFEncoder {
     enum EncoderError: Error {
         case incompatibleVersion(Int)
         case invalidLanguageCode(String)
@@ -265,6 +269,9 @@ extension TCStringEncoderV2 {
             throw EncoderError.invalidLanguageCode(publisherCC)
         }
 
+        let vendorsConsent = (try? VendorFieldEncoder(vendors: vendorsConsent).encode()) ?? String()
+        let vendorInterest = (try? VendorFieldEncoder(vendors: vendorLegitimateInterest).encode()) ?? String()
+
         var consentString = String()
 
         consentString.append(encode(version, to: FieldIndices.CORE_VERSION))
@@ -285,16 +292,29 @@ extension TCStringEncoderV2 {
         consentString.append(encode(purposeOneTreatment, to: FieldIndices.CORE_PURPOSE_ONE_TREATMENT))
         consentString.append(encode(firstPublisherCCCharacter - Constants.asciiOffset, to: FieldIndices.CORE_PUBLISHER_CC / 2))
         consentString.append(encode(secondPublisherCCCharacter - Constants.asciiOffset, to: FieldIndices.CORE_PUBLISHER_CC / 2))
+        consentString.append(vendorsConsent)
+        consentString.append(vendorInterest)
+        consentString.append(encode(publisherRestrictions.count, to: FieldIndices.CORE_NUM_PUB_RESTRICTION))
 
+        publisherRestrictions.forEach { publisherRestriction in
+            consentString.append(encode(publisherRestriction.purposeId, to: FieldIndices.PURPOSE_ID))
+            consentString.append(encode(publisherRestriction.restrictionType.rawValue, to: FieldIndices.RESTRICTION_TYPE))
 
-//        consentString.append(encode(cmpId, to: NSRange.cmpIdentifier.length))
-//        consentString.append(encode(cmpVersion, to: NSRange.cmpVersion.length))
-//        consentString.append(encode(, to: NSRange.consentScreen.length))
+            let encodedVendors = try! VendorFieldEncoder(
+                vendors: Set(publisherRestriction.vendors),
+                emitRangeEncoding: true,
+                emitMaxVendorId: false,
+                emitIsRangeEncoding: false
+            ).encode()
 
+            consentString.append(encodedVendors)
+        }
 
         return consentString
     }
+}
 
+extension TCFEncoder {
     func encode(_ bool: Bool, to length: Int) -> String {
         encode(bool ? 1 : 0, to: length)
     }
@@ -355,14 +375,9 @@ extension TCStringEncoderV2 {
         static let CORE_PURPOSES_LI_TRANSPARENCY = 24
         static let CORE_PURPOSE_ONE_TREATMENT = 1
         static let CORE_PUBLISHER_CC = 12
-        static let CORE_VENDOR_MAX_VENDOR_ID = 16
-        static let CORE_VENDOR_IS_RANGE_ENCODING = 1
-//         CORE_VENDOR_BITRANGE_FIELD(BitRangeFieldUtils.lengthSupplier(CORE_VENDOR_IS_RANGE_ENCODING, CORE_VENDOR_MAX_VENDOR_ID)),
-        static let CORE_VENDOR_LI_MAX_VENDOR_ID = 16
-        static let CORE_VENDOR_LI_IS_RANGE_ENCODING = 1
-//         CORE_VENDOR_LI_BITRANGE_FIELD(BitRangeFieldUtils.lengthSupplier(CORE_VENDOR_LI_IS_RANGE_ENCODING, CORE_VENDOR_LI_MAX_VENDOR_ID)),
         static let CORE_NUM_PUB_RESTRICTION = 12
-//         CORE_PUB_RESTRICTION_ENTRY(PublisherRestrictionUtils.lengthSupplier(CORE_NUM_PUB_RESTRICTION)),
+        static let PURPOSE_ID = 6
+        static let RESTRICTION_TYPE = 2
 
 //         OOB_SEGMENT_TYPE(3, 0),
 //
@@ -418,26 +433,166 @@ private extension String {
         let totalBytes = byteCount + (bitRemainder > 0 ? 1 : 0)
         return padRight(toLength: totalBytes * multiple)
     }
-//
-//    func split(by length: Int) -> [String] {
-//        var startIndex = self.startIndex
-//        var results = [Substring]()
-//
-//        while startIndex < self.endIndex {
-//            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-//            results.append(self[startIndex..<endIndex])
-//            startIndex = endIndex
-//        }
-//
-//        return results.map { String($0) }
-//    }
-//
-//    func trimmedWebSafeBase64EncodedString() -> String {
-//        let data = Data(bytes: split(by: 8).compactMap { UInt8($0, radix: 2) })
-//        return data.base64EncodedString()
-//            .trimmingCharacters(in: ["="])
-//            .replacingOccurrences(of: "+", with: "-")
-//            .replacingOccurrences(of: "/", with: "_")
-//    }
+
+    func split(by length: Int) -> [String] {
+        var startIndex = self.startIndex
+        var results = [Substring]()
+
+        while startIndex < self.endIndex {
+            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
+            results.append(self[startIndex..<endIndex])
+            startIndex = endIndex
+        }
+
+        return results.map { String($0) }
+    }
+
+    func trimmedWebSafeBase64EncodedString() -> String {
+        let data = Data(split(by: 8).compactMap { UInt8($0, radix: 2) })
+
+        return data.base64EncodedString()
+            .trimmingCharacters(in: ["="])
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+    }
 }
 
+struct VendorFieldEncoder: TCFEncoder {
+    enum VendorEncodingType: Int {
+        case bitField = 0
+        case range = 1
+    }
+
+    let vendors: Set<Int16>
+    let maxVendorId: Int16
+    let defaultConsent: Bool
+    let emitRangeEncoding: Bool
+    let emitMaxVendorId: Bool
+    let emitIsRangeEncoding: Bool
+
+    init(
+        vendors: Set<Int16>,
+        maxVendorId: Int16 = 0,
+        defaultConsent: Bool = false,
+        emitRangeEncoding: Bool = false,
+        emitMaxVendorId: Bool = true,
+        emitIsRangeEncoding: Bool = true
+    ) {
+        self.vendors = vendors
+        self.maxVendorId = maxVendorId
+        self.defaultConsent = defaultConsent
+        self.emitRangeEncoding = emitRangeEncoding
+        self.emitMaxVendorId = emitMaxVendorId
+        self.emitIsRangeEncoding = emitIsRangeEncoding
+    }
+
+    func encode() throws -> String {
+        if vendors.isEmpty {
+            return encode(0, to: FieldIndices.CORE_VENDOR_MAX_VENDOR_ID)
+            + encode(false, to: FieldIndices.CORE_VENDOR_IS_RANGE_ENCODING)
+        }
+
+        let maxVendorId = vendors.max() ?? 0
+        var vendorsEncoded = String()
+
+        if emitMaxVendorId {
+            vendorsEncoded.append(encode(maxVendorId, to: FieldIndices.CORE_VENDOR_MAX_VENDOR_ID))
+        }
+
+        // we encode by both methods (bit field and ranges) and use whichever is smallest
+        let encodingUsingBitField = vendorsEncoded
+            .appending(bitFieldBinaryString(allowedVendorIds: vendors, maxVendorId: maxVendorId))
+
+        let encodingUsingRanges = vendorsEncoded
+            .appending(rangesBinaryString(allowedVendorIds: vendors, maxVendorId: maxVendorId))
+
+        if encodingUsingRanges.count < encodingUsingBitField.count || emitRangeEncoding {
+            return encodingUsingRanges
+        } else {
+            return encodingUsingBitField
+        }
+    }
+
+    func bitFieldBinaryString(allowedVendorIds: Set<Int16>, maxVendorId: Int16) -> String {
+        var consentString = ""
+        consentString.append(encode(VendorEncodingType.bitField.rawValue, to: FieldIndices.CORE_VENDOR_IS_RANGE_ENCODING))
+        consentString.append(encode(vendorBitFieldForVendors: allowedVendorIds, maxVendorId: maxVendorId))
+        return consentString
+    }
+
+    func rangesBinaryString(allowedVendorIds: Set<Int16>, maxVendorId: Int16) -> String {
+        var consentString = ""
+        if emitIsRangeEncoding {
+            consentString.append(encode(VendorEncodingType.range.rawValue, to: FieldIndices.CORE_VENDOR_IS_RANGE_ENCODING))
+        }
+
+        consentString.append(encode(vendorRanges: ranges(for: allowedVendorIds, in: Set(1...maxVendorId), defaultConsent: defaultConsent)))
+        return consentString
+    }
+
+    func encode(vendorBitFieldForVendors vendors: Set<Int16>, maxVendorId: Int16) -> String {
+        (1...maxVendorId).reduce("") { $0 + (vendors.contains($1) ? "1" : "0") }
+    }
+
+    func encode(vendorRanges ranges: [ClosedRange<Int16>]) -> String {
+        var string = ""
+
+        string.append(encode(ranges.count, to: FieldIndices.NUM_ENTRIES))
+
+        for range in ranges {
+            if range.count == 1 {
+                // single entry
+                string.append(encode(0, to: 1))
+                string.append(encode(range.lowerBound, to: FieldIndices.CORE_VENDOR_VENDOR_ID))
+            } else {
+                // range entry
+                string.append(encode(1, to: 1))
+                string.append(encode(range.lowerBound, to: FieldIndices.CORE_VENDOR_VENDOR_ID))
+                string.append(encode(range.upperBound, to: FieldIndices.CORE_VENDOR_VENDOR_ID))
+            }
+        }
+
+        return string
+    }
+
+    func ranges(for allowedVendorIds: Set<Int16>, in allVendorIds: Set<Int16>, defaultConsent: Bool) -> [ClosedRange<Int16>] {
+        let vendorsToEncode = defaultConsent ? allVendorIds.subtracting(allowedVendorIds).sorted() : allowedVendorIds.sorted()
+
+        var ranges = [ClosedRange<Int16>]()
+        var currentRangeStart: Int16?
+        for vendorId in allVendorIds.sorted() {
+            if vendorsToEncode.contains(vendorId) {
+                if currentRangeStart == nil {
+                    // start a new range
+                    currentRangeStart = vendorId
+                }
+            } else if let rangeStart = currentRangeStart {
+                // close the range
+                ranges.append(rangeStart...vendorId-1)
+                currentRangeStart = nil
+            }
+        }
+
+        // close any range open at the end
+        if let rangeStart = currentRangeStart, let last = vendorsToEncode.last {
+            ranges.append(rangeStart...last)
+            currentRangeStart = nil
+        }
+
+        return ranges
+    }
+}
+
+
+extension VendorFieldEncoder {
+    enum FieldIndices {
+        static let CORE_VENDOR_VENDOR_ID = 16
+        static let NUM_ENTRIES = 12
+        static let CORE_VENDOR_MAX_VENDOR_ID = 16
+        static let CORE_VENDOR_IS_RANGE_ENCODING = 1
+
+        static let CORE_VENDOR_LI_MAX_VENDOR_ID = 16
+        static let CORE_VENDOR_LI_IS_RANGE_ENCODING = 1
+        static let CORE_NUM_PUB_RESTRICTION = 12
+    }
+}

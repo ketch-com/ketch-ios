@@ -1,5 +1,5 @@
 //
-//  CCPA_Test.swift
+//  CCPA_Tests.swift
 //  KetchSDK_Tests
 //
 //  Created by Anton Lyfar on 25.10.2022.
@@ -9,7 +9,7 @@
 import XCTest
 @testable import KetchSDK
 
-class CCPA_Test: XCTestCase {
+class CCPA_Tests: XCTestCase {
     func test_isCCPA_aplicable() {
         let testConfiguration1 = KetchSDK.Configuration(
             language: nil,
@@ -185,15 +185,6 @@ class CCPA_Test: XCTestCase {
 
         XCTAssertEqual(encodedString, "1YYY")
     }
-
-    func test_TCF_encoding() {
-        let tcf = try? TCF(with: Self.testConfiguration, vendorListVersion: 128)
-        XCTAssertNotNil(tcf)
-
-        let encodedString = tcf?.encode(with: Self.testConsent)
-
-        XCTAssertEqual(encodedString, "1YYY")
-    }
 }
 
 private extension KetchSDK.ConsentStatus {
@@ -206,7 +197,7 @@ private extension KetchSDK.ConsentStatus {
     }
 }
 
-extension CCPA_Test {
+extension CCPA_Tests {
     static let testConfiguration = KetchSDK.Configuration(
         language: nil,
         organization: .init(code: "transcenda"),

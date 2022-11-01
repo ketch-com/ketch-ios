@@ -237,7 +237,7 @@ extension KetchSDK.Configuration {
         public let policyUrl: String?
         public let cookieMaxAgeSeconds: Int?
         public let usesCookies: Bool?
-        public let UsesNonCookieAccess: Bool?
+        public let usesNonCookieAccess: Bool?
 
         public struct VendorPurpose: Codable {
             public let name: String

@@ -85,7 +85,20 @@ public class TCF: PolicyPlugin {
             vendorLegitimateInterest: Set(vendorLegitimateInterest)
         )
 
-        return try! encoder.encode().trimmedWebSafeBase64EncodedString()
+        let core = try! encoder.encode().trimmedWebSafeBase64EncodedString()
+
+        let vendorsEncoder = VendorEncoder(
+            vendors: [],
+            disclosedVendors: [],
+            allowedVendors: []
+        )
+
+        let disclosedVendorsSegment = vendorsEncoder.encodeDisclosedVendors()
+        let allowedVendorsSegment = vendorsEncoder.encodeAllowedVendors()
+
+        return [core, disclosedVendorsSegment, allowedVendorsSegment]
+            .compactMap { $0 }
+            .joined(separator: ".")
     }
 }
 
@@ -126,8 +139,8 @@ struct TCStringEncoderV2 {
     let purposeOneTreatment: Bool
     let publisherCC: String
     let vendorLegitimateInterest: Set<Int16>
-    let disclosedVendors: [Int]
-    let allowedVendors: [Int]
+    let disclosedVendors: Set<Int16>
+    let allowedVendors: Set<Int16>
     let pubPurposesConsent: [Int]
     let numberOfCustomPurposes: [Int]
     let customPurposesConsent: [Int]
@@ -154,8 +167,8 @@ struct TCStringEncoderV2 {
         purposeOneTreatment: Bool = Default.purposeOneTreatment,
         publisherCC: String = Default.publisherCC,
         vendorLegitimateInterest: Set<Int16> = [],
-        disclosedVendors: [Int] = [],
-        allowedVendors: [Int] = [],
+        disclosedVendors: Set<Int16> = [],
+        allowedVendors: Set<Int16> = [],
         pubPurposesConsent: [Int] = [],
         numberOfCustomPurposes: [Int] = [],
         customPurposesConsent: [Int] = [],
@@ -269,8 +282,8 @@ extension TCStringEncoderV2: TCFEncoder {
             throw EncoderError.invalidLanguageCode(publisherCC)
         }
 
-        let vendorsConsent = (try? VendorFieldEncoder(vendors: vendorsConsent).encode()) ?? String()
-        let vendorInterest = (try? VendorFieldEncoder(vendors: vendorLegitimateInterest).encode()) ?? String()
+        let vendorsConsent = (try? VendorEncoder(vendors: vendorsConsent).encode()) ?? String()
+        let vendorInterest = (try? VendorEncoder(vendors: vendorLegitimateInterest).encode()) ?? String()
 
         var consentString = String()
 
@@ -300,11 +313,13 @@ extension TCStringEncoderV2: TCFEncoder {
             consentString.append(encode(publisherRestriction.purposeId, to: FieldIndices.PURPOSE_ID))
             consentString.append(encode(publisherRestriction.restrictionType.rawValue, to: FieldIndices.RESTRICTION_TYPE))
 
-            let encodedVendors = try! VendorFieldEncoder(
+            let encodedVendors = try! VendorEncoder(
                 vendors: Set(publisherRestriction.vendors),
                 emitRangeEncoding: true,
                 emitMaxVendorId: false,
-                emitIsRangeEncoding: false
+                emitIsRangeEncoding: false,
+                disclosedVendors: disclosedVendors,
+                allowedVendors: allowedVendors
             ).encode()
 
             consentString.append(encodedVendors)
@@ -457,7 +472,7 @@ private extension String {
     }
 }
 
-struct VendorFieldEncoder: TCFEncoder {
+struct VendorEncoder: TCFEncoder {
     enum VendorEncodingType: Int {
         case bitField = 0
         case range = 1
@@ -469,6 +484,8 @@ struct VendorFieldEncoder: TCFEncoder {
     let emitRangeEncoding: Bool
     let emitMaxVendorId: Bool
     let emitIsRangeEncoding: Bool
+    let disclosedVendors: Set<Int16>
+    let allowedVendors: Set<Int16>
 
     init(
         vendors: Set<Int16>,
@@ -476,7 +493,9 @@ struct VendorFieldEncoder: TCFEncoder {
         defaultConsent: Bool = false,
         emitRangeEncoding: Bool = false,
         emitMaxVendorId: Bool = true,
-        emitIsRangeEncoding: Bool = true
+        emitIsRangeEncoding: Bool = true,
+        disclosedVendors: Set<Int16> = [],
+        allowedVendors: Set<Int16> = []
     ) {
         self.vendors = vendors
         self.maxVendorId = maxVendorId
@@ -484,6 +503,8 @@ struct VendorFieldEncoder: TCFEncoder {
         self.emitRangeEncoding = emitRangeEncoding
         self.emitMaxVendorId = emitMaxVendorId
         self.emitIsRangeEncoding = emitIsRangeEncoding
+        self.disclosedVendors = disclosedVendors
+        self.allowedVendors = allowedVendors
     }
 
     func encode() throws -> String {
@@ -531,7 +552,9 @@ struct VendorFieldEncoder: TCFEncoder {
     }
 
     func encode(vendorBitFieldForVendors vendors: Set<Int16>, maxVendorId: Int16) -> String {
-        (1...maxVendorId).reduce("") { $0 + (vendors.contains($1) ? "1" : "0") }
+        guard maxVendorId >= 1 else { return "" }
+
+        return (1...maxVendorId).reduce("") { $0 + (vendors.contains($1) ? "1" : "0") }
     }
 
     func encode(vendorRanges ranges: [ClosedRange<Int16>]) -> String {
@@ -583,8 +606,7 @@ struct VendorFieldEncoder: TCFEncoder {
     }
 }
 
-
-extension VendorFieldEncoder {
+extension VendorEncoder {
     enum FieldIndices {
         static let CORE_VENDOR_VENDOR_ID = 16
         static let NUM_ENTRIES = 12
@@ -594,5 +616,51 @@ extension VendorFieldEncoder {
         static let CORE_VENDOR_LI_MAX_VENDOR_ID = 16
         static let CORE_VENDOR_LI_IS_RANGE_ENCODING = 1
         static let CORE_NUM_PUB_RESTRICTION = 12
+
+        static let OOB_SEGMENT_TYPE = 3
+    }
+}
+
+extension VendorEncoder {
+    enum SegmentType: Int {
+        case core
+        case disclosedVendor
+        case allowedVendor
+        case publisherTC
+        case invalid = -1
+
+        init?(rawValue: Int) {
+            switch rawValue {
+            case 0: self = .core
+            case 1: self = .disclosedVendor
+            case 2: self = .allowedVendor
+            case 3: self = .publisherTC
+            default: self = .invalid
+            }
+        }
+    }
+
+    func encodeDisclosedVendors() -> String? {
+        var consentString = ""
+        if disclosedVendors.isEmpty { return nil }
+
+        consentString.append(encode(SegmentType.disclosedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
+        consentString.append(encode(vendorBitFieldForVendors: disclosedVendors, maxVendorId: maxVendorId))
+
+        return consentString.trimmedWebSafeBase64EncodedString()
+    }
+
+    func encodeAllowedVendors() -> String? {
+        var consentString = ""
+        if allowedVendors.isEmpty { return nil }
+
+        consentString.append(encode(SegmentType.allowedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
+        consentString.append(encode(vendorBitFieldForVendors: allowedVendors, maxVendorId: maxVendorId))
+
+        return consentString.trimmedWebSafeBase64EncodedString()
+    }
+
+    func encodePublisherTC() -> String {
+        ""
     }
 }

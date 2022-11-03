@@ -219,7 +219,8 @@ class TCF_Tests: XCTestCase {
             specialFeatureOptIns: [],
             purposesLITransparency: [],
             publisherCC: "AA",
-            vendorLegitimateInterest: Set([2, 6, 8])
+            vendorLegitimateInterest: Set([2, 6, 8]),
+            vendors: []
         )
 
         let encodedString = try! encoder.encode()

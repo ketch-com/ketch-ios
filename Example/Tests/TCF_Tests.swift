@@ -222,7 +222,7 @@ class TCF_Tests: XCTestCase {
             vendorLegitimateInterest: Set([2, 6, 8])
         )
 
-        let encodedString = try! encoder.encode().trimmedWebSafeBase64EncodedString()
+        let encodedString = try! encoder.encode()
 
         XCTAssertEqual(encodedString, "COvFyGBOvFyGBAbAAAENAPCAAOAAAAAAAAAAAEEUACCKAAA")
     }
@@ -424,28 +424,4 @@ extension TCF_Tests {
         ],
         vendors: ["1000", "1001", "1002", "1003", "1004"]
     )
-}
-
-private extension String {
-    func split(by length: Int) -> [String] {
-        var startIndex = self.startIndex
-        var results = [Substring]()
-
-        while startIndex < self.endIndex {
-            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            results.append(self[startIndex..<endIndex])
-            startIndex = endIndex
-        }
-
-        return results.map { String($0) }
-    }
-
-    func trimmedWebSafeBase64EncodedString() -> String {
-        let data = Data(split(by: 8).compactMap { UInt8($0, radix: 2) })
-
-        return data.base64EncodedString()
-            .trimmingCharacters(in: ["="])
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-    }
 }

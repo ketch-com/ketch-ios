@@ -50,18 +50,18 @@ public class TCF: PolicyPlugin {
             .filter { $0.tcfType == Constants.TCF_PURPOSE_TYPE }
             .filter { $0.legalBasisCode == Constants.CONSENT_OPTIN }
             .compactMap(\.tcfID)
-            .compactMap(Int.init)
+            .compactMap(Int16.init)
 
         let purposesLITransparency = purposes
             .filter { $0.tcfType == Constants.TCF_PURPOSE_TYPE }
             .filter { $0.legalBasisCode == Constants.CONSENT_OPTIN || $0.legalBasisCode == Constants.LEGITIMATEINTEREST_OBJECTABLE }
             .compactMap(\.tcfID)
-            .compactMap(Int.init)
+            .compactMap(Int16.init)
 
         let specialFeatureOptIns = purposes
             .filter { $0.tcfType == Constants.TCF_SPECIAL_FEATURE_TYPE }
             .compactMap(\.tcfID)
-            .compactMap(Int.init)
+            .compactMap(Int16.init)
 
         let vendors = configuration.vendors?.filter { vendor in
             consent.vendors?.contains(vendor.id) ?? false
@@ -76,29 +76,16 @@ public class TCF: PolicyPlugin {
             cmpVersion: Constants.CMP_VERSION,
             consentLanguage: configuration.language,
             vendorListVersion: vendorListVersion,
-            purposesConsent: purposesConsent,
+            purposesConsent: Set(purposesConsent),
             vendorsConsent: Set(vendorsConsent),
             isServiceSpecific: Constants.IS_SERVICE_SPECIFIC,
             useNonStandardStacks: Constants.USE_NON_STANDART_STACKS,
-            specialFeatureOptIns: specialFeatureOptIns,
-            purposesLITransparency: purposesLITransparency,
+            specialFeatureOptIns: Set(specialFeatureOptIns),
+            purposesLITransparency: Set(purposesLITransparency),
             vendorLegitimateInterest: Set(vendorLegitimateInterest)
         )
 
-        let core = try! encoder.encode().trimmedWebSafeBase64EncodedString()
-
-        let vendorsEncoder = VendorEncoder(
-            vendors: [],
-            disclosedVendors: [],
-            allowedVendors: []
-        )
-
-        let disclosedVendorsSegment = vendorsEncoder.encodeDisclosedVendors()
-        let allowedVendorsSegment = vendorsEncoder.encodeAllowedVendors()
-
-        return [core, disclosedVendorsSegment, allowedVendorsSegment]
-            .compactMap { $0 }
-            .joined(separator: ".")
+        return try! encoder.encode()
     }
 }
 
@@ -129,23 +116,23 @@ struct TCStringEncoderV2 {
     let consentScreen: Int
     let consentLanguage: String
     let vendorListVersion: Int
-    let purposesConsent: [Int]
+    let purposesConsent: Set<Int16>
     let vendorsConsent: Set<Int16>
     let tcfPolicyVersion: Int
     let isServiceSpecific: Bool
     let useNonStandardStacks: Bool
-    let specialFeatureOptIns: [Int]
-    let purposesLITransparency: [Int]
+    let specialFeatureOptIns: Set<Int16>
+    let purposesLITransparency: Set<Int16>
     let purposeOneTreatment: Bool
     let publisherCC: String
     let vendorLegitimateInterest: Set<Int16>
     let disclosedVendors: Set<Int16>
     let allowedVendors: Set<Int16>
-    let pubPurposesConsent: [Int]
-    let numberOfCustomPurposes: [Int]
-    let customPurposesConsent: [Int]
-    let customPurposesLITransparency: [Int]
-    let pubPurposesLITransparency: [Int]
+    let pubPurposesConsent: Set<Int16>
+    let numberOfCustomPurposes: Int16
+    let customPurposesConsent: Set<Int16>
+    let customPurposesLITransparency: Set<Int16>
+    let pubPurposesLITransparency: Set<Int16>
     let publisherRestrictions: [PublisherRestrictionEntry]
 
     init(
@@ -157,23 +144,23 @@ struct TCStringEncoderV2 {
         consentScreen: Int = Default.consentScreen,
         consentLanguage: String? = Default.consentLanguage,
         vendorListVersion: Int = Default.vendorListVersion,
-        purposesConsent: [Int] = [],
+        purposesConsent: Set<Int16> = [],
         vendorsConsent: Set<Int16> = [],
         tcfPolicyVersion: Int = Default.tcfPolicyVersion,
         isServiceSpecific: Bool = Default.isServiceSpecific,
         useNonStandardStacks: Bool = Default.useNonStandardStacks,
-        specialFeatureOptIns: [Int] = [],
-        purposesLITransparency: [Int] = [],
+        specialFeatureOptIns: Set<Int16> = [],
+        purposesLITransparency: Set<Int16> = [],
         purposeOneTreatment: Bool = Default.purposeOneTreatment,
         publisherCC: String = Default.publisherCC,
         vendorLegitimateInterest: Set<Int16> = [],
         disclosedVendors: Set<Int16> = [],
         allowedVendors: Set<Int16> = [],
-        pubPurposesConsent: [Int] = [],
-        numberOfCustomPurposes: [Int] = [],
-        customPurposesConsent: [Int] = [],
-        customPurposesLITransparency: [Int] = [],
-        pubPurposesLITransparency: [Int] = [],
+        pubPurposesConsent: Set<Int16> = [],
+        numberOfCustomPurposes: Int16 = 0,
+        customPurposesConsent: Set<Int16> = [],
+        customPurposesLITransparency: Set<Int16> = [],
+        pubPurposesLITransparency: Set<Int16> = [],
         publisherRestrictions: [PublisherRestrictionEntry] = []
     ) {
         self.version = version
@@ -207,7 +194,7 @@ struct TCStringEncoderV2 {
     struct PublisherRestrictionEntry {
         let purposeId: Int
         let restrictionType: RestrictionType
-        let vendors: [Int16]
+        let vendors: Set<Int16>
     }
 
     enum RestrictionType: Int {
@@ -249,9 +236,36 @@ extension TCStringEncoderV2: TCFEncoder {
     enum EncoderError: Error {
         case incompatibleVersion(Int)
         case invalidLanguageCode(String)
+        case emptyValue(named: String)
     }
 
     func encode() throws -> String {
+        let core = try encodeCore()
+
+        let vendorsEncoder = VendorEncoder(
+            vendors: [],
+            disclosedVendors: [],
+            allowedVendors: []
+        )
+
+        let disclosedVendorsSegment = vendorsEncoder.encodeDisclosedVendors()
+        let allowedVendorsSegment = vendorsEncoder.encodeAllowedVendors()
+
+        let publisherEncoder = PublisherEncoder(
+            pubPurposesConsent: purposesConsent,
+            pubPurposesLITransparency: purposesLITransparency,
+            numberOfCustomPurposes: numberOfCustomPurposes,
+            customPurposesConsent: customPurposesConsent,
+            customPurposesLITransparency: customPurposesLITransparency
+        )
+        let publisherSegment = try? publisherEncoder.encode()
+
+        return [core, disclosedVendorsSegment, allowedVendorsSegment, publisherSegment]
+            .compactMap { $0 }
+            .joined(separator: ".")
+    }
+
+    func encodeCore() throws -> String {
         guard version == 2 else { throw EncoderError.incompatibleVersion(version) }
 
         guard
@@ -325,7 +339,7 @@ extension TCStringEncoderV2: TCFEncoder {
             consentString.append(encodedVendors)
         }
 
-        return consentString
+        return consentString.trimmedWebSafeBase64EncodedString()
     }
 }
 
@@ -351,9 +365,9 @@ extension TCFEncoder {
         encode(Int(date.timeIntervalSince1970 * 10), to: length)
     }
 
-    func encode(_ indices: [Int], to length: Int) -> String {
-        let minIndex = 1
-        let maxIndex = minIndex + length - 1
+    func encode(_ indices: Set<Int16>, to length: Int) -> String {
+        let minIndex: Int16 = 1
+        let maxIndex = minIndex + Int16(length) - 1
 
         var bitString = [Character](repeating: "0", count: length)
 
@@ -361,7 +375,7 @@ extension TCFEncoder {
             .forEach { index in
                 guard (minIndex...maxIndex).contains(index) else { return }
 
-                bitString[index - minIndex] = "1"
+                bitString[Int(index - minIndex)] = "1"
             }
 
         return String(bitString)
@@ -369,6 +383,24 @@ extension TCFEncoder {
 }
 
 extension TCStringEncoderV2 {
+    enum SegmentType: Int {
+        case core
+        case disclosedVendor
+        case allowedVendor
+        case publisherTC
+        case invalid = -1
+
+        init?(rawValue: Int) {
+            switch rawValue {
+            case 0: self = .core
+            case 1: self = .disclosedVendor
+            case 2: self = .allowedVendor
+            case 3: self = .publisherTC
+            default: self = .invalid
+            }
+        }
+    }
+
     private enum Constants {
         static let asciiOffset: UInt8 = 65
     }
@@ -622,45 +654,91 @@ extension VendorEncoder {
 }
 
 extension VendorEncoder {
-    enum SegmentType: Int {
-        case core
-        case disclosedVendor
-        case allowedVendor
-        case publisherTC
-        case invalid = -1
-
-        init?(rawValue: Int) {
-            switch rawValue {
-            case 0: self = .core
-            case 1: self = .disclosedVendor
-            case 2: self = .allowedVendor
-            case 3: self = .publisherTC
-            default: self = .invalid
-            }
-        }
-    }
-
     func encodeDisclosedVendors() -> String? {
-        var consentString = ""
         if disclosedVendors.isEmpty { return nil }
 
-        consentString.append(encode(SegmentType.disclosedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
+        var consentString = ""
+        consentString.append(encode(TCStringEncoderV2.SegmentType.disclosedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
         consentString.append(encode(vendorBitFieldForVendors: disclosedVendors, maxVendorId: maxVendorId))
 
         return consentString.trimmedWebSafeBase64EncodedString()
     }
 
     func encodeAllowedVendors() -> String? {
-        var consentString = ""
         if allowedVendors.isEmpty { return nil }
 
-        consentString.append(encode(SegmentType.allowedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
+        var consentString = ""
+        consentString.append(encode(TCStringEncoderV2.SegmentType.allowedVendor.rawValue, to: FieldIndices.OOB_SEGMENT_TYPE))
         consentString.append(encode(vendorBitFieldForVendors: allowedVendors, maxVendorId: maxVendorId))
 
         return consentString.trimmedWebSafeBase64EncodedString()
     }
+}
 
-    func encodePublisherTC() -> String {
-        ""
+struct PublisherEncoder: TCFEncoder {
+    enum FieldIndices {
+        static let CORE_VENDOR_VENDOR_ID = 16
+        static let NUM_ENTRIES = 12
+        static let CORE_VENDOR_MAX_VENDOR_ID = 16
+        static let CORE_VENDOR_IS_RANGE_ENCODING = 1
+
+        static let CORE_VENDOR_LI_MAX_VENDOR_ID = 16
+        static let CORE_VENDOR_LI_IS_RANGE_ENCODING = 1
+        static let CORE_NUM_PUB_RESTRICTION = 12
+
+        static let PPTC_PUB_PURPOSES_CONSENT: Int16 = 24
+        static let PPTC_PUB_PURPOSES_LI_TRANSPARENCY: Int16 = 24
+        static let PPTC_NUM_CUSTOM_PURPOSES = 6
+
+        static let PPTC_SEGMENT_TYPE = 3
+    }
+
+    let pubPurposesConsent: Set<Int16>
+    let pubPurposesLITransparency: Set<Int16>
+    let numberOfCustomPurposes: Int16
+    let customPurposesConsent: Set<Int16>
+    let customPurposesLITransparency: Set<Int16>
+
+    init(
+        pubPurposesConsent: Set<Int16>,
+        pubPurposesLITransparency: Set<Int16>,
+        numberOfCustomPurposes: Int16,
+        customPurposesConsent: Set<Int16>,
+        customPurposesLITransparency: Set<Int16>
+    ) {
+        self.pubPurposesConsent = pubPurposesConsent
+        self.pubPurposesLITransparency = pubPurposesLITransparency
+        self.numberOfCustomPurposes = numberOfCustomPurposes
+        self.customPurposesConsent = customPurposesConsent
+        self.customPurposesLITransparency = customPurposesLITransparency
+    }
+
+    /// Publisher Purposes Transparency and Consent segment
+    /// - Returns: Encoded string
+    func encode() throws -> String {
+        guard pubPurposesConsent.isEmpty == false
+        else { throw TCStringEncoderV2.EncoderError.emptyValue(named: "pubPurposesConsent") }
+
+        guard pubPurposesLITransparency.isEmpty == false
+        else { throw TCStringEncoderV2.EncoderError.emptyValue(named: "pubPurposesLITransparency") }
+
+        guard numberOfCustomPurposes > 0
+        else { throw TCStringEncoderV2.EncoderError.emptyValue(named: "numberOfCustomPurposes") }
+
+        var consentString = ""
+        consentString.append(encode(TCStringEncoderV2.SegmentType.publisherTC.rawValue, to: FieldIndices.PPTC_SEGMENT_TYPE))
+        consentString.append(encode(pubPurposesConsent, count: FieldIndices.PPTC_PUB_PURPOSES_CONSENT))
+        consentString.append(encode(pubPurposesLITransparency, count: FieldIndices.PPTC_PUB_PURPOSES_LI_TRANSPARENCY))
+        consentString.append(encode(numberOfCustomPurposes, to: FieldIndices.PPTC_NUM_CUSTOM_PURPOSES))
+        consentString.append(encode(customPurposesConsent, count: numberOfCustomPurposes))
+        consentString.append(encode(customPurposesLITransparency, count: numberOfCustomPurposes))
+
+        return consentString.trimmedWebSafeBase64EncodedString()
+    }
+
+    func encode(_ values: Set<Int16>, count: Int16) -> String {
+        guard count >= 1 else { return "" }
+
+        return (1...count).reduce("") { $0 + (values.contains($1) ? "1" : "0") }
     }
 }

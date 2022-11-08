@@ -44,4 +44,9 @@ TODO: Add long description of the pod here.
     tcf.source_files = 'KetchSDK/Classes/TCF/**/*.{swift}'
     tcf.dependency 'KetchSDK/Core'
   end
+
+  s.subspec 'UI' do |ui|
+    ui.source_files = 'KetchSDK/Classes/UI/**/*.{swift}'
+    ui.dependency 'KetchSDK/Core'
+  end
 end

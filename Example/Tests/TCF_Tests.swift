@@ -35,7 +35,9 @@ class TCF_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertNoThrow(try TCF(with: testConfiguration1, vendorListVersion: 128))
+        let tcf = TCF()
+        tcf.configLoaded(testConfiguration1)
+        XCTAssert(tcf.isApplied)
 
         let testConfiguration2 = KetchSDK.Configuration(
             language: nil,
@@ -61,7 +63,9 @@ class TCF_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertNoThrow(try TCF(with: testConfiguration2, vendorListVersion: 128))
+        let tcf2 = TCF()
+        tcf2.configLoaded(testConfiguration2)
+        XCTAssert(tcf2.isApplied)
     }
 
     func test_isCCPA_notAplicable() {
@@ -89,12 +93,9 @@ class TCF_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try TCF(with: testConfiguration_notApplicable_1, vendorListVersion: 128),
-            "Error on TCF init. TCF is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let tcf1 = TCF()
+        tcf1.configLoaded(testConfiguration_notApplicable_1)
+        XCTAssertFalse(tcf1.isApplied)
 
         let testConfiguration_notApplicable_2 = KetchSDK.Configuration(
             language: nil,
@@ -120,12 +121,9 @@ class TCF_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try TCF(with: testConfiguration_notApplicable_2, vendorListVersion: 128),
-            "Error on TCF init. TCF is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let tcf2 = TCF()
+        tcf2.configLoaded(testConfiguration_notApplicable_2)
+        XCTAssertFalse(tcf2.isApplied)
 
         let testConfiguration_notApplicable_3 = KetchSDK.Configuration(
             language: nil,
@@ -151,20 +149,16 @@ class TCF_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try TCF(with: testConfiguration_notApplicable_3, vendorListVersion: 128),
-            "Error on TCF init. TCF is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let tcf3 = TCF()
+        tcf3.configLoaded(testConfiguration_notApplicable_3)
+        XCTAssertFalse(tcf3.isApplied)
     }
 
     func test_CCPA_consentChanged() {
         let testDefaults = UserDefaults()
-        let tcf = try? TCF(with: Self.testConfiguration, vendorListVersion: 128, userDefaults: testDefaults)
-        XCTAssertNotNil(tcf)
-
-        tcf?.consentChanged(consent: Self.testConsent)
+        let tcf = TCF(userDefaults: testDefaults)
+        tcf.configLoaded(Self.testConfiguration)
+        tcf.consentChanged(Self.testConsent)
 
         let TCF_TCString_Key = "IABTCF_TCString"
         let TCF_gdprApplies_Key = "IABTCF_gdprApplies"
@@ -182,14 +176,14 @@ class TCF_Tests: XCTestCase {
     }
 
     func test_TCF_encoding() {
-        let tcf = try? TCF(with: Self.testConfiguration, vendorListVersion: 128)
-        XCTAssertNotNil(tcf)
+        let tcf = TCF()
+        tcf.configLoaded(Self.testConfiguration)
 
-        let encodedString = tcf?.encode(with: Self.testConsent)
+        let encodedString = tcf.encode(with: Self.testConsent)
 
-        let startIndex = encodedString!.index(encodedString!.startIndex, offsetBy: 1)
-        let endIndex = encodedString!.index(encodedString!.startIndex, offsetBy: 12)
-        let dateFieldOmittedEncodedString = encodedString!.replacingCharacters(in: startIndex...endIndex, with: "___")
+        let startIndex = encodedString.index(encodedString.startIndex, offsetBy: 1)
+        let endIndex = encodedString.index(encodedString.startIndex, offsetBy: 12)
+        let dateFieldOmittedEncodedString = encodedString.replacingCharacters(in: startIndex...endIndex, with: "___")
 
         XCTAssertEqual(dateFieldOmittedEncodedString, "C___ACABAENCAAgAAAAAAAAACiQH2QAYH0AfYB9kAGB9AH2AAA")
     }
@@ -226,16 +220,6 @@ class TCF_Tests: XCTestCase {
         let encodedString = try! encoder.encode()
 
         XCTAssertEqual(encodedString, "COvFyGBOvFyGBAbAAAENAPCAAOAAAAAAAAAAAEEUACCKAAA")
-    }
-}
-
-private extension KetchSDK.ConsentStatus {
-    init(
-        purposes: [String: Bool],
-        vendors: [String]?
-    ) {
-        self.purposes = purposes
-        self.vendors = vendors
     }
 }
 

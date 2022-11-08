@@ -23,14 +23,14 @@ class KetchTests: XCTestCase {
         let expectation = expectation(description: "")
 
         sut.invokeRights(
+            organization: "transcenda",
             config: .init(
-                organizationCode: "transcenda",
                 controllerCode: "my_controller",
                 propertyCode: "website_smart_tag",
                 environmentCode: "production",
-                identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
-                invokedAt: nil,
                 jurisdictionCode: "default",
+                invokedAt: nil,
+                identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
                 rightCode: "gdpr_portability",
                 user: .init(
                     email: "user@email.com",
@@ -68,7 +68,6 @@ class KetchTests: XCTestCase {
                 propertyCode: "website_smart_tag",
                 environmentCode: "production",
                 identities: ["idfa" : "00000000-0000-0000-0000-000000000000"],
-                collectedAt: nil,
                 jurisdictionCode: "default",
                 migrationOption: .migrateDefault,
                 purposes: [

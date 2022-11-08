@@ -1,18 +1,28 @@
 //
-//  ketchSDK.swift
-//  ketchSDK
+//  KetchSDK.swift
+//  KetchSDK
 //
 //  Created by Anton Lyfar on 05.10.2022.
 //
 
 import Combine
 
-public class KetchSDK {
-    public static let shared = KetchSDK()
-
-    private var subscriptions = Set<AnyCancellable>()
-
-    private init() { }
+public enum KetchSDK {
+    public static func create(
+        organizationCode: String,
+        propertyCode: String,
+        environmentCode: String,
+        controllerCode: String,
+        identities: [String : String]
+    ) -> Ketch {
+        Ketch(
+            organizationCode: organizationCode,
+            propertyCode: propertyCode,
+            environmentCode: environmentCode,
+            controllerCode: controllerCode,
+            identities: identities
+        )
+    }
 }
 
 extension KetchSDK {
@@ -71,7 +81,6 @@ extension KetchSDK {
     ///   - propertyCode: property code
     ///   - environmentCode: environment code
     ///   - identities: map of identity code and value
-    ///   - collectedAt: the current timestamp
     ///   - jurisdictionCode: jurisdiction code
     ///   - migrationOption: migration option.
     ///   - purposes: map of purpose code and PurposeLegalBasis
@@ -83,7 +92,6 @@ extension KetchSDK {
         propertyCode: String,
         environmentCode: String,
         identities: [String : String],
-        collectedAt: Int?,
         jurisdictionCode: String,
         migrationOption: ConsentUpdate.MigrationOption,
         purposes: [String : ConsentUpdate.PurposeAllowedLegalBasis],
@@ -97,7 +105,6 @@ extension KetchSDK {
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     identities: identities,
-                    collectedAt: collectedAt,
                     jurisdictionCode: jurisdictionCode,
                     migrationOption: migrationOption,
                     purposes: purposes,
@@ -132,14 +139,14 @@ extension KetchSDK {
     ) -> AnyPublisher<Void, KetchError> {
         KetchApiRequest()
             .invokeRights(
+                organization: organizationCode,
                 config: InvokeRightConfig(
-                    organizationCode: organizationCode,
                     controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
-                    identities: identities,
-                    invokedAt: invokedAt,
                     jurisdictionCode: jurisdictionCode,
+                    invokedAt: invokedAt,
+                    identities: identities,
                     rightCode: rightCode,
                     user: user
                 )
@@ -151,72 +158,5 @@ extension KetchSDK {
         KetchApiRequest()
             .getVendors()
             .eraseToAnyPublisher()
-    }
-}
-
-extension KetchSDK {
-    public func fetchConfig(
-        organization: String,
-        property: String,
-        completion: @escaping (Result<Configuration, KetchError>
-    ) -> Void) {
-        KetchApiRequest()
-            .fetchConfig(organization: organization, property: organization)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: { configuration in
-                completion(.success(configuration))
-            }
-            .store(in: &subscriptions)
-    }
-
-    public func fetchGetConsent(
-        consentConfig: ConsentConfig,
-        completion: @escaping (Result<ConsentStatus, KetchError>) -> Void
-    ) {
-        KetchApiRequest()
-            .getConsent(config: consentConfig)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: { consentStatus in
-                completion(.success(consentStatus))
-            }
-            .store(in: &subscriptions)
-    }
-
-    public func fetchSetConsent(
-        consentUpdate: ConsentUpdate,
-        completion: @escaping (Result<Void, KetchError>) -> Void
-    ) {
-        KetchApiRequest()
-            .updateConsent(update: consentUpdate)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: {
-                completion(.success(()))
-            }
-            .store(in: &subscriptions)
-    }
-
-    public func fetchInvokeRights(
-        config: InvokeRightConfig,
-        completion: @escaping (Result<Void, KetchError>) -> Void
-    ) {
-        KetchApiRequest()
-            .invokeRights(config: config)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: {
-                completion(.success(()))
-            }
-            .store(in: &subscriptions)
     }
 }

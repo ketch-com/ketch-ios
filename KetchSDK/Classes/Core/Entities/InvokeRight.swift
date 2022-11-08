@@ -9,34 +9,31 @@ import Foundation
 
 extension KetchSDK {
     public struct InvokeRightConfig: Codable {
-        public let organizationCode: String
         public let controllerCode: String?
         public let propertyCode: String
         public let environmentCode: String
-        public let identities: [String: String]
-        public let invokedAt: Int?
         public let jurisdictionCode: String
-        public let rightCode: String
+        public let invokedAt: Int?
+        public let identities: [String: String]
+        public let rightCode: String?
         public let user: User
 
         public init(
-            organizationCode: String,
             controllerCode: String?,
             propertyCode: String,
             environmentCode: String,
-            identities: [String: String],
-            invokedAt: Int?,
             jurisdictionCode: String,
-            rightCode: String,
+            invokedAt: Int?,
+            identities: [String: String],
+            rightCode: String?,
             user: User
         ) {
-            self.organizationCode = organizationCode
             self.controllerCode = controllerCode
             self.propertyCode = propertyCode
             self.environmentCode = environmentCode
-            self.identities = identities
-            self.invokedAt = invokedAt
             self.jurisdictionCode = jurisdictionCode
+            self.invokedAt = invokedAt
+            self.identities = identities
             self.rightCode = rightCode
             self.user = user
         }

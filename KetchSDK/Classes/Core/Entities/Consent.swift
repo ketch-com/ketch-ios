@@ -14,7 +14,6 @@ extension KetchSDK {
         public let propertyCode: String
         public let environmentCode: String
         public let identities: [String: String]
-        public let collectedAt: Int?
         public let jurisdictionCode: String
         public let migrationOption: MigrationOption
         public let purposes: [String: PurposeAllowedLegalBasis]
@@ -26,7 +25,6 @@ extension KetchSDK {
             propertyCode: String,
             environmentCode: String,
             identities: [String: String],
-            collectedAt: Int?,
             jurisdictionCode: String,
             migrationOption: MigrationOption,
             purposes: [String: PurposeAllowedLegalBasis],
@@ -37,7 +35,6 @@ extension KetchSDK {
             self.propertyCode = propertyCode
             self.environmentCode = environmentCode
             self.identities = identities
-            self.collectedAt = collectedAt
             self.jurisdictionCode = jurisdictionCode
             self.migrationOption = migrationOption
             self.purposes = purposes
@@ -132,6 +129,14 @@ extension KetchSDK {
                 return ($0, value)
             } ?? []
             self.purposes = [String: Bool](uniqueKeysWithValues: keyValues)
+        }
+
+        public init(
+            purposes: [String: Bool],
+            vendors: [String]?
+        ) {
+            self.purposes = purposes
+            self.vendors = vendors
         }
     }
 }

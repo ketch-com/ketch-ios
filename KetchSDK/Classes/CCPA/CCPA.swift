@@ -20,19 +20,14 @@ public class CCPA: PolicyPlugin {
     let notice = false
     let lspa = false
 
-    override init(
-        with configuration: KetchSDK.Configuration,
-        userDefaults: UserDefaults = .standard
-    ) throws {
-        guard configuration.regulations?.contains(Constants.CCPACA) == true else {
-            throw PolicyPluginError.notApplicableToConfig
-        }
+    public override var protocolID: String { "CCPA" }
 
-        try super.init(with: configuration, userDefaults: userDefaults)
+    public override var isApplied: Bool {
+        configuration?.regulations?.contains(Constants.CCPACA) == true
     }
 
-    public override func consentChanged(consent: KetchSDK.ConsentStatus) {
-        let encodedString = encode(with: consent, notice: notice, lspa: lspa)
+    public override func consentChanged(_ consentStatus: KetchSDK.ConsentStatus) {
+        let encodedString = encode(with: consentStatus, notice: notice, lspa: lspa)
 
         save(encodedString, forKey: USPrivacy_String_Key)
         save(true , forKey: USPrivacy_Applied_Key)
@@ -46,7 +41,7 @@ public class CCPA: PolicyPlugin {
         let defaultResult = "\(Constants.API_VERSION)---"
 
         guard
-            let canonicalPurposes = configuration.canonicalPurposes,
+            let canonicalPurposes = configuration?.canonicalPurposes,
             canonicalPurposes.isEmpty == false
         else {
             print("Configuration.canonicalPurposes is nil or empty")

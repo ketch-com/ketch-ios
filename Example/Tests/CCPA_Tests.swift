@@ -35,7 +35,9 @@ class CCPA_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertNoThrow(try CCPA(with: testConfiguration1))
+        let ccpa = CCPA()
+        ccpa.configLoaded(testConfiguration1)
+        XCTAssert(ccpa.isApplied)
 
         let testConfiguration2 = KetchSDK.Configuration(
             language: nil,
@@ -61,7 +63,9 @@ class CCPA_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertNoThrow(try CCPA(with: testConfiguration2))
+        let ccpa2 = CCPA()
+        ccpa2.configLoaded(testConfiguration2)
+        XCTAssert(ccpa2.isApplied)
     }
 
     func test_isCCPA_notAplicable() {
@@ -89,12 +93,9 @@ class CCPA_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try CCPA(with: testConfiguration_notApplicable_1),
-            "Error on CCPA init. CCPA is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let ccpa = CCPA()
+        ccpa.configLoaded(testConfiguration_notApplicable_1)
+        XCTAssertFalse(ccpa.isApplied)
 
         let testConfiguration_notApplicable_2 = KetchSDK.Configuration(
             language: nil,
@@ -120,12 +121,9 @@ class CCPA_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try CCPA(with: testConfiguration_notApplicable_2),
-            "Error on CCPA init. CCPA is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let ccpa2 = CCPA()
+        ccpa2.configLoaded(testConfiguration_notApplicable_2)
+        XCTAssertFalse(ccpa2.isApplied)
 
         let testConfiguration_notApplicable_3 = KetchSDK.Configuration(
             language: nil,
@@ -151,20 +149,16 @@ class CCPA_Tests: XCTestCase {
             vendors: nil
         )
 
-        XCTAssertThrowsError(
-            try CCPA(with: testConfiguration_notApplicable_3),
-            "Error on CCPA init. CCPA is not applied to config"
-        ) { error in
-            XCTAssertNotNil(error as? PolicyPluginError)
-        }
+        let ccpa3 = CCPA()
+        ccpa3.configLoaded(testConfiguration_notApplicable_3)
+        XCTAssertFalse(ccpa3.isApplied)
     }
 
     func test_CCPA_consentChanged() {
         let testDefaults = UserDefaults()
-        let ccpa = try? CCPA(with: Self.testConfiguration, userDefaults: testDefaults)
-        XCTAssertNotNil(ccpa)
-
-        ccpa?.consentChanged(consent: Self.testConsent)
+        let ccpa = CCPA(userDefaults: testDefaults)
+        ccpa.configLoaded(Self.testConfiguration)
+        ccpa.consentChanged(Self.testConsent)
 
         let USPrivacy_String_Key = "IABUSPrivacy_String"
         let USPrivacy_Applied_Key = "IABUSPrivacy_Applied"
@@ -178,22 +172,12 @@ class CCPA_Tests: XCTestCase {
     }
 
     func test_CCPA_encoding() {
-        let ccpa = try? CCPA(with: Self.testConfiguration)
-        XCTAssertNotNil(ccpa)
+        let ccpa = CCPA()
+        ccpa.configLoaded(Self.testConfiguration)
 
-        let encodedString = ccpa?.encode(with: Self.testConsent, notice: true, lspa: true)
+        let encodedString = ccpa.encode(with: Self.testConsent, notice: true, lspa: true)
 
         XCTAssertEqual(encodedString, "1YYY")
-    }
-}
-
-private extension KetchSDK.ConsentStatus {
-    init(
-        purposes: [String: Bool],
-        vendors: [String]?
-    ) {
-        self.purposes = purposes
-        self.vendors = vendors
     }
 }
 

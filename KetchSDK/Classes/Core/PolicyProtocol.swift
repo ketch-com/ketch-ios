@@ -8,9 +8,22 @@
 import Foundation
 
 public protocol PolicyProtocol {
-    func consentChanged(consent: KetchSDK.ConsentStatus)
+    var protocolID: String { get }
+    var isApplied: Bool { get }
+
+    func configLoaded(_ configuration: KetchSDK.Configuration)
+    func consentChanged(_ consentStatus: KetchSDK.ConsentStatus)
     func willShowExperience()
     func experienceHidden(reason: ExperienceHiddenReason)
+    func rightInvoked(
+        controller: String?,
+        property: String,
+        environment: String,
+        invokedAt: Int?,
+        identities: [String: String],
+        right: String?,
+        user: KetchSDK.InvokeRightConfig.User
+    )
 }
 
 public enum ExperienceHiddenReason: String {
@@ -25,16 +38,19 @@ public enum PolicyPluginError: Error {
 }
 
 open class PolicyPlugin: PolicyProtocol {
+    public var protocolID: String {
+        fatalError("protocolID is not implemented")
+    }
 
-    let configuration: KetchSDK.Configuration
+    public var isApplied: Bool {
+        fatalError("isApplied is not implemented")
+    }
+
+    var configuration: KetchSDK.Configuration?
 
     let userDefaults: UserDefaults
 
-    init(
-        with configuration: KetchSDK.Configuration,
-        userDefaults: UserDefaults = .standard
-    ) throws {
-        self.configuration = configuration
+    public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
     }
 
@@ -46,11 +62,34 @@ open class PolicyPlugin: PolicyProtocol {
         userDefaults.value(forKey: key)
     }
 
-// MARK: - PolicyProtocol
-    public func consentChanged(consent: KetchSDK.ConsentStatus) { }
+    // MARK: - PolicyProtocol
+    public func configLoaded(_ configuration: KetchSDK.Configuration) {
+        self.configuration = configuration
+    }
+
+    public func consentChanged(_ consentStatus: KetchSDK.ConsentStatus) { }
 
     public func willShowExperience() { }
 
     public func experienceHidden(reason: ExperienceHiddenReason) { }
 
+    public func rightInvoked(
+        controller: String?,
+        property: String,
+        environment: String,
+        invokedAt: Int?,
+        identities: [String: String],
+        right: String?,
+        user: KetchSDK.InvokeRightConfig.User
+    ) { }
+}
+
+extension PolicyPlugin: Hashable {
+    public static func == (lhs: PolicyPlugin, rhs: PolicyPlugin) -> Bool {
+        lhs.hashValue == rhs.hashValue
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(protocolID)
+    }
 }

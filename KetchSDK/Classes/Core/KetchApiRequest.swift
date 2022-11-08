@@ -34,6 +34,31 @@ class KetchApiRequest {
         .eraseToAnyPublisher()
     }
 
+    func fetchConfig(
+        organization: String,
+        property: String,
+        environment: String,
+        hash: Int,
+        jurisdiction: String,
+        language: String
+    ) -> AnyPublisher<Configuration, KetchError> {
+        apiClient.execute(
+            request: ApiRequest(
+                endPoint: .fullConfig(
+                    organization: organization,
+                    property: property,
+                    environment: environment,
+                    hash: hash,
+                    jurisdiction: jurisdiction,
+                    language: language
+                )
+            )
+        )
+        .decode(type: Configuration.self, decoder: JSONDecoder())
+        .mapError(KetchError.init)
+        .eraseToAnyPublisher()
+    }
+
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
         apiClient.execute(
             request: ApiRequest(
@@ -60,10 +85,10 @@ class KetchApiRequest {
         .eraseToAnyPublisher()
     }
 
-    func invokeRights(config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
+    func invokeRights(organization: String, config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
         apiClient.execute(
             request: ApiRequest(
-                endPoint: .invokeRights(organization: config.organizationCode),
+                endPoint: .invokeRights(organization: organization),
                 method: .post,
                 body: try? JSONEncoder().encode(config)
             )

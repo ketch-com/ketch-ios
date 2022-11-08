@@ -9,6 +9,7 @@ platform :ios, '13.0'
 target 'KetchSDK_Example' do
   pod 'KetchSDK/CCPA', :path => '../'
   pod 'KetchSDK/TCF', :path => '../'
+  pod 'KetchSDK/UI', :path => '../'
 
   target 'KetchSDK_Tests' do
     inherit! :search_paths

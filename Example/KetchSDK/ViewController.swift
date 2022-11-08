@@ -65,8 +65,8 @@ class ViewController: UIViewController {
                 property: "website_smart_tag"
             ) { result in
                 switch result {
-                case .failure(let error): break
-                case .success(let config): break
+                case .failure: break
+                case .success: break
                 }
             }
 
@@ -125,8 +125,8 @@ class ViewController: UIViewController {
             .shared
             .fetchSetConsent(consentUpdate: update) { result in
                 switch result {
-                case .failure(let error): break
-                case .success(let config): break
+                case .failure: break
+                case .success: break
                 }
             }
 
@@ -181,7 +181,7 @@ class ViewController: UIViewController {
                 consentConfig: config
             ) { result in
                 switch result {
-                case .failure(let error): break
+                case .failure: break
                 case .success: break
                 }
             }
@@ -249,7 +249,7 @@ class ViewController: UIViewController {
                 config: rightsConfig
             ) { result in
                 switch result {
-                case .failure(let error): break
+                case .failure: break
                 case .success: break
                 }
             }

@@ -13,23 +13,14 @@ private let TCF_gdprApplies_Key = "IABTCF_gdprApplies"
 public class TCF: PolicyPlugin {
     public typealias TCF_String = String
 
-    private let vendorListVersion: Int
+    public override var protocolID: String { "TCF" }
 
-    init(
-        with configuration: KetchSDK.Configuration,
-        vendorListVersion: Int,
-        userDefaults: UserDefaults = .standard
-    ) throws {
-        guard configuration.regulations?.contains(Constants.GDPREU) == true else {
-            throw PolicyPluginError.notApplicableToConfig
-        }
-
-        self.vendorListVersion = vendorListVersion
-        try super.init(with: configuration, userDefaults: userDefaults)
+    public override var isApplied: Bool {
+        configuration?.regulations?.contains(Constants.GDPREU) == true
     }
 
-    public override func consentChanged(consent: KetchSDK.ConsentStatus) {
-        let encodedString = encode(with: consent)
+    public override func consentChanged(_ consentStatus: KetchSDK.ConsentStatus) {
+        let encodedString = encode(with: consentStatus)
 
         save(encodedString, forKey: TCF_TCString_Key)
         save(true , forKey: TCF_gdprApplies_Key)
@@ -40,7 +31,7 @@ public class TCF: PolicyPlugin {
     ) -> TCF_String {
         let consentPurposes = consent.purposes.filter(\.value).map(\.key)
 
-        let purposes = configuration.purposes?.filter { purpose in
+        let purposes = configuration?.purposes?.filter { purpose in
             purpose.tcfID?.isEmpty == false
             && consentPurposes.contains(purpose.code)
         } ?? []
@@ -62,7 +53,7 @@ public class TCF: PolicyPlugin {
             .compactMap(\.tcfID)
             .compactMap(Int16.init)
 
-        let vendors = configuration.vendors?.filter { vendor in
+        let vendors = configuration?.vendors?.filter { vendor in
             consent.vendors?.contains(vendor.id) ?? false
         } ?? []
 
@@ -73,8 +64,8 @@ public class TCF: PolicyPlugin {
             version: Constants.VERSION,
             cmpId: Constants.CMP_ID,
             cmpVersion: Constants.CMP_VERSION,
-            consentLanguage: configuration.language,
-            vendorListVersion: vendorListVersion,
+            consentLanguage: configuration?.language,
+            vendorListVersion: 128,
             purposesConsent: Set(purposesConsent),
             vendorsConsent: Set(vendorsConsent),
             isServiceSpecific: Constants.IS_SERVICE_SPECIFIC,

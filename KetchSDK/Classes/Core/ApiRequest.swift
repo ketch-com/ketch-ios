@@ -28,6 +28,26 @@ struct EndPoint {
         )
     }
 
+    static func fullConfig(
+        organization: String,
+        property: String,
+        environment: String,
+        hash: Int,
+        jurisdiction: String,
+        language: String
+    ) -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchHost,
+            path: [
+                ketchApi, ketchApiVersion,
+                "config", organization, property, environment, String(hash), jurisdiction, language,
+                "config.json"
+            ].joined(separator: "/"),
+            queryItems: []
+        )
+    }
+
     static func getConsent(organization: String) -> EndPoint {
         EndPoint(
             scheme: defaultScheme,

@@ -3,11 +3,11 @@
 //  KetchSDK
 //
 //  Created by Anton Lyfar on 10/05/2022.
-//  Copyright (c) 2022 Anton Lyfar. All rights reserved.
 //
 
 import UIKit
 import SwiftUI
+import KetchSDK
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,7 +18,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = UIHostingController(rootView: ContentView())
+        window?.rootViewController = UIHostingController(
+            rootView: ContentView2()
+        )
+
         window?.makeKeyAndVisible()
 
         return true

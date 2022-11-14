@@ -28,7 +28,7 @@ TODO: Add long description of the pod here.
   # s.source         = { :http => "https://ketch.jfrog.io/artifactory/ios/KetchSDK/ketchSDK.tar.gz" }
   s.source           = { :git => 'https://github.com/ketch-sdk/ketch-ios.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '13.0'
+  s.ios.deployment_target = '14.0'
   s.swift_version = '5.0'
 
   s.subspec 'Core' do |core|

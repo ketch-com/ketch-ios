@@ -9,16 +9,19 @@ import SwiftUI
 
 extension KetchUI {
     public struct PresentationItem: Identifiable {
-        @EnvironmentObject var modalManager: ModalManager
-
         public let itemType: ItemType
 
         public var id: String {
             String(describing: itemType)
         }
 
-        public enum ItemType {
-            case banner
+        public indirect enum ItemType {
+            case banner(
+                _ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
+                config: KetchSDK.Configuration,
+                consent: KetchSDK.ConsentStatus
+            )
+
             case modal
             case jit
             case preference
@@ -27,20 +30,65 @@ extension KetchUI {
         @ViewBuilder
         public var content: some View {
             switch itemType {
-            case .banner: banner
+            case .banner(let _banner, let config, let consent): banner(_banner, config: config, consent: consent)
             case .modal: modal
             case .jit: jit
             case .preference: preference
             }
         }
 
-        var banner: some View {
-            BannerView()
-                .asResponsiveSheet(style: .bottomSheet)
+        func banner(
+            _ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
+            config: KetchSDK.Configuration,
+            consent: KetchSDK.ConsentStatus
+        ) -> some View {
+            let bannerBackgroundColor = Color(hex: config.theme?.bannerBackgroundColor ?? String())
+            let bannerButtonColor = Color(hex: config.theme?.bannerButtonColor ?? String())
+            let bannerSecondaryButtonColor = Color(hex: config.theme?.bannerSecondaryButtonColor ?? String())
+            let bannerContentColor = Color(hex: config.theme?.bannerContentColor ?? String())
+
+            var primaryButton: BannerView.Props.Button?
+            var secondaryButton: BannerView.Props.Button?
+
+            if banner.buttonText.isEmpty == false {
+                primaryButton = .init(
+                    text: banner.buttonText,
+                    textColor: bannerBackgroundColor,
+                    borderColor: bannerButtonColor,
+                    backgroundColor: bannerButtonColor) { }
+            }
+
+            if let secondaryButtonText = banner.secondaryButtonText, secondaryButtonText.isEmpty == false {
+                secondaryButton = .init(
+                    text: secondaryButtonText,
+                    textColor: bannerButtonColor,
+                    borderColor: bannerButtonColor,
+                    backgroundColor: bannerSecondaryButtonColor) { }
+            }
+
+            let bannerProps = BannerView.Props(
+                title: banner.title ?? String(),
+                text: banner.footerDescription,
+                primaryButton: primaryButton,
+                secondaryButton: secondaryButton,
+                theme: BannerView.Props.Theme(
+                    contentColor: bannerContentColor,
+                    backgroundColor: bannerBackgroundColor,
+                    linkColor: bannerButtonColor,
+                    borderRadius: config.theme?.buttonBorderRadius ?? 0
+                )
+            ) {
+
+            }
+
+            return BannerView(props: bannerProps)
+                .asResponsiveSheet(style: .bottomSheet(backgroundColor: bannerBackgroundColor))
         }
 
         var modal: some View {
             ModalView()
+                .onAppear {}
+                .onDisappear {}
                 .asResponsiveSheet(style: .popUp)
         }
 
@@ -55,7 +103,11 @@ extension KetchUI {
         }
     }
 
-    enum ViewStyle { case bottomSheet, popUp, screenCover }
+    enum ViewStyle {
+        case bottomSheet(backgroundColor: Color = Color(UIColor.systemBackground))
+        case popUp
+        case screenCover
+    }
 }
 
 fileprivate struct ResponsiveSheetWrapper: ViewModifier {
@@ -129,11 +181,11 @@ fileprivate struct ResponsiveSheetContent: ViewModifier {
 
     func body(content: Content) -> some View {
         switch style {
-        case .bottomSheet:
+        case .bottomSheet(let color):
             content
                 .padding(.bottom, safeAreaInsets.bottom)
                 .background(
-                    Color(UIColor.systemBackground)
+                    color
                         .cornerRadius(8, corners: [.topLeft, .topRight])
                         .shadow(color: .black.opacity(0.15), radius: 12, y: -4)
                 )
@@ -241,3 +293,20 @@ fileprivate extension UIEdgeInsets {
     }
 }
 
+private extension Color {
+  init(hex: String) {
+    let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+    var int: UInt64 = 0
+    Scanner(string: hex).scanHexInt64(&int)
+    let a, r, g, b: UInt64
+
+    switch hex.count {
+    case 3: (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+    case 6: (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+    case 8:  (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+    default: (a, r, g, b) = (1, 1, 1, 0)
+    }
+
+    self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
+  }
+}

@@ -25,9 +25,6 @@ struct ModalView: View {
                     .padding(.vertical, 20)
                     .background(Color(.systemGray6))
 
-
-
-
                 VStack(alignment: .leading, spacing: 16) {
                     Text("About Your Privacy")
                         .font(.system(size: 16, weight: .bold))

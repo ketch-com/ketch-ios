@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.rootViewController = UIHostingController(
-            rootView: ContentView2()
+            rootView: ContentView()
         )
 
         window?.makeKeyAndVisible()

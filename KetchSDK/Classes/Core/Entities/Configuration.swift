@@ -23,7 +23,7 @@ extension KetchSDK {
         public let rights: [Right]?
         public let regulations: [String]?
         public let theme: Theme?
-        public let experience: Experience?
+        public let experiences: Experience?
         public let purposes: [Purpose]?
         public let canonicalPurposes: [String: CanonicalPurpose]?
         public let services: [String: String]?
@@ -95,6 +95,7 @@ extension KetchSDK.Configuration {
         public let buttonBorderRadius: Int?
         public let bannerContentColor: String?
         public let bannerButtonColor: String?
+        public let bannerSecondaryButtonColor: String?
         public let modalHeaderBackgroundColor: String?
         public let modalHeaderContentColor: String?
         public let modalContentColor: String?

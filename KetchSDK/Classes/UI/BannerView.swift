@@ -43,6 +43,7 @@ struct BannerView: View {
 
     @State var presentationItem: KetchUI.PresentationItem?
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -57,10 +58,21 @@ struct BannerView: View {
                 .foregroundColor(props.theme.contentColor)
             }
             
-            Text(props.text)
-                .font(.system(size: props.theme.textFontSize))
-                .padding(.bottom, 12)
-                .foregroundColor(props.theme.contentColor)
+            let t = extractText(in: props.text)
+            
+            Text(
+                extractText(
+                    in: replacePhoneNumbersWithLinks(
+                        in: replaceUrlWithLinks(
+                            in: props.text
+                        )
+                    )
+                )
+            )
+            .font(.system(size: props.theme.textFontSize))
+            .padding(.bottom, 12)
+            .foregroundColor(props.theme.contentColor)
+                .accentColor(props.theme.linkColor)
 
             if let primaryButton = props.primaryButton {
                 button(props: primaryButton, cornerRadius: props.theme.borderRadius)
@@ -106,6 +118,57 @@ struct BannerView: View {
                 .cornerRadius(CGFloat(cornerRadius))
         )
     }
+
+    private func replacePhoneNumbersWithLinks(in string: String) -> String {
+        var input = string
+        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.phoneNumber.rawValue)
+        let matches = detector.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
+
+        for match in matches {
+            guard let range = Range(match.range, in: input) else { continue }
+            let phone = input[range]
+
+            let replacement = "[\(phone)](tel:\(phone))"
+            input.replaceSubrange(range, with: replacement)
+        }
+
+        return input
+    }
+
+    private func replaceUrlWithLinks(in string: String) -> String {
+        var input = string
+        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
+
+        for match in matches {
+            guard let range = Range(match.range, in: input) else { continue }
+            let phone = input[range]
+
+            let replacement = "[\(phone)](\(phone))"
+            input.replaceSubrange(range, with: replacement)
+        }
+
+        return input
+    }
+
+    private func extractText(in input: String) -> LocalizedStringKey {
+        var query = input
+        let regex = try! NSRegularExpression(pattern: "\\[(.*?)\\)", options: [])
+        var results = [String]()
+
+        regex.enumerateMatches(in: query, options: [], range: NSMakeRange(0, query.utf16.count)) { result, flags, stop in
+            if let r = result?.range(at: 0), let range = Range(r, in: query) {
+                results.append(String(query[range]))
+            }
+        }
+
+        results.forEach { result in
+            let replacement = "**" + result + "**"
+            query = query.replacingOccurrences(of: result, with: replacement)
+        }
+
+        return LocalizedStringKey(query)
+    }
 }
 
 struct BannerView_Previews: PreviewProvider {
@@ -115,11 +178,14 @@ struct BannerView_Previews: PreviewProvider {
             BannerView(props: BannerView.Props(
                 title: "Your Privacy",
                 text:
-                    """
-                    We and our partners are using technologies like Cookies or Targeting and process personal \
-                    data like IP-address or browser information in order to personalize the advertisement that \
-                    you see. You can always change/withdraw your consent. Our Privacy Policy.
-                    """,
+"""
+We and our partners are using technologies like Cookies or Targeting and process personal \
+data like IP-address or browser information in order to personalize the advertisement that \
+you see. You can always change/withdraw your consent.
+\(Link("5552345", destination: URL(string: "tel:5552345")!))
+Our [Privacy Policy](https://example.com).
+"""
+                ,
                 primaryButton: BannerView.Props.Button(
                     text: "I understand",
                     textColor: .white,

@@ -79,6 +79,8 @@ extension KetchUI {
                 )
             ) {
 
+            } openUrlAction: { url in
+
             }
 
             return BannerView(props: bannerProps)

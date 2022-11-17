@@ -15,6 +15,7 @@ struct BannerView: View {
         let secondaryButton: Button?
         let theme: Theme
         let cancelAction: () -> Void
+        let openUrlAction: (URL) -> Void
 
         struct Button {
             let fontSize: CGFloat = 14
@@ -57,22 +58,8 @@ struct BannerView: View {
                 }
                 .foregroundColor(props.theme.contentColor)
             }
-            
-            let t = extractText(in: props.text)
-            
-            Text(
-                extractText(
-                    in: replacePhoneNumbersWithLinks(
-                        in: replaceUrlWithLinks(
-                            in: props.text
-                        )
-                    )
-                )
-            )
-            .font(.system(size: props.theme.textFontSize))
-            .padding(.bottom, 12)
-            .foregroundColor(props.theme.contentColor)
-                .accentColor(props.theme.linkColor)
+
+            descriptionText(with: props.text)
 
             if let primaryButton = props.primaryButton {
                 button(props: primaryButton, cornerRadius: props.theme.borderRadius)
@@ -119,55 +106,124 @@ struct BannerView: View {
         )
     }
 
-    private func replacePhoneNumbersWithLinks(in string: String) -> String {
-        var input = string
-        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.phoneNumber.rawValue)
-        let matches = detector.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
-
-        for match in matches {
-            guard let range = Range(match.range, in: input) else { continue }
-            let phone = input[range]
-
-            let replacement = "[\(phone)](tel:\(phone))"
-            input.replaceSubrange(range, with: replacement)
+    @ViewBuilder
+    private func descriptionText(with description: String) -> some View {
+        if #available(iOS 15.0, *) {
+            formattedText(with: description)
+                .environment(\.openURL, OpenURLAction { url in
+                    props.openUrlAction(url)
+                    return .handled
+                })
+        } else {
+            formattedText(with: description)
+                .onOpenURL(perform: props.openUrlAction)
         }
-
-        return input
     }
 
-    private func replaceUrlWithLinks(in string: String) -> String {
-        var input = string
-        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let matches = detector.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
-
-        for match in matches {
-            guard let range = Range(match.range, in: input) else { continue }
-            let phone = input[range]
-
-            let replacement = "[\(phone)](\(phone))"
-            input.replaceSubrange(range, with: replacement)
+    @ViewBuilder
+    private func formattedText(with description: String) -> some View {
+        props.text.markupFragments().convertToLinks().reduce(Text("")) { result, fragment in
+            let text = Text(LocalizedStringKey(String(fragment.substring)))
+            switch fragment.type {
+            case .markupLink: return result + text.underline()
+            default: return result + text
+            }
         }
+        .font(.system(size: props.theme.textFontSize))
+        .padding(.bottom, 12)
+        .foregroundColor(props.theme.contentColor)
+        .accentColor(props.theme.linkColor)
+    }
+}
 
-        return input
+extension String {
+    func markupFragments() -> [MarkupFragment] {
+        self[self.startIndex..<self.endIndex]
+            .markupFragments(type: .markupLink)
+            .markupFragments(type: .url)
+            .markupFragments(type: .phone)
+    }
+}
+
+extension Array where Element == MarkupFragment {
+    func markupFragments(type: MarkupFragmentType) -> [MarkupFragment] {
+        reduce(into: []) { result, fragment in
+            if case .text = fragment.type {
+                result.append(contentsOf: fragment.substring.markupFragments(type: type))
+            } else {
+                result.append(fragment)
+            }
+        }
     }
 
-    private func extractText(in input: String) -> LocalizedStringKey {
-        var query = input
-        let regex = try! NSRegularExpression(pattern: "\\[(.*?)\\)", options: [])
-        var results = [String]()
+    func convertToLinks() -> [MarkupFragment] {
+        map { fragment in
+            switch fragment.type {
+            case .url:
+                let url = fragment.substring
 
-        regex.enumerateMatches(in: query, options: [], range: NSMakeRange(0, query.utf16.count)) { result, flags, stop in
-            if let r = result?.range(at: 0), let range = Range(r, in: query) {
-                results.append(String(query[range]))
+                return MarkupFragment(type: .markupLink, substring: Substring("[\(url)](\(url))"))
+
+            case .phone:
+                let phone = fragment.substring
+
+                return MarkupFragment(type: .markupLink, substring: Substring("[\(phone)](tel:\(phone))"))
+
+            default: return fragment
+            }
+        }
+    }
+}
+
+extension Substring {
+    func markupFragments(type: MarkupFragmentType) -> [MarkupFragment] {
+        guard let regex = type.regex else { return [MarkupFragment(type: .text, substring: self)] }
+
+        var results = [MarkupFragment]()
+        var lastIndex = startIndex
+
+        regex.enumerateMatches(
+            in: String(self),
+            range: NSMakeRange(0, utf16.count)
+        ) { result, flags, stop in
+            if let result = result, let inputRange = Range(result.range, in: self) {
+                if inputRange.lowerBound > lastIndex {
+                    let substring = self[lastIndex..<inputRange.lowerBound]
+                    results.append(MarkupFragment(type: .text, substring: substring))
+                }
+
+                results.append(MarkupFragment(type: type, substring: self[inputRange]))
+                lastIndex = inputRange.upperBound
             }
         }
 
-        results.forEach { result in
-            let replacement = "**" + result + "**"
-            query = query.replacingOccurrences(of: result, with: replacement)
+        if endIndex > lastIndex {
+            let substring = self[lastIndex..<endIndex]
+            results.append(MarkupFragment(type: .text, substring: substring))
         }
 
-        return LocalizedStringKey(query)
+        return results
+    }
+}
+
+struct MarkupFragment {
+    let type: MarkupFragmentType
+    let substring: Substring
+}
+
+enum MarkupFragmentType {
+    case text
+    case url
+    case phone
+    case markupLink
+
+    var regex: NSRegularExpression? {
+        switch self {
+        case .text: return nil
+        case .url: return try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        case .phone: return try? NSDataDetector(types: NSTextCheckingResult.CheckingType.phoneNumber.rawValue)
+        case .markupLink: return try? NSRegularExpression(pattern: "\\[(.*?)\\)", options: [])
+        }
     }
 }
 
@@ -175,38 +231,33 @@ struct BannerView_Previews: PreviewProvider {
     static var previews: some View {
         ZStack {
             Color.gray
-            BannerView(props: BannerView.Props(
-                title: "Your Privacy",
-                text:
-"""
-We and our partners are using technologies like Cookies or Targeting and process personal \
-data like IP-address or browser information in order to personalize the advertisement that \
-you see. You can always change/withdraw your consent.
-\(Link("5552345", destination: URL(string: "tel:5552345")!))
-Our [Privacy Policy](https://example.com).
-"""
-                ,
-                primaryButton: BannerView.Props.Button(
-                    text: "I understand",
-                    textColor: .white,
-                    borderColor: .blue,
-                    backgroundColor: .blue,
-                    actionHandler: {}
-                ),
-                secondaryButton: BannerView.Props.Button(
-                    text: "Cancel",
-                    textColor: .blue,
-                    borderColor: .blue,
-                    backgroundColor: .white,
-                    actionHandler: {}
-                ),
-                theme: BannerView.Props.Theme(
-                    contentColor: .black,
-                    backgroundColor: .white,
-                    linkColor: .red,
-                    borderRadius: 5
-                ),
-                cancelAction: {})
+            BannerView(
+                props: BannerView.Props(
+                    title: "Your Privacy",
+                    text: "Welcome! We’re glad you’re here and want you to know that we respect your privacy and your right to control how we collect, use, and share your personal data.\n\nGoogle site: http://google.com.  fjjjjjjjjj\nMy phone: +380671111111.\n\n[Trigger Modal](triggerModal)\n\n[Privacy Policy](privacyPolicy)\n[Terms & Conditions](termsOfService)\n\n[Custom Link](http://google.com)",
+                    primaryButton: BannerView.Props.Button(
+                        text: "I understand",
+                        textColor: .white,
+                        borderColor: .blue,
+                        backgroundColor: .blue,
+                        actionHandler: {}
+                    ),
+                    secondaryButton: BannerView.Props.Button(
+                        text: "Cancel",
+                        textColor: .blue,
+                        borderColor: .blue,
+                        backgroundColor: .white,
+                        actionHandler: {}
+                    ),
+                    theme: BannerView.Props.Theme(
+                        contentColor: .black,
+                        backgroundColor: .white,
+                        linkColor: .red,
+                        borderRadius: 5
+                    ),
+                    cancelAction: {},
+                    openUrlAction: { _ in }
+                )
             )
         }
     }

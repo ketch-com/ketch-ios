@@ -36,6 +36,7 @@ struct ContentView: View {
                 Button("Get Consent")           { ketch.loadConsent() }
                 Button("Update Consent")        { ketch.updateConsent() }
                     .padding(.bottom, 40)
+
                 Button("Show Banner")           { ketchUI.showBanner() }
                 Button("Show Modal")            { ketchUI.showModal() }
                 Button("Show JIT")              { ketchUI.showJIT() }

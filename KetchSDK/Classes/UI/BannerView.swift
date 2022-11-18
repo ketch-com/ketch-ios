@@ -14,8 +14,7 @@ struct BannerView: View {
         let primaryButton: Button?
         let secondaryButton: Button?
         let theme: Theme
-        let cancelAction: () -> Void
-        let openUrlAction: (URL) -> Void
+        let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         struct Button {
             let fontSize: CGFloat = 14
@@ -26,7 +25,7 @@ struct BannerView: View {
             let textColor: Color
             let borderColor: Color
             let backgroundColor: Color
-            let actionHandler: () -> Void
+            let action: Action
         }
 
         struct Theme {
@@ -38,13 +37,20 @@ struct BannerView: View {
             let linkColor: Color
             let borderRadius: Int
         }
+
+        enum Action {
+            case primary
+            case secondary
+            case close
+            case openUrl(URL)
+        }
     }
 
     let props: Props
 
     @State var presentationItem: KetchUI.PresentationItem?
+    @Environment(\.openURL) var openURL
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -53,20 +59,31 @@ struct BannerView: View {
                     .font(.system(size: props.theme.titleFontSize, weight: .heavy))
                     .foregroundColor(props.theme.contentColor)
                 Spacer()
-                Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                Button(action: {
+                    handle(action: .close)
+                    presentationMode.wrappedValue.dismiss()
+                }) {
                     Text("X")
                 }
                 .foregroundColor(props.theme.contentColor)
             }
 
             descriptionText(with: props.text)
+                .font(.system(size: props.theme.textFontSize))
+                .padding(.bottom, 12)
+                .foregroundColor(props.theme.contentColor)
+                .accentColor(props.theme.linkColor)
 
             if let primaryButton = props.primaryButton {
-                button(props: primaryButton, cornerRadius: props.theme.borderRadius)
+                button(props: primaryButton, cornerRadius: props.theme.borderRadius) {
+                    self.handle(action: .primary)
+                }
             }
 
             if let secondaryButton = props.secondaryButton {
-                button(props: secondaryButton, cornerRadius: props.theme.borderRadius)
+                button(props: secondaryButton, cornerRadius: props.theme.borderRadius) {
+                    self.handle(action: .secondary)
+                }
             }
             
             HStack {
@@ -82,10 +99,14 @@ struct BannerView: View {
     }
 
     @ViewBuilder
-    private func button(props: Props.Button, cornerRadius: Int) -> some View {
+    private func button(
+        props: Props.Button,
+        cornerRadius: Int,
+        actionHandler: @escaping () -> Void
+    ) -> some View {
         Button {
-            presentationItem = .init(itemType: .modal) // presentationMode.wrappedValue.dismiss()
-            props.actionHandler()
+            actionHandler()
+            presentationMode.wrappedValue.dismiss()
         } label: {
             Text(props.text)
                 .font(.system(size: props.fontSize, weight: .semibold))
@@ -111,12 +132,14 @@ struct BannerView: View {
         if #available(iOS 15.0, *) {
             formattedText(with: description)
                 .environment(\.openURL, OpenURLAction { url in
-                    props.openUrlAction(url)
+                    self.handle(action: .openUrl(url))
                     return .handled
                 })
         } else {
             formattedText(with: description)
-                .onOpenURL(perform: props.openUrlAction)
+                .onOpenURL { url in
+                    self.handle(action: .openUrl(url))
+                }
         }
     }
 
@@ -129,10 +152,10 @@ struct BannerView: View {
             default: return result + text
             }
         }
-        .font(.system(size: props.theme.textFontSize))
-        .padding(.bottom, 12)
-        .foregroundColor(props.theme.contentColor)
-        .accentColor(props.theme.linkColor)
+    }
+
+    private func handle(action: Props.Action) {
+        presentationItem = props.actionHandler(action)
     }
 }
 
@@ -240,14 +263,14 @@ struct BannerView_Previews: PreviewProvider {
                         textColor: .white,
                         borderColor: .blue,
                         backgroundColor: .blue,
-                        actionHandler: {}
+                        action: .primary
                     ),
                     secondaryButton: BannerView.Props.Button(
                         text: "Cancel",
                         textColor: .blue,
                         borderColor: .blue,
                         backgroundColor: .white,
-                        actionHandler: {}
+                        action: .secondary
                     ),
                     theme: BannerView.Props.Theme(
                         contentColor: .black,
@@ -255,8 +278,9 @@ struct BannerView_Previews: PreviewProvider {
                         linkColor: .red,
                         borderRadius: 5
                     ),
-                    cancelAction: {},
-                    openUrlAction: { _ in }
+                    actionHandler: { action in
+                        nil
+                    }
                 )
             )
         }

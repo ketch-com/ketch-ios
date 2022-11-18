@@ -17,18 +17,22 @@ public class Ketch {
     private var subscriptions = Set<AnyCancellable>()
     private var plugins = Set<PolicyPlugin>()
 
+    let userDefaults: UserDefaults
+
     init(
         organizationCode: String,
         propertyCode: String,
         environmentCode: String,
         controllerCode: String,
-        identities: [String : String]
+        identities: [String : String],
+        userDefaults: UserDefaults = .standard
     ) {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
         self.controllerCode = controllerCode
         self.identities = identities
+        self.userDefaults = userDefaults
 
         configurationSubject
             .replaceError(with: nil)
@@ -328,5 +332,26 @@ extension Ketch {
 
     public func contains(plugin: PolicyPlugin) -> Bool {
         plugins.contains(plugin)
+    }
+}
+
+private let CONSENT_VERSION = "consent_version"
+private let PREFERENCE_VERSION = "preference_version"
+
+extension Ketch {
+    func updateConsentVersion(version: Int?) {
+        userDefaults.set(version, forKey: CONSENT_VERSION)
+    }
+
+    func getConsentVersion() -> Int? {
+        userDefaults.value(forKey: CONSENT_VERSION) as? Int
+    }
+
+    func updatePreferenceVersion(version: Int?) {
+        userDefaults.set(version, forKey: PREFERENCE_VERSION)
+    }
+
+    func getPreferenceVersion() -> Int? {
+        userDefaults.value(forKey: PREFERENCE_VERSION) as? Int
     }
 }

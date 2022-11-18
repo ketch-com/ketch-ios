@@ -11,11 +11,19 @@ import Combine
 public class KetchUI: ObservableObject {
     @Published public var presentationItem: PresentationItem?
 
+    private let ketch: Ketch
+
     private var subscriptions = Set<AnyCancellable>()
     private var configuration: KetchSDK.Configuration?
     private var consentStatus: KetchSDK.ConsentStatus?
 
     public init(ketch: Ketch) {
+        self.ketch = ketch
+
+        bindInput()
+    }
+
+    public func bindInput() {
         ketch.configurationPublisher
             .replaceError(with: nil)
             .sink { configuration in
@@ -39,19 +47,123 @@ public class KetchUI: ObservableObject {
         else { return }
 
         presentationItem = PresentationItem(
-            itemType: .banner(banner, config: configuration, consent: consentStatus)
-        )
+            itemType: .banner(banner),
+            config: configuration,
+            consent: consentStatus
+        ) { action in
+            switch action {
+            case .primary:
+                if let primaryButtonAction = banner.primaryButtonAction {
+                    switch primaryButtonAction {
+                    case .saveCurrentState: self.saveConsentState(configuration: configuration, consentStatus: consentStatus)
+                    case .acceptAll: self.acceptAll(configuration: configuration)
+                    }
+                }
+
+            case .secondary:
+                if let secondaryButtonDestination = banner.secondaryButtonDestination {
+                    switch secondaryButtonDestination {
+                    case .gotoModal: self.showModal()
+                    case .gotoPreference: break
+                    case .rejectAll: self.rejectAll(configuration: configuration)
+                    }
+                }
+            }
+        }
     }
 
     public func showModal() {
-        presentationItem = PresentationItem(itemType: .modal)
+        guard
+            let configuration,
+            let consentStatus
+        else { return }
+
+        presentationItem = PresentationItem(
+            itemType: .modal,
+            config: configuration,
+            consent: consentStatus
+        ) { action in
+
+        }
     }
 
     public func showJIT() {
-        presentationItem = PresentationItem(itemType: .jit)
+        guard
+            let configuration,
+            let consentStatus
+        else { return }
+
+        presentationItem = PresentationItem(
+            itemType: .jit,
+            config: configuration,
+            consent: consentStatus
+        ) { action in
+
+        }
     }
 
     public func showPreference() {
-        presentationItem = PresentationItem(itemType: .preference)
+        guard
+            let configuration,
+            let consentStatus
+        else { return }
+
+        presentationItem = PresentationItem(
+            itemType: .preference,
+            config: configuration,
+            consent: consentStatus
+        ) { action in
+
+        }
+    }
+}
+
+extension KetchUI {
+    private func acceptAll(configuration: KetchSDK.Configuration) {
+        let purposes = configuration.purposes?
+            .reduce(into: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]()) { result, purpose in
+                result[purpose.code] = KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis(
+                    allowed: true,
+                    legalBasisCode: purpose.legalBasisCode
+                )
+            }
+
+        let vendors = configuration.vendors?.map(\.id)
+
+        ketch.updateConsent(purposes: purposes, vendors: vendors)
+        ketch.updateConsentVersion(version: configuration.experiences?.consent?.version)
+    }
+
+    private func rejectAll(configuration: KetchSDK.Configuration) {
+        let purposes = configuration.purposes?
+            .reduce(into: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]()) { result, purpose in
+                result[purpose.code] = KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis(
+                    allowed: false,
+                    legalBasisCode: purpose.legalBasisCode
+                )
+            }
+
+        let vendors = [String]()
+
+        ketch.updateConsent(purposes: purposes, vendors: vendors)
+        ketch.updateConsentVersion(version: configuration.experiences?.consent?.version)
+    }
+
+    private func saveConsentState(configuration: KetchSDK.Configuration, consentStatus: KetchSDK.ConsentStatus) {
+        let purposes = configuration.purposes?
+            .reduce(into: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]()) { result, purpose in
+                result[purpose.code] = KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis(
+                    allowed: consentStatus.purposes[purpose.code] ?? true,
+                    legalBasisCode: purpose.legalBasisCode
+                )
+            }
+
+        let vendors = consentStatus.vendors
+
+        ketch.updateConsent(purposes: purposes, vendors: vendors)
+    }
+
+    private func invokeRight(right: KetchSDK.Configuration.Right, user: KetchSDK.InvokeRightConfig.User) {
+        ketch.invokeRights(right: right.code, user: user)
     }
 }

@@ -9,61 +9,63 @@ import SwiftUI
 
 extension KetchUI {
     public struct PresentationItem: Identifiable {
-        public let itemType: ItemType
+        let itemType: ItemType
+        let config: KetchSDK.Configuration
+        let consent: KetchSDK.ConsentStatus
+        let actionHandler: (Action) -> Void
 
-        public var id: String {
-            String(describing: itemType)
-        }
+        public var id: String { String(describing: itemType) }
 
-        public indirect enum ItemType {
-            case banner(
-                _ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
-                config: KetchSDK.Configuration,
-                consent: KetchSDK.ConsentStatus
-            )
-
+        enum ItemType {
+            case banner(KetchSDK.Configuration.Experience.ConsentExperience.Banner)
             case modal
             case jit
             case preference
         }
 
+        enum Action {
+            case primary
+            case secondary
+        }
+
         @ViewBuilder
         public var content: some View {
             switch itemType {
-            case .banner(let _banner, let config, let consent): banner(_banner, config: config, consent: consent)
+            case .banner(let _banner): banner(_banner)
             case .modal: modal
             case .jit: jit
             case .preference: preference
             }
         }
 
-        func banner(
-            _ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
-            config: KetchSDK.Configuration,
-            consent: KetchSDK.ConsentStatus
-        ) -> some View {
+        func banner(_ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner) -> some View {
             let bannerBackgroundColor = Color(hex: config.theme?.bannerBackgroundColor ?? String())
             let bannerButtonColor = Color(hex: config.theme?.bannerButtonColor ?? String())
             let bannerSecondaryButtonColor = Color(hex: config.theme?.bannerSecondaryButtonColor ?? String())
             let bannerContentColor = Color(hex: config.theme?.bannerContentColor ?? String())
 
             var primaryButton: BannerView.Props.Button?
-            var secondaryButton: BannerView.Props.Button?
 
             if banner.buttonText.isEmpty == false {
                 primaryButton = .init(
                     text: banner.buttonText,
                     textColor: bannerBackgroundColor,
                     borderColor: bannerButtonColor,
-                    backgroundColor: bannerButtonColor) { }
+                    backgroundColor: bannerButtonColor,
+                    action: .primary
+                )
             }
+
+            var secondaryButton: BannerView.Props.Button?
 
             if let secondaryButtonText = banner.secondaryButtonText, secondaryButtonText.isEmpty == false {
                 secondaryButton = .init(
                     text: secondaryButtonText,
                     textColor: bannerButtonColor,
                     borderColor: bannerButtonColor,
-                    backgroundColor: bannerSecondaryButtonColor) { }
+                    backgroundColor: bannerSecondaryButtonColor,
+                    action: .secondary
+                )
             }
 
             let bannerProps = BannerView.Props(
@@ -76,12 +78,22 @@ extension KetchUI {
                     backgroundColor: bannerBackgroundColor,
                     linkColor: bannerButtonColor,
                     borderRadius: config.theme?.buttonBorderRadius ?? 0
-                )
-            ) {
+                ),
+                actionHandler: { action in
+                    switch action {
+                    case .primary:
+                        actionHandler(.primary)
+                        return nil
 
-            } openUrlAction: { url in
+                    case .secondary:
+                        actionHandler(.secondary)
+                        return nil
 
-            }
+                    case .close: return nil
+                    case .openUrl(let url): return child(with: url)
+                    }
+                }
+            )
 
             return BannerView(props: bannerProps)
                 .asResponsiveSheet(style: .bottomSheet(backgroundColor: bannerBackgroundColor))
@@ -89,8 +101,6 @@ extension KetchUI {
 
         var modal: some View {
             ModalView()
-                .onAppear {}
-                .onDisappear {}
                 .asResponsiveSheet(style: .popUp)
         }
 
@@ -102,6 +112,17 @@ extension KetchUI {
         var preference: some View {
             PreferenceView()
                 .asResponsiveSheet(style: .screenCover)
+        }
+
+        func child(with url: URL) -> PresentationItem? {
+            switch url.absoluteString {
+            case "triggerModal", "privacyPolicy", "termsOfService":
+                return .init(itemType: .modal, config: config, consent: consent) { _ in }
+                
+            default:
+                UIApplication.shared.open(url)
+                return nil
+            }
         }
     }
 

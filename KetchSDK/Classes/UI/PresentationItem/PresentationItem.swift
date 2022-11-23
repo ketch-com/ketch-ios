@@ -18,7 +18,7 @@ extension KetchUI {
 
         enum ItemType {
             case banner(KetchSDK.Configuration.Experience.ConsentExperience.Banner)
-            case modal
+            case modal(KetchSDK.Configuration.Experience.ConsentExperience.Modal)
             case jit
             case preference
         }
@@ -32,7 +32,7 @@ extension KetchUI {
         public var content: some View {
             switch itemType {
             case .banner(let _banner): banner(_banner)
-            case .modal: modal
+            case .modal(let _modal): modal(_modal)
             case .jit: jit
             case .preference: preference
             }
@@ -99,8 +99,38 @@ extension KetchUI {
                 .asResponsiveSheet(style: .bottomSheet(backgroundColor: bannerBackgroundColor))
         }
 
-        var modal: some View {
-            ModalView()
+        func modal(_ modal: KetchSDK.Configuration.Experience.ConsentExperience.Modal) -> some View {
+            let modalProps = ModalView.Props(
+                title: "Privacy Center",
+                bodyTitle: "About Your Privacy",
+                bodyDescription:
+                    """
+                    Axonic, Inc. determines the use of personal data collected on our media properties and across \
+                    the internet. We may collect data that you submit to us directly or data that we collect \
+                    automatically including from cookies (such as device information or IP address).
+                    """
+                    ,
+                purposes: [],
+                vendors: [],
+                primaryButton: ModalView.Props.Button(
+                    text: "I understand",
+                    textColor: .white,
+                    borderColor: .blue,
+                    backgroundColor: .blue,
+                    action: .primary
+                ),
+                theme: ModalView.Props.Theme(
+                    contentColor: .black,
+                    backgroundColor: .white,
+                    linkColor: .red,
+                    borderRadius: 5
+                ),
+                actionHandler: { action in
+                    nil
+                }
+            )
+
+            return ModalView(props: modalProps)
                 .asResponsiveSheet(style: .popUp)
         }
 
@@ -116,8 +146,12 @@ extension KetchUI {
 
         func child(with url: URL) -> PresentationItem? {
             switch url.absoluteString {
-            case "triggerModal", "privacyPolicy", "termsOfService":
-                return .init(itemType: .modal, config: config, consent: consent) { _ in }
+//            case "triggerModal", "privacyPolicy", "termsOfService":
+//                return .init(
+//                    itemType: .modal(),
+//                    config: config,
+//                    consent: consent
+//                ) { _ in }
                 
             default:
                 UIApplication.shared.open(url)

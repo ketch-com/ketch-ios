@@ -75,15 +75,21 @@ public class KetchUI: ObservableObject {
     public func showModal() {
         guard
             let configuration,
-            let consentStatus
+            let consentStatus,
+            let modal = configuration.experiences?.consent?.modal
         else { return }
 
         presentationItem = PresentationItem(
-            itemType: .modal,
+            itemType: .modal(modal),
             config: configuration,
             consent: consentStatus
         ) { action in
-
+            switch action {
+            case .primary:
+                break
+            case .secondary:
+                break
+            }
         }
     }
 

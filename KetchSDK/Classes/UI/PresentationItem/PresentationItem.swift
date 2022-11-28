@@ -112,12 +112,13 @@ extension KetchUI {
                     ,
                 purposes: [],
                 vendors: [],
+                categories: [],
                 primaryButton: ModalView.Props.Button(
                     text: "I understand",
                     textColor: .white,
                     borderColor: .blue,
                     backgroundColor: .blue,
-                    action: .primary
+                    action: .save
                 ),
                 theme: ModalView.Props.Theme(
                     contentColor: .black,

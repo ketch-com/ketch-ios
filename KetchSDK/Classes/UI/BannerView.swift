@@ -63,7 +63,7 @@ struct BannerView: View {
                     handle(action: .close)
                     presentationMode.wrappedValue.dismiss()
                 }) {
-                    Text("X")
+                    Image(systemName: "xmark")
                 }
                 .foregroundColor(props.theme.contentColor)
             }

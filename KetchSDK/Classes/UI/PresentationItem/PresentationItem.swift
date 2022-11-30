@@ -188,7 +188,31 @@ extension KetchUI {
                         legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription
                     )
                 } ?? [],
-                vendors: [],
+                vendors: config.vendors?.map { vendor in
+                    var policyUrl: URL?
+                    if let policy = vendor.policyUrl {
+                        policyUrl = URL(string: policy)
+                    }
+
+                    return ModalView.Props.Vendor(
+                        id: vendor.id,
+                        name: vendor.name,
+                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
+                        purposes: vendor.purposes?.map {
+                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                        },
+                        specialPurposes: vendor.purposes?.map {
+                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                        },
+                        features: vendor.purposes?.map {
+                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                        },
+                        specialFeatures: vendor.purposes?.map {
+                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                        },
+                        policyUrl: policyUrl
+                    )
+                } ?? [],
                 categories: [],
                 saveButton: ModalView.Props.Button(
                     text: item.config.buttonText,
@@ -199,12 +223,12 @@ extension KetchUI {
                 theme: modalTheme,
                 actionHandler: { action in
                     switch action {
-                    case .save(let purposesConsent):
+                    case .save(let purposesConsent, let vendors):
                         item.actionHandler(
                             .save(
                                 purposesConsent: KetchSDK.ConsentStatus(
                                     purposes: purposesConsent,
-                                    vendors: consent.vendors
+                                    vendors: vendors
                                 )
                             )
                         )

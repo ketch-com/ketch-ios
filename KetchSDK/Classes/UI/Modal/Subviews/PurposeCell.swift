@@ -28,26 +28,26 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
     private var content: some View {
         VStack {
-            HStack(alignment: .top) {
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .frame(width: 20, height: 20)
-                    .padding(4)
+            VStack(alignment: .leading, spacing: 20) {
+                ConsentCellHeader(
+                    isExpanded: isExpanded,
+                    title: purpose.title,
+                    subTitle: purpose.legalBasisName,
+                    isOn: consent
+                )
 
-                VStack(alignment: .leading, spacing: 20) {
-                    header
-                    if isExpanded {
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Purpose: ")
+                if isExpanded {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Purpose: ")
+                            .font(.system(size: 14, weight: .bold))
+                        + Text(purpose.purposeDescription)
+                            .font(.system(size: 14))
+
+                        if let legalBasisDescription = purpose.legalBasisDescription {
+                            Text("Legal Basic: ")
                                 .font(.system(size: 14, weight: .bold))
-                            + Text(purpose.purposeDescription)
+                            + Text(legalBasisDescription)
                                 .font(.system(size: 14))
-
-                            if let legalBasisDescription = purpose.legalBasisDescription {
-                                Text("Legal Basic: ")
-                                    .font(.system(size: 14, weight: .bold))
-                                + Text(legalBasisDescription)
-                                    .font(.system(size: 14))
-                            }
                         }
 
                         if let vendorsDestination = vendorsDestination {
@@ -68,31 +68,10 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
                             .foregroundColor(.black)
                         }
                     }
+                    .padding(.leading, 30)
                 }
             }
             Divider()
         }
-    }
-
-    private var header: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading) {
-                Text(purpose.title)
-                    .font(.system(size: 12, weight: .bold))
-                if let legalBasisName = purpose.legalBasisName {
-                    Text(legalBasisName)
-                        .font(.system(size: 11))
-                }
-            }
-
-            Spacer()
-
-            Toggle("Accept", isOn: consent)
-                .labelsHidden()
-                .disabled(purpose.required)
-                .toggleStyle(SwitchToggleStyle(tint: .black))
-                .onTapGesture { }
-        }
-        .padding(.vertical, 4)
     }
 }

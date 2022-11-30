@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension ModalView {
-    struct UserConsent: Hashable, Identifiable {
+    struct PurposeConsent: Hashable, Identifiable {
         var id: String { purpose.id }
 
         var consent: Bool
@@ -16,11 +16,23 @@ extension ModalView {
         let purpose: Props.Purpose
     }
 
-    class UserConsentsList: ObservableObject {
-        @Published var userConsents: [UserConsent]
+    struct VendorConsent: Hashable, Identifiable {
+        var id: String { vendor.id }
 
-        init(userConsents: [UserConsent]) {
-            self.userConsents = userConsents
+        var isAccepted: Bool
+        let vendor: Props.Vendor
+    }
+
+    class UserConsentsList: ObservableObject {
+        @Published var purposeConsents: [PurposeConsent]
+        @Published var vendorConsents: [VendorConsent]
+
+        init(
+            purposeConsents: [PurposeConsent],
+            vendorConsents: [VendorConsent]
+        ) {
+            self.purposeConsents = purposeConsents
+            self.vendorConsents = vendorConsents
         }
     }
 }

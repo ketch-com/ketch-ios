@@ -19,11 +19,17 @@ struct ModalView: View {
     init(props: Props) {
         self.props = props
         consents = UserConsentsList(
-            userConsents: props.purposes.map { purpose in
-                UserConsent(
+            purposeConsents: props.purposes.map { purpose in
+                PurposeConsent(
                     consent: purpose.consent || purpose.required,
                     required: purpose.required,
                     purpose: purpose
+                )
+            },
+            vendorConsents: props.vendors.map { vendor in
+                VendorConsent(
+                    isAccepted: vendor.isAccepted,
+                    vendor: vendor
                 )
             }
         )
@@ -79,11 +85,14 @@ struct ModalView: View {
                                 ) {
                                     handle(
                                         action: .save(
-                                            purposeCodeConsents: consents.userConsents.reduce(
+                                            purposeCodeConsents: consents.purposeConsents.reduce(
                                                 into: [String: Bool]()
-                                            ) { result, userConsent in
-                                                result[userConsent.purpose.code] = userConsent.consent
-                                            }
+                                            ) { result, purposeConsent in
+                                                result[purposeConsent.purpose.code] = purposeConsent.consent
+                                            },
+                                            vendors: consents.vendorConsents
+                                                .filter(\.isAccepted)
+                                                .map(\.id)
                                         )
                                     )
                                     presentationMode.wrappedValue.dismiss()
@@ -100,6 +109,7 @@ struct ModalView: View {
                         .background(props.theme.headerBackgroundColor)
                     }
                 }
+                .accentColor(props.theme.contentColor)
             }
         }
     }
@@ -138,6 +148,11 @@ struct ModalView: View {
     }
 
     @ViewBuilder
+    private func acceptChecklist() -> some View {
+        EmptyView()
+    }
+
+    @ViewBuilder
     func purposesView() -> some View {
         VStack {
             HStack {
@@ -149,7 +164,7 @@ struct ModalView: View {
                 Spacer()
 
                 Button {
-                    consents.setAll(false)
+                    consents.setAllPurposeConsents(false)
                 } label: {
                     Text("Opt Out")
                         .padding(.horizontal)
@@ -160,7 +175,7 @@ struct ModalView: View {
                 .background(Color(UIColor.systemGray6).cornerRadius(5))
 
                 Button {
-                    consents.setAll(true)
+                    consents.setAllPurposeConsents(true)
                 } label: {
                     Text("Opt In")
                         .padding(.horizontal)
@@ -172,11 +187,15 @@ struct ModalView: View {
             }
             .padding(.horizontal)
 
-            ForEach($consents.userConsents) { index, userConsent in
+            ForEach($consents.purposeConsents) { index, purposeConsent in
+                let purpose = purposeConsent.wrappedValue.purpose
+
                 PurposeCell(
-                    consent: userConsent.consent,
-                    purpose: userConsent.wrappedValue.purpose,
-                    vendorsDestination: props.vendors.isEmpty ? nil : { vendorsView },
+                    consent: purposeConsent.consent,
+                    purpose: purpose,
+                    vendorsDestination: props.vendors.isEmpty ? nil : {
+                        vendorsView(title: purpose.title, description: purpose.purposeDescription)
+                    },
                     categoriesDestination: props.categories.isEmpty ? nil : { categoriesView }
                 )
             }
@@ -185,10 +204,69 @@ struct ModalView: View {
     }
 
     @ViewBuilder
-    var vendorsView: some View {
+    func vendorsView(title: String, description: String) -> some View {
         VStack {
-            Text("Vendors")
+            ScrollView(showsIndicators: true) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .bold))
+
+                    KetchUI.PresentationItem.descriptionText(with: description) { url in
+                        handle(action: .openUrl(url))
+                    }
+                    .font(.system(size: props.theme.textFontSize))
+                    .foregroundColor(props.theme.contentColor)
+                    .accentColor(props.theme.linkColor)
+                }
+                .padding(18)
+
+                VStack {
+                    HStack {
+                        if let consentTitle = props.consentTitle {
+                            Text(consentTitle)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(props.theme.contentColor)
+                        }
+                        Spacer()
+
+                        Button {
+                            consents.setAllVendorIsAccept(false)
+                        } label: {
+                            Text("Opt Out")
+                                .padding(.horizontal)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.black)
+                                .frame(height: 28)
+                        }
+                        .background(Color(UIColor.systemGray6).cornerRadius(5))
+
+                        Button {
+                            consents.setAllVendorIsAccept(true)
+                        } label: {
+                            Text("Opt In")
+                                .padding(.horizontal)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.black)
+                                .frame(height: 28)
+                        }
+                        .background(Color(UIColor.systemGray6).cornerRadius(5))
+                    }
+                    .padding(.horizontal)
+
+                    ForEach($consents.vendorConsents) { index, vendorConsent in
+                        let vendor = vendorConsent.wrappedValue.vendor
+
+                        VendorCell(isAccepted: vendorConsent.isAccepted, vendor: vendor) { url in
+                            handle(action: .openUrl(url))
+                        }
+                    }
+                }
+
+            }
+            .background(props.theme.bodyBackgroundColor)
         }
+        .navigationTitle("Vendors")
+        .animation(.easeInOut(duration: 0.15))
     }
 
     @ViewBuilder
@@ -200,11 +278,17 @@ struct ModalView: View {
 }
 
 extension ModalView.UserConsentsList {
-    func setAll(_ value: Bool) {
-        userConsents.enumerated().forEach { (index, _) in
-            if userConsents[index].required { return }
+    func setAllPurposeConsents(_ value: Bool) {
+        purposeConsents.enumerated().forEach { (index, _) in
+            if purposeConsents[index].required { return }
 
-            userConsents[index].consent = value
+            purposeConsents[index].consent = value
+        }
+    }
+
+    func setAllVendorIsAccept(_ value: Bool) {
+        vendorConsents.enumerated().forEach { (index, _) in
+            vendorConsents[index].isAccepted = value
         }
     }
 }
@@ -236,7 +320,7 @@ struct ModalView_Previews: PreviewProvider {
                             consent: false,
                             required: true,
                             title: "Store and/or access information on a device",
-                            legalBasisName: "Legal Basic: Consent - Opt In",
+                            legalBasisName: nil,
                             purposeDescription: "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
                             legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"
                         ),
@@ -250,7 +334,11 @@ struct ModalView_Previews: PreviewProvider {
                             legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"
                         )
                     ],
-                    vendors: [.init()],
+                    vendors: [.init(
+                        id: "101", name: "Vendor", isAccepted: true,
+                        purposes: [], specialPurposes: [], features: [], specialFeatures: [],
+                        policyUrl: nil
+                    )],
                     categories: [.init()],
 
                     saveButton: ModalView.Props.Button(

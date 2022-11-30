@@ -35,8 +35,22 @@ extension ModalView {
             let legalBasisDescription: String?
         }
         
-        struct Vendor {
-            
+        struct Vendor: Hashable, Identifiable {
+            let id: String
+            let name: String
+            let isAccepted: Bool
+            let purposes: [VendorPurpose]?
+            let specialPurposes: [VendorPurpose]?
+            let features: [VendorPurpose]?
+            let specialFeatures: [VendorPurpose]?
+            let policyUrl: URL?
+
+            struct VendorPurpose: Hashable, Identifiable {
+                var id: String { name }
+
+                let name: String
+                let legalBasis: String?
+            }
         }
         
         struct Category {
@@ -70,7 +84,7 @@ extension ModalView {
         }
         
         enum Action {
-            case save(purposeCodeConsents: [String: Bool])
+            case save(purposeCodeConsents: [String: Bool], vendors: [String])
             case close
             case openUrl(URL)
         }

@@ -85,27 +85,53 @@ extension KetchSDK.Configuration {
         public let code: String?
         public let name: String?
         public let description: String?
+
+        public let watermark: Bool?
+
+        public let buttonBorderRadius: Int?
+
         public let bannerBackgroundColor: String?
+        public let bannerContentColor: String?
+        public let bannerButtonColor: String?
+        public let bannerSecondaryButtonColor: String?
+        public let bannerPosition: BannerPosition?
+
+        public let modalHeaderBackgroundColor: String?
+        public let modalHeaderContentColor: String?
+        public let modalContentColor: String?
+        public let modalButtonColor: String?
+        public let modalPosition: ModalPosition?
+        public let modalSwitchOffColor: String?
+        public let modalSwitchOnColor: String?
+
         public let lightboxRibbonColor: String?
         public let formHeaderColor: String?
         public let statusColor: String?
         public let highlightColor: String?
         public let feedbackColor: String?
         public let font: String?
-        public let buttonBorderRadius: Int?
-        public let bannerContentColor: String?
-        public let bannerButtonColor: String?
-        public let bannerSecondaryButtonColor: String?
-        public let modalHeaderBackgroundColor: String?
-        public let modalHeaderContentColor: String?
-        public let modalContentColor: String?
-        public let modalButtonColor: String?
+
         public let formHeaderBackgroundColor: String?
         public let formHeaderContentColor: String?
         public let formContentColor: String?
         public let formButtonColor: String?
-        public let bannerPosition: Int?
-        public let modalPosition: Int?
+        public let formSwitchOffColor: String?
+        public let formSwitchOnColor: String?
+
+        public enum BannerPosition: Int, Codable {
+            case UNKNOWN = 0
+            case BOTTOM = 1
+            case TOP = 2
+            case BOTTOM_LEFT = 3
+            case BOTTOM_RIGHT = 4
+        }
+
+        public enum ModalPosition: Int, Codable {
+            case UNKNOWN = 0
+            case CENTER = 1
+            case LEFT_FULL_HEIGHT = 2
+            case RIGHT_FULL_HEIGHT = 3
+        }
     }
 
     public struct Experience: Codable {
@@ -145,6 +171,12 @@ extension KetchSDK.Configuration {
                 public let bodyTitle: String?
                 public let bodyDescription: String?
                 public let buttonText: String
+
+                public let showCloseIcon: Bool?
+                public let consentTitle: String?
+                public let hideConsentTitle: Bool?
+                public let hideLegalBases: Bool?
+                public let extensions: [String: String]?
             }
 
             public struct JIT: Codable {

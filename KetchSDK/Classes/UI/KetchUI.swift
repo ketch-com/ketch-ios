@@ -46,8 +46,8 @@ public class KetchUI: ObservableObject {
             let banner = configuration.experiences?.consent?.banner
         else { return }
 
-        presentationItem = PresentationItem(
-            itemType: .banner(banner),
+        presentationItem = PresentationItem.banner(
+            bannerConfig: banner,
             config: configuration,
             consent: consentStatus
         ) { action in
@@ -79,16 +79,14 @@ public class KetchUI: ObservableObject {
             let modal = configuration.experiences?.consent?.modal
         else { return }
 
-        presentationItem = PresentationItem(
-            itemType: .modal(modal),
+        presentationItem = PresentationItem.modal(
+            modalConfig: modal,
             config: configuration,
             consent: consentStatus
         ) { action in
             switch action {
-            case .primary:
-                break
-            case .secondary:
-                break
+            case .save(let purposesConsent):
+                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
             }
         }
     }
@@ -103,9 +101,7 @@ public class KetchUI: ObservableObject {
             itemType: .jit,
             config: configuration,
             consent: consentStatus
-        ) { action in
-
-        }
+        )
     }
 
     public func showPreference() {
@@ -118,9 +114,7 @@ public class KetchUI: ObservableObject {
             itemType: .preference,
             config: configuration,
             consent: consentStatus
-        ) { action in
-
-        }
+        )
     }
 }
 

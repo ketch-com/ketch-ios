@@ -12,33 +12,82 @@ extension KetchUI {
         let itemType: ItemType
         let config: KetchSDK.Configuration
         let consent: KetchSDK.ConsentStatus
-        let actionHandler: (Action) -> Void
 
         public var id: String { String(describing: itemType) }
 
         enum ItemType {
-            case banner(KetchSDK.Configuration.Experience.ConsentExperience.Banner)
-            case modal(KetchSDK.Configuration.Experience.ConsentExperience.Modal)
+            case banner(BannerItem)
+            case modal(ModalItem)
             case jit
             case preference
+
+            struct BannerItem {
+                let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
+                let actionHandler: (Action) -> Void
+
+                enum Action {
+                    case primary
+                    case secondary
+                }
+            }
+
+            struct ModalItem {
+                let config: KetchSDK.Configuration.Experience.ConsentExperience.Modal
+                let actionHandler: (Action) -> Void
+
+                enum Action {
+                    case save(purposesConsent: KetchSDK.ConsentStatus)
+                }
+            }
         }
 
-        enum Action {
-            case primary
-            case secondary
+        static func banner(
+            bannerConfig: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
+            config: KetchSDK.Configuration,
+            consent: KetchSDK.ConsentStatus,
+            actionHandler: @escaping (ItemType.BannerItem.Action) -> Void
+        ) -> PresentationItem {
+            PresentationItem(
+                itemType: .banner(
+                    ItemType.BannerItem(
+                        config: bannerConfig,
+                        actionHandler: actionHandler
+                    )
+                ),
+                config: config,
+                consent: consent
+            )
+        }
+
+        static func modal(
+            modalConfig: KetchSDK.Configuration.Experience.ConsentExperience.Modal,
+            config: KetchSDK.Configuration,
+            consent: KetchSDK.ConsentStatus,
+            actionHandler: @escaping (ItemType.ModalItem.Action) -> Void
+        ) -> PresentationItem {
+            PresentationItem(
+                itemType: .modal(
+                    ItemType.ModalItem(
+                        config: modalConfig,
+                        actionHandler: actionHandler
+                    )
+                ),
+                config: config,
+                consent: consent
+            )
         }
 
         @ViewBuilder
         public var content: some View {
             switch itemType {
-            case .banner(let _banner): banner(_banner)
-            case .modal(let _modal): modal(_modal)
+            case .banner(let bannerItem): banner(item: bannerItem)
+            case .modal(let modalItem): modal(item: modalItem)
             case .jit: jit
             case .preference: preference
             }
         }
 
-        func banner(_ banner: KetchSDK.Configuration.Experience.ConsentExperience.Banner) -> some View {
+        func banner(item: ItemType.BannerItem) -> some View {
             let bannerBackgroundColor = Color(hex: config.theme?.bannerBackgroundColor ?? String())
             let bannerButtonColor = Color(hex: config.theme?.bannerButtonColor ?? String())
             let bannerSecondaryButtonColor = Color(hex: config.theme?.bannerSecondaryButtonColor ?? String())
@@ -46,9 +95,9 @@ extension KetchUI {
 
             var primaryButton: BannerView.Props.Button?
 
-            if banner.buttonText.isEmpty == false {
+            if item.config.buttonText.isEmpty == false {
                 primaryButton = .init(
-                    text: banner.buttonText,
+                    text: item.config.buttonText,
                     textColor: bannerBackgroundColor,
                     borderColor: bannerButtonColor,
                     backgroundColor: bannerButtonColor,
@@ -58,7 +107,7 @@ extension KetchUI {
 
             var secondaryButton: BannerView.Props.Button?
 
-            if let secondaryButtonText = banner.secondaryButtonText, secondaryButtonText.isEmpty == false {
+            if let secondaryButtonText = item.config.secondaryButtonText, secondaryButtonText.isEmpty == false {
                 secondaryButton = .init(
                     text: secondaryButtonText,
                     textColor: bannerButtonColor,
@@ -69,8 +118,8 @@ extension KetchUI {
             }
 
             let bannerProps = BannerView.Props(
-                title: banner.title ?? String(),
-                text: banner.footerDescription,
+                title: item.config.title ?? String(),
+                text: item.config.footerDescription,
                 primaryButton: primaryButton,
                 secondaryButton: secondaryButton,
                 theme: BannerView.Props.Theme(
@@ -81,17 +130,13 @@ extension KetchUI {
                 ),
                 actionHandler: { action in
                     switch action {
-                    case .primary:
-                        actionHandler(.primary)
-                        return nil
-
-                    case .secondary:
-                        actionHandler(.secondary)
-                        return nil
-
-                    case .close: return nil
+                    case .primary: item.actionHandler(.primary)
+                    case .secondary: item.actionHandler(.secondary)
+                    case .close: break
                     case .openUrl(let url): return child(with: url)
                     }
+
+                    return nil
                 }
             )
 
@@ -99,35 +144,76 @@ extension KetchUI {
                 .asResponsiveSheet(style: .bottomSheet(backgroundColor: bannerBackgroundColor))
         }
 
-        func modal(_ modal: KetchSDK.Configuration.Experience.ConsentExperience.Modal) -> some View {
+        func modal(item: ItemType.ModalItem) -> some View {
+            let theme = config.theme
+
+            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
+            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
+            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
+            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
+
+            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
+            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
+            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+
+            let modalTheme = ModalView.Props.Theme(
+                headerBackgroundColor: modalHeaderBackgroundColor,
+                headerTextColor: modalHeaderContentColor,
+                bodyBackgroundColor: .white,
+                contentColor: modalContentColor,
+                linkColor: modalContentColor,
+                switchOffColor: switchOffColor,
+                switchOnColor: switchOnColor,
+                borderRadius: theme?.buttonBorderRadius ?? 0
+            )
+
+            let hideConsentTitle = item.config.hideConsentTitle ?? false
+            let hideLegalBases = item.config.hideLegalBases ?? false
+
             let modalProps = ModalView.Props(
-                title: "Privacy Center",
-                bodyTitle: "About Your Privacy",
-                bodyDescription:
-                    """
-                    Axonic, Inc. determines the use of personal data collected on our media properties and across \
-                    the internet. We may collect data that you submit to us directly or data that we collect \
-                    automatically including from cookies (such as device information or IP address).
-                    """
-                    ,
-                purposes: [],
+                title: item.config.title,
+                showCloseIcon: item.config.showCloseIcon ?? false,
+                bodyTitle: item.config.bodyTitle ?? String(),
+                bodyDescription: item.config.bodyDescription ?? String(),
+                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
+                purposes: config.purposes?.map { purpose in
+                    ModalView.Props.Purpose(
+                        code: purpose.code,
+                        consent: consent.purposes[purpose.code] ?? false,
+                        required: purpose.requiresOptIn ?? false,
+                        title: purpose.name ?? String(),
+                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
+                        purposeDescription: purpose.description ?? String(),
+                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription
+                    )
+                } ?? [],
                 vendors: [],
                 categories: [],
-                primaryButton: ModalView.Props.Button(
-                    text: "I understand",
-                    textColor: .white,
-                    borderColor: .blue,
-                    backgroundColor: .blue,
-                    action: .save
+                saveButton: ModalView.Props.Button(
+                    text: item.config.buttonText,
+                    textColor: firstButtonTextColor,
+                    borderColor: firstButtonBorderColor,
+                    backgroundColor: firstButtonBackgroundColor
                 ),
-                theme: ModalView.Props.Theme(
-                    contentColor: .black,
-                    backgroundColor: .white,
-                    linkColor: .red,
-                    borderRadius: 5
-                ),
+                theme: modalTheme,
                 actionHandler: { action in
-                    nil
+                    switch action {
+                    case .save(let purposesConsent):
+                        item.actionHandler(
+                            .save(
+                                purposesConsent: KetchSDK.ConsentStatus(
+                                    purposes: purposesConsent,
+                                    vendors: consent.vendors
+                                )
+                            )
+                        )
+
+                    case .close: break
+                    case .openUrl(let url): return child(with: url)
+                    }
+
+                    return nil
                 }
             )
 

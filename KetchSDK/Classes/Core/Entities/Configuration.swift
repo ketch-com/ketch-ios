@@ -241,10 +241,10 @@ extension KetchSDK.Configuration {
         public let legalBasisDescription: String?
 
         public struct PurposeCategory: Codable {
-            public let name: String?
-            public let description: String?
-            public let retentionPeriod: String?
-            public let externalTransfers: String?
+            public let name: String
+            public let description: String
+            public let retentionPeriod: String
+            public let externalTransfers: String
         }
     }
 

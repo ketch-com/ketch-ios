@@ -185,7 +185,15 @@ extension KetchUI {
                         title: purpose.name ?? String(),
                         legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
                         purposeDescription: purpose.description ?? String(),
-                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription
+                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
+                        categories: purpose.categories?.map { category in
+                            ModalView.Props.Category(
+                                name: category.name,
+                                retentionPeriod: category.retentionPeriod,
+                                externalTransfers: category.externalTransfers,
+                                description: category.description
+                            )
+                        } ?? []
                     )
                 } ?? [],
                 vendors: config.vendors?.map { vendor in
@@ -213,7 +221,6 @@ extension KetchUI {
                         policyUrl: policyUrl
                     )
                 } ?? [],
-                categories: [],
                 saveButton: ModalView.Props.Button(
                     text: item.config.buttonText,
                     textColor: firstButtonTextColor,

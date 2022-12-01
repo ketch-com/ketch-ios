@@ -17,7 +17,6 @@ extension ModalView {
         let purposes: [Purpose]
         
         let vendors: [Vendor]
-        let categories: [Category]
         
         let saveButton: Button?
         
@@ -33,6 +32,7 @@ extension ModalView {
             let legalBasisName: String?
             let purposeDescription: String
             let legalBasisDescription: String?
+            let categories: [Category]
         }
         
         struct Vendor: Hashable, Identifiable {
@@ -53,8 +53,13 @@ extension ModalView {
             }
         }
         
-        struct Category {
-            
+        struct Category: Hashable, Identifiable {
+            var id: String { name }
+
+            let name: String
+            let retentionPeriod: String
+            let externalTransfers: String
+            let description: String
         }
         
         struct Button {

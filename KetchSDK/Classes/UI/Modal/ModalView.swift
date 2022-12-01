@@ -156,11 +156,10 @@ struct ModalView: View {
     func purposesView() -> some View {
         VStack {
             HStack {
-                if let consentTitle = props.consentTitle {
-                    Text(consentTitle)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(props.theme.contentColor)
-                }
+                Text(props.consentTitle ?? "Purposes")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(props.theme.contentColor)
+
                 Spacer()
 
                 Button {
@@ -196,7 +195,13 @@ struct ModalView: View {
                     vendorsDestination: props.vendors.isEmpty ? nil : {
                         vendorsView(title: purpose.title, description: purpose.purposeDescription)
                     },
-                    categoriesDestination: props.categories.isEmpty ? nil : { categoriesView }
+                    categoriesDestination: purpose.categories.isEmpty ? nil : {
+                        categoriesView(
+                            title: purpose.title,
+                            description: purpose.purposeDescription,
+                            categories: purpose.categories
+                        )
+                    }
                 )
             }
         }
@@ -222,11 +227,6 @@ struct ModalView: View {
 
                 VStack {
                     HStack {
-                        if let consentTitle = props.consentTitle {
-                            Text(consentTitle)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(props.theme.contentColor)
-                        }
                         Spacer()
 
                         Button {
@@ -270,10 +270,47 @@ struct ModalView: View {
     }
 
     @ViewBuilder
-    var categoriesView: some View {
+    func categoriesView(title: String, description: String, categories: [Props.Category]) -> some View {
         VStack {
-            Text("Categories")
+            ScrollView(showsIndicators: true) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .bold))
+
+                    KetchUI.PresentationItem.descriptionText(with: description) { url in
+                        handle(action: .openUrl(url))
+                    }
+                    .font(.system(size: props.theme.textFontSize))
+                    .foregroundColor(props.theme.contentColor)
+                    .accentColor(props.theme.linkColor)
+                }
+                .padding(18)
+
+                VStack {
+                    HStack {
+                        Text("Data Category")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(props.theme.contentColor)
+
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+
+                    ForEach(categories) { category in
+                        CategoryCell(
+                            name: category.name,
+                            retentionPeriod: category.retentionPeriod,
+                            externalTransfers: category.externalTransfers,
+                            description: category.description
+                        )
+                    }
+                }
+
+            }
+            .background(props.theme.bodyBackgroundColor)
         }
+        .navigationTitle("Data Categories")
+        .animation(.easeInOut(duration: 0.15))
     }
 }
 
@@ -313,7 +350,13 @@ struct ModalView_Previews: PreviewProvider {
                             title: "Store and/or access information on a device",
                             legalBasisName: "Legal Basic: Consent - Opt In",
                             purposeDescription: "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
-                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"
+                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                            categories: [.init(
+                                name: "User Identifiers",
+                                retentionPeriod: "180 days",
+                                externalTransfers: "None",
+                                description: "Identifiers such as name, address, unique personal identifier, email, or phone number."
+                            )]
                         ),
                         .init(
                             code: "1002",
@@ -322,7 +365,13 @@ struct ModalView_Previews: PreviewProvider {
                             title: "Store and/or access information on a device",
                             legalBasisName: nil,
                             purposeDescription: "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
-                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"
+                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                            categories: [.init(
+                                name: "User Identifiers",
+                                retentionPeriod: "180 days",
+                                externalTransfers: "None",
+                                description: "Identifiers such as name, address, unique personal identifier, email, or phone number."
+                            )]
                         ),
                         .init(
                             code: "1003",
@@ -331,7 +380,8 @@ struct ModalView_Previews: PreviewProvider {
                             title: "Store and/or access information on a device",
                             legalBasisName: "Legal Basic: Consent - Opt In",
                             purposeDescription: "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
-                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes"
+                            legalBasisDescription: "Data subject has affirmatively and unambiguously consented to the processing for one or more specific purposes",
+                            categories: []
                         )
                     ],
                     vendors: [.init(
@@ -339,7 +389,6 @@ struct ModalView_Previews: PreviewProvider {
                         purposes: [.init(name: "name", legalBasis: "basis")], specialPurposes: [.init(name: "name", legalBasis: "basis")], features: [.init(name: "name", legalBasis: "basis")], specialFeatures: [.init(name: "name", legalBasis: "basis")],
                         policyUrl: URL(string: "www.google.com")
                     )],
-                    categories: [.init()],
 
                     saveButton: ModalView.Props.Button(
                         text: "I understand",

@@ -336,8 +336,8 @@ struct ModalView_Previews: PreviewProvider {
                     ],
                     vendors: [.init(
                         id: "101", name: "Vendor", isAccepted: true,
-                        purposes: [], specialPurposes: [], features: [], specialFeatures: [],
-                        policyUrl: nil
+                        purposes: [.init(name: "name", legalBasis: "basis")], specialPurposes: [.init(name: "name", legalBasis: "basis")], features: [.init(name: "name", legalBasis: "basis")], specialFeatures: [.init(name: "name", legalBasis: "basis")],
+                        policyUrl: URL(string: "www.google.com")
                     )],
                     categories: [.init()],
 

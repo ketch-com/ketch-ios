@@ -30,6 +30,7 @@ struct VendorCell: View {
             VStack(alignment: .leading, spacing: 20) {
                 ConsentCellHeader(
                     isExpanded: isExpanded,
+                    isRequired: false,
                     title: vendor.name,
                     subTitle: nil,
                     isOn: isAccepted

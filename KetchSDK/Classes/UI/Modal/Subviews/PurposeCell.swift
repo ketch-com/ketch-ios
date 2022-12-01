@@ -31,6 +31,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
             VStack(alignment: .leading, spacing: 20) {
                 ConsentCellHeader(
                     isExpanded: isExpanded,
+                    isRequired: purpose.required,
                     title: purpose.title,
                     subTitle: purpose.legalBasisName,
                     isOn: consent

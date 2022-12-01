@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ConsentCellHeader: View {
     var isExpanded: Bool
+    var isRequired: Bool
     let title: String
     let subTitle: String?
     var isOn: Binding<Bool>
@@ -32,6 +33,7 @@ struct ConsentCellHeader: View {
 
             Toggle("Accept", isOn: isOn)
                 .labelsHidden()
+                .disabled(isRequired)
                 .toggleStyle(SwitchToggleStyle(tint: .black))
                 .onTapGesture { }
         }

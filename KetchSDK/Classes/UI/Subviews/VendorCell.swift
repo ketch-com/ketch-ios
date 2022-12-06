@@ -7,32 +7,9 @@
 
 import SwiftUI
 
-
-extension PurposesView.Props {
-    struct Vendor: Hashable, Identifiable {
-        let id: String
-        let name: String
-        let isAccepted: Bool
-        let purposes: [VendorPurpose]?
-        let specialPurposes: [VendorPurpose]?
-        let features: [VendorPurpose]?
-        let specialFeatures: [VendorPurpose]?
-        let policyUrl: URL?
-
-        struct VendorPurpose: Hashable, Identifiable {
-            var id: String { name }
-
-            let name: String
-            let legalBasis: String?
-        }
-    }
-}
-
 struct VendorCell: View {
-    typealias Vendor = PurposesView.Props.Vendor
-
     var isAccepted: Binding<Bool>
-    let vendor: PurposesView.Props.Vendor
+    let vendor: Props.Vendor
     let actionHandler: (URL) -> Void
 
     @State private var isExpanded: Bool = false
@@ -87,7 +64,7 @@ struct VendorCell: View {
     }
 
     @ViewBuilder
-    private func vendorPurposeList(title: String, with purposes: [PurposesView.Props.Vendor.VendorPurpose]?) -> some View {
+    private func vendorPurposeList(title: String, with purposes: [Props.VendorPurpose]?) -> some View {
         if let purposes = purposes, purposes.isEmpty == false {
             VStack(alignment: .leading) {
                 Text(title)

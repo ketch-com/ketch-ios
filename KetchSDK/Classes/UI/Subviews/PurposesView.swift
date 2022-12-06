@@ -8,28 +8,12 @@
 import SwiftUI
 
 struct PurposesView: View {
-    struct Props {
-        let bodyTitle: String
-        let bodyDescription: String
-        let consentTitle: String?
-        let purposes: [Purpose]
-        let vendors: [Vendor]
-        let theme: Theme
-
-        struct Theme {
-            let textFontSize: CGFloat = 14
-            let bodyBackgroundColor: Color
-            let contentColor: Color
-            let linkColor: Color
-        }
-    }
-
     enum Action {
         case close
         case openUrl(URL)
     }
 
-    let props: Props
+    let props: Props.PurposesList
     @Binding var purposeConsents: [PurposesView.PurposeConsent]
     @Binding var vendorConsents: [PurposesView.VendorConsent]
     let actionHandler: (Action) -> Void
@@ -98,14 +82,10 @@ struct PurposesView: View {
                     purpose: purpose,
                     vendorsDestination: props.vendors.isEmpty ? nil : {
                         VendorsView(
-                            props: VendorsView.Props(
+                            props: Props.VendorList(
                                 title: purpose.title,
                                 description: purpose.purposeDescription,
-                                theme: VendorsView.Props.Theme(
-                                    bodyBackgroundColor: props.theme.bodyBackgroundColor,
-                                    contentColor: props.theme.contentColor,
-                                    linkColor: props.theme.linkColor
-                                )
+                                theme: props.theme.vendorListTheme
                             ),
                             vendorConsents: $vendorConsents
                         ) { action in
@@ -117,14 +97,10 @@ struct PurposesView: View {
                     },
                     categoriesDestination: purpose.categories.isEmpty ? nil : {
                         CategoriesView(
-                            props: CategoriesView.Props(
+                            props: Props.CategoryList(
                                 title: purpose.title,
                                 description: purpose.purposeDescription,
-                                theme: CategoriesView.Props.Theme(
-                                    bodyBackgroundColor: props.theme.bodyBackgroundColor,
-                                    contentColor: props.theme.contentColor,
-                                    linkColor: props.theme.linkColor
-                                ),
+                                theme: props.theme.categoryListTheme,
                                 categories: purpose.categories
                             )
                         ) { action in

@@ -8,7 +8,14 @@
 import SwiftUI
 
 struct ModalView: View {
-    let props: Props
+    enum Action {
+        case save(purposeCodeConsents: [String: Bool], vendors: [String])
+        case close
+        case openUrl(URL)
+    }
+
+    let props: Props.Modal
+    let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
     @ObservedObject private var consentsList = PurposesView.UserConsentsList()
@@ -16,8 +23,9 @@ struct ModalView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
 
-    init(props: Props) {
+    init(props: Props.Modal, actionHandler: @escaping (Action) -> KetchUI.PresentationItem?) {
         self.props = props
+        self.actionHandler = actionHandler
         consentsList = props.purposes.consentsList
     }
 
@@ -104,26 +112,26 @@ struct ModalView: View {
             presentationMode.wrappedValue.dismiss()
         } label: {
             Text(props.text)
-                .font(.system(size: props.fontSize, weight: .semibold))
-                .foregroundColor(props.textColor)
-                .frame(height: props.height)
+                .font(.system(size: props.theme.fontSize, weight: .semibold))
+                .foregroundColor(props.theme.textColor)
+                .frame(height: props.theme.height)
                 .frame(maxWidth: .infinity)
                 .overlay(
                     RoundedRectangle(cornerRadius: CGFloat(cornerRadius))
                         .stroke(
-                            props.borderColor,
-                            lineWidth: props.borderWidth
+                            props.theme.borderColor,
+                            lineWidth: props.theme.borderWidth
                         )
                 )
         }
         .background(
-            props.backgroundColor
+            props.theme.backgroundColor
                 .cornerRadius(CGFloat(cornerRadius))
         )
     }
 
-    private func handle(action: Props.Action) {
-        presentationItem = props.actionHandler(action)
+    private func handle(action: Action) {
+        presentationItem = actionHandler(action)
     }
 }
 

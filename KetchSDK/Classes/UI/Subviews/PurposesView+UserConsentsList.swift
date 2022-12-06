@@ -37,7 +37,7 @@ extension PurposesView {
     }
 }
 
-extension PurposesView.Props {
+extension Props.PurposesList {
     var consentsList: PurposesView.UserConsentsList {
         PurposesView.UserConsentsList(
             purposeConsents: purposes.map { purpose in

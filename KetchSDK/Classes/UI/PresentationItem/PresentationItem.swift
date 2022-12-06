@@ -172,156 +172,36 @@ extension KetchUI {
         }
 
         func modal(item: ItemType.ModalItem) -> some View {
-            let theme = config.theme
+            let theme = Props.Modal.Theme(with: config.theme)
 
-            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
-            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
-            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
-            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
-
-            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
-            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
-            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-
-            let modalTheme = ModalView.Props.Theme(
-                headerBackgroundColor: modalHeaderBackgroundColor,
-                headerTextColor: modalHeaderContentColor,
-                bodyBackgroundColor: .white,
-                contentColor: modalContentColor,
-                linkColor: modalContentColor,
-                switchOffColor: switchOffColor,
-                switchOnColor: switchOnColor,
-                borderRadius: theme?.buttonBorderRadius ?? 0
+            let purposesProps = Props.PurposesList(
+                modalConfig: item.config,
+                purposes: config.purposes,
+                vendors: config.vendors,
+                purposesConsent: consent.purposes,
+                vendorsConsent: consent.vendors,
+                theme: theme.purposesListTheme
             )
 
-            let hideConsentTitle = item.config.hideConsentTitle ?? false
-            let hideLegalBases = item.config.hideLegalBases ?? false
-
-            let purposes: [PurposesView.Props.Purpose] = config.purposes?.map { purpose in
-                PurposesView.Props.Purpose(
-                    code: purpose.code,
-                    consent: consent.purposes[purpose.code] ?? false,
-                    required: purpose.requiresOptIn ?? false,
-                    title: purpose.name ?? String(),
-                    legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
-                    purposeDescription: purpose.description ?? String(),
-                    legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
-                    categories: purpose.categories?.map { category in
-                        CategoriesView.Props.Category(
-                            name: category.name,
-                            retentionPeriod: category.retentionPeriod,
-                            externalTransfers: category.externalTransfers,
-                            description: category.description
-                        )
-                    } ?? []
-                )
-            } ?? []
-
-            let purposesProps = PurposesView.Props(
-                bodyTitle: item.config.bodyTitle ?? String(),
-                bodyDescription: item.config.bodyDescription ?? String(),
-                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
-                purposes: purposes,
-                vendors: config.vendors?.map { vendor in
-                    var policyUrl: URL?
-                    if let policy = vendor.policyUrl {
-                        policyUrl = URL(string: policy)
-                    }
-
-                    return PurposesView.Props.Vendor(
-                        id: vendor.id,
-                        name: vendor.name,
-                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
-                        purposes: vendor.purposes?.map {
-                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-                        },
-                        specialPurposes: vendor.purposes?.map {
-                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-                        },
-                        features: vendor.purposes?.map {
-                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-                        },
-                        specialFeatures: vendor.purposes?.map {
-                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-                        },
-                        policyUrl: policyUrl
-                    )
-                } ?? [],
-                theme: PurposesView.Props.Theme(
-                    bodyBackgroundColor: .white,
-                    contentColor: modalContentColor,
-                    linkColor: modalContentColor
-                )
+            let buttonProps = Props.Button(
+                text: item.config.buttonText,
+                theme: theme.firstButtonTheme
             )
 
-//            let purposes = PurposesView.Props(
-//                bodyTitle: item.config.bodyTitle ?? String(),
-//                bodyDescription: item.config.bodyDescription ?? String(),
-//                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
-//                purposes: config.purposes?.map { purpose in
-//                    ModalView.Props.Purpose(
-//                        code: purpose.code,
-//                        consent: consent.purposes[purpose.code] ?? false,
-//                        required: purpose.requiresOptIn ?? false,
-//                        title: purpose.name ?? String(),
-//                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
-//                        purposeDescription: purpose.description ?? String(),
-//                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
-//                        categories: purpose.categories?.map { category in
-//                            CategoriesView.Props.Category(
-//                                name: category.name,
-//                                retentionPeriod: category.retentionPeriod,
-//                                externalTransfers: category.externalTransfers,
-//                                description: category.description
-//                            )
-//                        } ?? []
-//                    )
-//                } ?? [],
-//                vendors: config.vendors?.map { vendor in
-//                    var policyUrl: URL?
-//                    if let policy = vendor.policyUrl {
-//                        policyUrl = URL(string: policy)
-//                    }
-//
-//                    return PurposesView.Props.Vendor(
-//                        id: vendor.id,
-//                        name: vendor.name,
-//                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
-//                        purposes: vendor.purposes?.map {
-//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        specialPurposes: vendor.purposes?.map {
-//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        features: vendor.purposes?.map {
-//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        specialFeatures: vendor.purposes?.map {
-//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        policyUrl: policyUrl
-//                    )
-//                } ?? [],
-//                theme: PurposesView.Props.Theme(
-//                    bodyBackgroundColor: .white,
-//                    contentColor: modalContentColor,
-//                    linkColor: modalContentColor
-//                )
-//            )
-
-            let modalProps = ModalView.Props(
+            let modalProps = Props.Modal(
                 title: item.config.title,
                 showCloseIcon: item.config.showCloseIcon ?? false,
                 purposes: purposesProps,
-                saveButton: ModalView.Props.Button(
-                    text: item.config.buttonText,
-                    textColor: firstButtonTextColor,
-                    borderColor: firstButtonBorderColor,
-                    backgroundColor: firstButtonBackgroundColor
-                ),
-                theme: modalTheme
-            ) { action in
+                saveButton: buttonProps,
+                theme: theme
+            )
+
+            return ModalView(props: modalProps, actionHandler: handleAction(for: item))
+                .asResponsiveSheet(style: .popUp)
+        }
+
+        private func handleAction(for item: ItemType.ModalItem) -> ((ModalView.Action) -> KetchUI.PresentationItem?) {
+            { action in
                 switch action {
                 case .save(let purposesConsent, let vendors):
                     item.actionHandler(
@@ -332,83 +212,96 @@ extension KetchUI {
                             )
                         )
                     )
-                    
+
                 case .close: break
                 case .openUrl(let url): return child(with: url)
                 }
-                
+
                 return nil
             }
+        }
 
+        var jit: some View {
+            JitView()
+                .asResponsiveSheet(style: .popUp)
+        }
 
-//            let modalProps2 = ModalView.Props(
-//                title: item.config.title,
-//                showCloseIcon: item.config.showCloseIcon ?? false,
-//                bodyTitle: item.config.bodyTitle ?? String(),
-//                bodyDescription: item.config.bodyDescription ?? String(),
-//                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
-//                purposes: config.purposes?.map { purpose in
-//                    ModalView.Props.Purpose(
-//                        code: purpose.code,
-//                        consent: consent.purposes[purpose.code] ?? false,
-//                        required: purpose.requiresOptIn ?? false,
-//                        title: purpose.name ?? String(),
-//                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
-//                        purposeDescription: purpose.description ?? String(),
-//                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
-//                        categories: purpose.categories?.map { category in
-//                            CategoriesView.Props.Category(
-//                                name: category.name,
-//                                retentionPeriod: category.retentionPeriod,
-//                                externalTransfers: category.externalTransfers,
-//                                description: category.description
-//                            )
-//                        } ?? []
-//                    )
-//                } ?? [],
-//                vendors: config.vendors?.map { vendor in
-//                    var policyUrl: URL?
-//                    if let policy = vendor.policyUrl {
-//                        policyUrl = URL(string: policy)
-//                    }
+        func preference(item: ItemType.PreferenceItem) -> some View {
+//            let theme = config.theme
 //
-//                    return ModalView.Props.Vendor(
-//                        id: vendor.id,
-//                        name: vendor.name,
-//                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
-//                        purposes: vendor.purposes?.map {
-//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        specialPurposes: vendor.purposes?.map {
-//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        features: vendor.purposes?.map {
-//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        specialFeatures: vendor.purposes?.map {
-//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
-//                        },
-//                        policyUrl: policyUrl
-//                    )
-//                } ?? [],
-//                saveButton: ModalView.Props.Button(
-//                    text: item.config.buttonText,
-//                    textColor: firstButtonTextColor,
-//                    borderColor: firstButtonBorderColor,
-//                    backgroundColor: firstButtonBackgroundColor
+//            let preferenceTheme = PreferenceView.Props.Theme(
+//                contentColor: .white,
+//                backgroundColor: .black,
+//                linkColor: .red,
+//                borderRadius: 5,
+//                firstButtonTextColor: .white,
+//                firstButtonBorderColor: .blue,
+//                firstButtonBackgroundColor: .blue,
+//                secondButtonTextColor: .blue,
+//                secondButtonBorderColor: .blue,
+//                secondButtonBackgroundColor: .white
+//            )
+//
+////            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+////            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
+////            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
+////            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
+////            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
+////
+////            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
+////            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
+////            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+////
+////            let modalTheme = ModalView.Props.Theme(
+////                headerBackgroundColor: modalHeaderBackgroundColor,
+////                headerTextColor: modalHeaderContentColor,
+////                bodyBackgroundColor: .white,
+////                contentColor: modalContentColor,
+////                linkColor: modalContentColor,
+////                switchOffColor: switchOffColor,
+////                switchOnColor: switchOnColor,
+////                borderRadius: theme?.buttonBorderRadius ?? 0
+////            )
+
+//            let preferenceProps = Props.Preference(
+//                title: item.config.title,
+//                privacyPolicy: .init(
+//                    tabName: item.config.overview.tabName,
+//                    title: item.config.overview.bodyTitle,
+//                    text: item.config.overview.bodyDescription
 //                ),
-//                theme: modalTheme,
+//                preferences: .init(
+//                    tabName: item.config.consents.tabName,
+//                    purposes: PurposesView.Props(
+//                        bodyTitle: item.config.consents.bodyTitle ?? "",
+//                        bodyDescription: item.config.consents.bodyDescription ?? "",
+//                        consentTitle: nil,
+//                        purposes: [],
+//                        vendors: [],
+//                        theme: PurposesView.Props.Theme(
+//                            bodyBackgroundColor: .white,
+//                            contentColor: .black,
+//                            linkColor: .red
+//                        )
+//                    )
+//                ),
+//                dataRights: .init(
+//                    tabName: item.config.rights.tabName,
+//                    title: item.config.rights.bodyTitle,
+//                    text: item.config.rights.bodyDescription
+//                ),
+//                theme: preferenceTheme,
 //                actionHandler: { action in
 //                    switch action {
-//                    case .save(let purposesConsent, let vendors):
-//                        item.actionHandler(
-//                            .save(
-//                                purposesConsent: KetchSDK.ConsentStatus(
-//                                    purposes: purposesConsent,
-//                                    vendors: vendors
-//                                )
-//                            )
-//                        )
+////                    case .save(let purposesConsent, let vendors):
+////                        item.actionHandler(
+////                            .save(
+////                                purposesConsent: KetchSDK.ConsentStatus(
+////                                    purposes: purposesConsent,
+////                                    vendors: vendors
+////                                )
+////                            )
+////                        )
 //
 //                    case .close: break
 //                    case .openUrl(let url): return child(with: url)
@@ -418,102 +311,11 @@ extension KetchUI {
 //                }
 //            )
 
-            return ModalView(props: modalProps)
-                .asResponsiveSheet(style: .popUp)
-        }
-
-        var jit: some View {
             JitView()
                 .asResponsiveSheet(style: .popUp)
-        }
 
-        func preference(item: ItemType.PreferenceItem) -> some View {
-            let theme = config.theme
-
-            let preferenceTheme = PreferenceView.Props.Theme(
-                contentColor: .white,
-                backgroundColor: .black,
-                linkColor: .red,
-                borderRadius: 5,
-                firstButtonTextColor: .white,
-                firstButtonBorderColor: .blue,
-                firstButtonBackgroundColor: .blue,
-                secondButtonTextColor: .blue,
-                secondButtonBorderColor: .blue,
-                secondButtonBackgroundColor: .white
-            )
-
-//            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-//            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
-//            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
-//            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
-//            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
-//
-//            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
-//            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
-//            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-//
-//            let modalTheme = ModalView.Props.Theme(
-//                headerBackgroundColor: modalHeaderBackgroundColor,
-//                headerTextColor: modalHeaderContentColor,
-//                bodyBackgroundColor: .white,
-//                contentColor: modalContentColor,
-//                linkColor: modalContentColor,
-//                switchOffColor: switchOffColor,
-//                switchOnColor: switchOnColor,
-//                borderRadius: theme?.buttonBorderRadius ?? 0
-//            )
-
-            let preferenceProps = PreferenceView.Props(
-                title: item.config.title,
-                privacyPolicy: .init(
-                    tabName: item.config.overview.tabName,
-                    title: item.config.overview.bodyTitle,
-                    text: item.config.overview.bodyDescription
-                ),
-                preferences: .init(
-                    tabName: item.config.consents.tabName,
-                    purposes: PurposesView.Props(
-                        bodyTitle: item.config.consents.bodyTitle ?? "",
-                        bodyDescription: item.config.consents.bodyDescription ?? "",
-                        consentTitle: nil,
-                        purposes: [],
-                        vendors: [],
-                        theme: PurposesView.Props.Theme(
-                            bodyBackgroundColor: .white,
-                            contentColor: .black,
-                            linkColor: .red
-                        )
-                    )
-                ),
-                dataRights: .init(
-                    tabName: item.config.rights.tabName,
-                    title: item.config.rights.bodyTitle,
-                    text: item.config.rights.bodyDescription
-                ),
-                theme: preferenceTheme,
-                actionHandler: { action in
-                    switch action {
-//                    case .save(let purposesConsent, let vendors):
-//                        item.actionHandler(
-//                            .save(
-//                                purposesConsent: KetchSDK.ConsentStatus(
-//                                    purposes: purposesConsent,
-//                                    vendors: vendors
-//                                )
-//                            )
-//                        )
-
-                    case .close: break
-                    case .openUrl(let url): return child(with: url)
-                    }
-
-                    return nil
-                }
-            )
-
-            return PreferenceView(props: preferenceProps)
-                .asResponsiveSheet(style: .screenCover)
+//            return PreferenceView(props: preferenceProps, actionHandler: nil)
+//                .asResponsiveSheet(style: .screenCover)
         }
 
         func child(with url: URL) -> PresentationItem? {
@@ -720,22 +522,4 @@ fileprivate extension UIEdgeInsets {
     var insets: EdgeInsets {
         EdgeInsets(top: top, leading: left, bottom: bottom, trailing: right)
     }
-}
-
-private extension Color {
-  init(hex: String) {
-    let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-    var int: UInt64 = 0
-    Scanner(string: hex).scanHexInt64(&int)
-    let a, r, g, b: UInt64
-
-    switch hex.count {
-    case 3: (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-    case 6: (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-    case 8:  (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-    default: (a, r, g, b) = (1, 1, 1, 0)
-    }
-
-    self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
-  }
 }

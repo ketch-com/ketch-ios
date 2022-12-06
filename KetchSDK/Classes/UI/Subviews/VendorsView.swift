@@ -8,25 +8,12 @@
 import SwiftUI
 
 struct VendorsView: View {
-    struct Props {
-        let title: String
-        let description: String
-        let theme: Theme
-
-        struct Theme {
-            let textFontSize: CGFloat = 14
-            let bodyBackgroundColor: Color
-            let contentColor: Color
-            let linkColor: Color
-        }
-    }
-
     enum Action {
         case close
         case openUrl(URL)
     }
 
-    let props: Props
+    let props: Props.VendorList
 
     @Binding var vendorConsents: [PurposesView.VendorConsent]
 

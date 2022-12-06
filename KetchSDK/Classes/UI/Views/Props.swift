@@ -39,19 +39,17 @@ extension Props.Modal.Theme {
 
 extension Props.PurposesList {
     init(
-        modalConfig: KetchSDK.Configuration.Experience.ConsentExperience.Modal,
+        bodyTitle: String,
+        bodyDescription: String,
+        consentTitle: String?,
+        hideConsentTitle: Bool = false,
+        hideLegalBases: Bool = false,
         purposes: [KetchSDK.Configuration.Purpose]?,
         vendors: [KetchSDK.Configuration.Vendor]?,
         purposesConsent: [String: Bool],
         vendorsConsent: [String]?,
         theme: Theme
     ) {
-        let hideConsentTitle = modalConfig.hideConsentTitle ?? false
-        let hideLegalBases = modalConfig.hideLegalBases ?? false
-        let bodyTitle = modalConfig.bodyTitle ?? String()
-        let bodyDescription = modalConfig.bodyDescription ?? String()
-        let consentTitle = hideConsentTitle ? nil : modalConfig.consentTitle
-
         let purposes = purposes?.map { purpose in
             Props.Purpose(
                 with: purpose,
@@ -180,9 +178,9 @@ extension Props.PurposesList.Theme {
 extension Props.Preference.Theme {
     var purposesListTheme: Props.PurposesList.Theme {
         .init(
-            bodyBackgroundColor: .white,
+            bodyBackgroundColor: bodyBackgroundColor,
             contentColor: contentColor,
-            linkColor: contentColor
+            linkColor: linkColor
         )
     }
 
@@ -191,6 +189,44 @@ extension Props.Preference.Theme {
             textColor: firstButtonBackgroundColor,
             borderColor: firstButtonBorderColor,
             backgroundColor: firstButtonTextColor
+        )
+    }
+}
+
+extension Props.Preference.Theme {
+    init(with theme: KetchSDK.Configuration.Theme?) {
+        let headerBackgroundColor = Color(hex: theme?.formHeaderBackgroundColor ?? String())
+        let headerContentColor = Color(hex: theme?.formHeaderContentColor ?? String())
+
+        let contentColor = Color(hex: theme?.formContentColor ?? String())
+        let bodyBackgroundColor = Color.white
+
+        let switchOffColor = Color(hex: theme?.formSwitchOffColor ?? "#7C868D")
+        let switchOnColor = Color(hex: theme?.formSwitchOnColor ?? theme?.formContentColor ?? String())
+
+        let firstButtonBackgroundColor = Color(hex: theme?.formButtonColor ?? String())
+        let firstButtonBorderColor = Color(hex: theme?.formButtonColor ?? String())
+        let firstButtonTextColor = Color.white
+
+        let secondButtonBackgroundColor = Color.white
+        let secondButtonBorderColor = Color(hex: theme?.formButtonColor ?? String())
+        let secondButtonTextColor = Color(hex: theme?.formButtonColor ?? String())
+
+        self.init(
+            headerBackgroundColor: headerBackgroundColor,
+            headerTextColor: headerContentColor,
+            bodyBackgroundColor: bodyBackgroundColor,
+            contentColor: contentColor,
+            linkColor: firstButtonBackgroundColor,
+            switchOffColor: switchOffColor,
+            switchOnColor: switchOnColor,
+            borderRadius: theme?.buttonBorderRadius ?? 0,
+            firstButtonBackgroundColor: firstButtonBackgroundColor,
+            firstButtonBorderColor: firstButtonBorderColor,
+            firstButtonTextColor: firstButtonTextColor,
+            secondButtonBackgroundColor: secondButtonBackgroundColor,
+            secondButtonBorderColor: secondButtonBorderColor,
+            secondButtonTextColor: secondButtonTextColor
         )
     }
 }

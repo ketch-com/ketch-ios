@@ -35,23 +35,23 @@ struct PreferenceView: View {
                 HStack {
                     Spacer()
                     Text("Powered by")
-                        .foregroundColor(props.theme.contentColor)
+                        .foregroundColor(props.theme.headerTextColor)
                 }
 
                 HStack {
                     Text(props.title)
                         .font(.system(size: props.theme.titleFontSize, weight: .heavy))
-                        .foregroundColor(props.theme.contentColor)
+                        .foregroundColor(props.theme.headerTextColor)
                     Spacer()
 
                 }
 
             }
             .padding(24)
-            .background(Color.black)
+            .background(props.theme.headerBackgroundColor)
 
             tabBar
-                .background(Color.black)
+                .background(props.theme.headerBackgroundColor)
 
             VStack {
                 switch selectedTab {
@@ -61,7 +61,7 @@ struct PreferenceView: View {
                 }
             }
         }
-        .background(Color.white)
+        .background(props.theme.bodyBackgroundColor)
     }
 
     @ViewBuilder
@@ -71,14 +71,14 @@ struct PreferenceView: View {
                 let isSelectedTab = selectedTab == tab
                 VStack {
                     Text(props.tabTitle(with: tab))
-                        .foregroundColor(props.theme.contentColor)
+                        .foregroundColor(props.theme.headerTextColor)
                         .frame(maxWidth: .infinity)
                         .opacity(isSelectedTab ? 1 : 0.5)
 
                     if isSelectedTab {
                         RoundedRectangle(cornerRadius: 2)
                             .frame(height: 4)
-                            .foregroundColor(props.theme.contentColor)
+                            .foregroundColor(props.theme.headerTextColor)
                     }
                 }
                 .onTapGesture {
@@ -141,7 +141,13 @@ struct PreferenceView: View {
 
     @ViewBuilder
     var preferences: some View {
-        Spacer()
+        PurposesView(
+            props: props.preferences.purposes,
+            purposeConsents: $consentsList.purposeConsents,
+            vendorConsents: $consentsList.vendorConsents
+        ) { action in
+
+        }
     }
 
     @ViewBuilder

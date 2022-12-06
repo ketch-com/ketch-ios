@@ -8,6 +8,12 @@
 import SwiftUI
 
 extension KetchUI {
+    enum ViewStyle {
+        case bottomSheet(backgroundColor: Color = Color(UIColor.systemBackground))
+        case popUp
+        case screenCover
+    }
+
     public struct PresentationItem: Identifiable {
         let itemType: ItemType
         let config: KetchSDK.Configuration
@@ -174,8 +180,14 @@ extension KetchUI {
         func modal(item: ItemType.ModalItem) -> some View {
             let theme = Props.Modal.Theme(with: config.theme)
 
+            let hideConsentTitle = item.config.hideConsentTitle ?? false
+
             let purposesProps = Props.PurposesList(
-                modalConfig: item.config,
+                bodyTitle: item.config.bodyTitle ?? String(),
+                bodyDescription: item.config.bodyDescription ?? String(),
+                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
+                hideConsentTitle: hideConsentTitle,
+                hideLegalBases: item.config.hideLegalBases ?? false,
                 purposes: config.purposes,
                 vendors: config.vendors,
                 purposesConsent: consent.purposes,
@@ -200,7 +212,67 @@ extension KetchUI {
                 .asResponsiveSheet(style: .popUp)
         }
 
-        private func handleAction(for item: ItemType.ModalItem) -> ((ModalView.Action) -> KetchUI.PresentationItem?) {
+        var jit: some View {
+            JitView()
+                .asResponsiveSheet(style: .popUp)
+        }
+
+        func preference(item: ItemType.PreferenceItem) -> some View {
+            let theme = Props.Preference.Theme(with: config.theme)
+
+            let purposesProps = Props.PurposesList(
+                bodyTitle: item.config.consents.bodyTitle ?? String(),
+                bodyDescription: item.config.consents.bodyDescription ?? String(),
+                consentTitle: "Purposes",
+                purposes: config.purposes,
+                vendors: config.vendors,
+                purposesConsent: consent.purposes,
+                vendorsConsent: consent.vendors,
+                theme: theme.purposesListTheme
+            )
+
+            let preferenceProps = Props.Preference(
+                title: item.config.title,
+                privacyPolicy: .init(
+                    tabName: item.config.overview.tabName,
+                    title: item.config.overview.bodyTitle,
+                    text: item.config.overview.bodyDescription
+                ),
+                preferences: .init(
+                    tabName: item.config.consents.tabName,
+                    purposes: purposesProps
+                ),
+                dataRights: .init(
+                    tabName: item.config.rights.tabName,
+                    title: item.config.rights.bodyTitle,
+                    text: item.config.rights.bodyDescription
+                ),
+                theme: theme
+            )
+
+
+            return PreferenceView(props: preferenceProps, actionHandler: handleAction(for: item))
+                .asResponsiveSheet(style: .screenCover)
+        }
+
+        func child(with url: URL) -> PresentationItem? {
+            switch url.absoluteString {
+//            case "triggerModal", "privacyPolicy", "termsOfService":
+//                return .init(
+//                    itemType: .modal(),
+//                    config: config,
+//                    consent: consent
+//                ) { _ in }
+                
+            default:
+                UIApplication.shared.open(url)
+                return nil
+            }
+        }
+
+        private func handleAction(
+            for item: ItemType.ModalItem
+        ) -> ((ModalView.Action) -> KetchUI.PresentationItem?) {
             { action in
                 switch action {
                 case .save(let purposesConsent, let vendors):
@@ -221,123 +293,18 @@ extension KetchUI {
             }
         }
 
-        var jit: some View {
-            JitView()
-                .asResponsiveSheet(style: .popUp)
-        }
+        private func handleAction(
+            for item: ItemType.PreferenceItem
+        ) -> ((PreferenceView.Action) -> KetchUI.PresentationItem?) {
+            { action in
+                switch action {
+                case .close: break
+                case .openUrl(let url): return child(with: url)
+                }
 
-        func preference(item: ItemType.PreferenceItem) -> some View {
-//            let theme = config.theme
-//
-//            let preferenceTheme = PreferenceView.Props.Theme(
-//                contentColor: .white,
-//                backgroundColor: .black,
-//                linkColor: .red,
-//                borderRadius: 5,
-//                firstButtonTextColor: .white,
-//                firstButtonBorderColor: .blue,
-//                firstButtonBackgroundColor: .blue,
-//                secondButtonTextColor: .blue,
-//                secondButtonBorderColor: .blue,
-//                secondButtonBackgroundColor: .white
-//            )
-//
-////            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-////            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
-////            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
-////            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
-////            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
-////
-////            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
-////            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
-////            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-////
-////            let modalTheme = ModalView.Props.Theme(
-////                headerBackgroundColor: modalHeaderBackgroundColor,
-////                headerTextColor: modalHeaderContentColor,
-////                bodyBackgroundColor: .white,
-////                contentColor: modalContentColor,
-////                linkColor: modalContentColor,
-////                switchOffColor: switchOffColor,
-////                switchOnColor: switchOnColor,
-////                borderRadius: theme?.buttonBorderRadius ?? 0
-////            )
-
-//            let preferenceProps = Props.Preference(
-//                title: item.config.title,
-//                privacyPolicy: .init(
-//                    tabName: item.config.overview.tabName,
-//                    title: item.config.overview.bodyTitle,
-//                    text: item.config.overview.bodyDescription
-//                ),
-//                preferences: .init(
-//                    tabName: item.config.consents.tabName,
-//                    purposes: PurposesView.Props(
-//                        bodyTitle: item.config.consents.bodyTitle ?? "",
-//                        bodyDescription: item.config.consents.bodyDescription ?? "",
-//                        consentTitle: nil,
-//                        purposes: [],
-//                        vendors: [],
-//                        theme: PurposesView.Props.Theme(
-//                            bodyBackgroundColor: .white,
-//                            contentColor: .black,
-//                            linkColor: .red
-//                        )
-//                    )
-//                ),
-//                dataRights: .init(
-//                    tabName: item.config.rights.tabName,
-//                    title: item.config.rights.bodyTitle,
-//                    text: item.config.rights.bodyDescription
-//                ),
-//                theme: preferenceTheme,
-//                actionHandler: { action in
-//                    switch action {
-////                    case .save(let purposesConsent, let vendors):
-////                        item.actionHandler(
-////                            .save(
-////                                purposesConsent: KetchSDK.ConsentStatus(
-////                                    purposes: purposesConsent,
-////                                    vendors: vendors
-////                                )
-////                            )
-////                        )
-//
-//                    case .close: break
-//                    case .openUrl(let url): return child(with: url)
-//                    }
-//
-//                    return nil
-//                }
-//            )
-
-            JitView()
-                .asResponsiveSheet(style: .popUp)
-
-//            return PreferenceView(props: preferenceProps, actionHandler: nil)
-//                .asResponsiveSheet(style: .screenCover)
-        }
-
-        func child(with url: URL) -> PresentationItem? {
-            switch url.absoluteString {
-//            case "triggerModal", "privacyPolicy", "termsOfService":
-//                return .init(
-//                    itemType: .modal(),
-//                    config: config,
-//                    consent: consent
-//                ) { _ in }
-                
-            default:
-                UIApplication.shared.open(url)
                 return nil
             }
         }
-    }
-
-    enum ViewStyle {
-        case bottomSheet(backgroundColor: Color = Color(UIColor.systemBackground))
-        case popUp
-        case screenCover
     }
 }
 

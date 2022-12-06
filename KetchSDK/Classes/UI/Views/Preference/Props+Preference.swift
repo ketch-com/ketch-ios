@@ -55,6 +55,10 @@ extension Props {
             let firstButtonBackgroundColor: Color
             let firstButtonBorderColor: Color
             let firstButtonTextColor: Color
+
+            let secondButtonBackgroundColor: Color
+            let secondButtonBorderColor: Color
+            let secondButtonTextColor: Color
         }
 
         func tabTitle(with tab: TabType) -> String {

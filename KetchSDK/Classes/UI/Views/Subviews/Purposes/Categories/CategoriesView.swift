@@ -22,7 +22,7 @@ struct CategoriesView: View {
                     Text(props.title)
                         .font(.system(size: 16, weight: .bold))
 
-                    KetchUI.PresentationItem.descriptionText(with: props.description) { url in
+                    DescriptionMarkupText(description: props.description) { url in
                         actionHandler(.openUrl(url))
                     }
                     .font(.system(size: props.theme.textFontSize))

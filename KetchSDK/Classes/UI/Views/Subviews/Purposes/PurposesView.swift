@@ -26,7 +26,7 @@ struct PurposesView: View {
                 Text(props.bodyTitle)
                     .font(.system(size: 16, weight: .bold))
 
-                KetchUI.PresentationItem.descriptionText(with: props.bodyDescription) { url in
+                DescriptionMarkupText(description: props.bodyDescription) { url in
                     actionHandler(.openUrl(url))
                 }
                 .font(.system(size: props.theme.textFontSize))

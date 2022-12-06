@@ -68,7 +68,7 @@ struct BannerView: View {
                 .foregroundColor(props.theme.contentColor)
             }
 
-            KetchUI.PresentationItem.descriptionText(with: props.text) { url in
+            DescriptionMarkupText(description: props.text) { url in
                 handle(action: .openUrl(url))
             }
             .font(.system(size: props.theme.textFontSize))

@@ -1,5 +1,5 @@
 //
-//  PresentationItem+DescriptionText.swift
+//  DescriptionMarkupText.swift
 //  KetchSDK
 //
 //  Created by Anton Lyfar on 23.11.2022.
@@ -7,9 +7,11 @@
 
 import SwiftUI
 
-extension KetchUI.PresentationItem {
-    @ViewBuilder
-    static func descriptionText(with description: String, handleUrl: @escaping (URL) -> Void) -> some View {
+struct DescriptionMarkupText: View {
+    let description: String
+    let handleUrl: (URL) -> Void
+
+    var body: some View {
         if #available(iOS 15.0, *) {
             formattedText(with: description)
                 .environment(\.openURL, OpenURLAction { url in
@@ -23,7 +25,7 @@ extension KetchUI.PresentationItem {
     }
 
     @ViewBuilder
-    private static func formattedText(with description: String) -> some View {
+    private func formattedText(with description: String) -> some View {
         description.markupFragments().convertToLinks().reduce(Text("")) { result, fragment in
             let text = Text(LocalizedStringKey(String(fragment.substring)))
             switch fragment.type {

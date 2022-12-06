@@ -103,8 +103,8 @@ struct PreferenceView: View {
                             }
                         }
 
-                        KetchUI.PresentationItem.descriptionText(
-                            with: props.privacyPolicy.text ?? ""
+                        DescriptionMarkupText(
+                            description: props.privacyPolicy.text ?? ""
                         ) { url in
                             handle(action: .openUrl(url))
                         }

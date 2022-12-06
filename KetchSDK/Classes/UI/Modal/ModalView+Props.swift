@@ -11,13 +11,7 @@ extension ModalView {
     struct Props {
         let title: String
         let showCloseIcon: Bool
-        let bodyTitle: String
-        let bodyDescription: String
-        let consentTitle: String?
-        let purposes: [Purpose]
-        
-        let vendors: [Vendor]
-        
+        let purposes: PurposesView.Props
         let saveButton: Button?
         
         let theme: Theme
@@ -32,34 +26,7 @@ extension ModalView {
             let legalBasisName: String?
             let purposeDescription: String
             let legalBasisDescription: String?
-            let categories: [Category]
-        }
-        
-        struct Vendor: Hashable, Identifiable {
-            let id: String
-            let name: String
-            let isAccepted: Bool
-            let purposes: [VendorPurpose]?
-            let specialPurposes: [VendorPurpose]?
-            let features: [VendorPurpose]?
-            let specialFeatures: [VendorPurpose]?
-            let policyUrl: URL?
-
-            struct VendorPurpose: Hashable, Identifiable {
-                var id: String { name }
-
-                let name: String
-                let legalBasis: String?
-            }
-        }
-        
-        struct Category: Hashable, Identifiable {
-            var id: String { name }
-
-            let name: String
-            let retentionPeriod: String
-            let externalTransfers: String
-            let description: String
+            let categories: [CategoriesView.Props.Category]
         }
         
         struct Button {

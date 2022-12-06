@@ -199,8 +199,8 @@ extension KetchSDK.Configuration {
         public let code: String
         public let version: Int
         public let title: String
-        public let rights: RightsTab?
-        public let consents: ConsentsTab?
+        public let rights: RightsTab
+        public let consents: ConsentsTab
         public let overview: OverviewTab
 
         public struct RightsTab: Codable {

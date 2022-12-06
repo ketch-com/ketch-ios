@@ -7,9 +7,25 @@
 
 import SwiftUI
 
+extension PurposesView.Props {
+    struct Purpose: Hashable, Identifiable {
+        let code: String
+        let consent: Bool
+        let required: Bool
+        let id: String = UUID().uuidString
+        let title: String
+        let legalBasisName: String?
+        let purposeDescription: String
+        let legalBasisDescription: String?
+        let categories: [CategoriesView.Props.Category]
+    }
+}
+
 struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
+    typealias Purpose = PurposesView.Props.Purpose
+
     var consent: Binding<Bool>
-    let purpose: ModalView.Props.Purpose
+    let purpose: Purpose
     let vendorsDestination: (() -> VendorsContent)?
     let categoriesDestination: (() -> CategoriesContent)?
 

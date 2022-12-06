@@ -19,7 +19,7 @@ extension KetchUI {
             case banner(BannerItem)
             case modal(ModalItem)
             case jit
-            case preference
+            case preference(PreferenceItem)
 
             struct BannerItem {
                 let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
@@ -33,6 +33,15 @@ extension KetchUI {
 
             struct ModalItem {
                 let config: KetchSDK.Configuration.Experience.ConsentExperience.Modal
+                let actionHandler: (Action) -> Void
+
+                enum Action {
+                    case save(purposesConsent: KetchSDK.ConsentStatus)
+                }
+            }
+
+            struct PreferenceItem {
+                let config: KetchSDK.Configuration.PreferenceExperience
                 let actionHandler: (Action) -> Void
 
                 enum Action {
@@ -77,13 +86,31 @@ extension KetchUI {
             )
         }
 
+        static func preference(
+            preferenceConfig: KetchSDK.Configuration.PreferenceExperience,
+            config: KetchSDK.Configuration,
+            consent: KetchSDK.ConsentStatus,
+            actionHandler: @escaping (ItemType.PreferenceItem.Action) -> Void
+        ) -> PresentationItem {
+            PresentationItem(
+                itemType: .preference(
+                    ItemType.PreferenceItem(
+                        config: preferenceConfig,
+                        actionHandler: actionHandler
+                    )
+                ),
+                config: config,
+                consent: consent
+            )
+        }
+
         @ViewBuilder
         public var content: some View {
             switch itemType {
             case .banner(let bannerItem): banner(item: bannerItem)
             case .modal(let modalItem): modal(item: modalItem)
             case .jit: jit
-            case .preference: preference
+            case .preference(let preferenceItem): preference(item: preferenceItem)
             }
         }
 
@@ -171,82 +198,225 @@ extension KetchUI {
             let hideConsentTitle = item.config.hideConsentTitle ?? false
             let hideLegalBases = item.config.hideLegalBases ?? false
 
-            let modalProps = ModalView.Props(
-                title: item.config.title,
-                showCloseIcon: item.config.showCloseIcon ?? false,
+            let purposes: [PurposesView.Props.Purpose] = config.purposes?.map { purpose in
+                PurposesView.Props.Purpose(
+                    code: purpose.code,
+                    consent: consent.purposes[purpose.code] ?? false,
+                    required: purpose.requiresOptIn ?? false,
+                    title: purpose.name ?? String(),
+                    legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
+                    purposeDescription: purpose.description ?? String(),
+                    legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
+                    categories: purpose.categories?.map { category in
+                        CategoriesView.Props.Category(
+                            name: category.name,
+                            retentionPeriod: category.retentionPeriod,
+                            externalTransfers: category.externalTransfers,
+                            description: category.description
+                        )
+                    } ?? []
+                )
+            } ?? []
+
+            let purposesProps = PurposesView.Props(
                 bodyTitle: item.config.bodyTitle ?? String(),
                 bodyDescription: item.config.bodyDescription ?? String(),
                 consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
-                purposes: config.purposes?.map { purpose in
-                    ModalView.Props.Purpose(
-                        code: purpose.code,
-                        consent: consent.purposes[purpose.code] ?? false,
-                        required: purpose.requiresOptIn ?? false,
-                        title: purpose.name ?? String(),
-                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
-                        purposeDescription: purpose.description ?? String(),
-                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
-                        categories: purpose.categories?.map { category in
-                            ModalView.Props.Category(
-                                name: category.name,
-                                retentionPeriod: category.retentionPeriod,
-                                externalTransfers: category.externalTransfers,
-                                description: category.description
-                            )
-                        } ?? []
-                    )
-                } ?? [],
+                purposes: purposes,
                 vendors: config.vendors?.map { vendor in
                     var policyUrl: URL?
                     if let policy = vendor.policyUrl {
                         policyUrl = URL(string: policy)
                     }
 
-                    return ModalView.Props.Vendor(
+                    return PurposesView.Props.Vendor(
                         id: vendor.id,
                         name: vendor.name,
                         isAccepted: consent.vendors?.contains(vendor.id) ?? false,
                         purposes: vendor.purposes?.map {
-                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
                         },
                         specialPurposes: vendor.purposes?.map {
-                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
                         },
                         features: vendor.purposes?.map {
-                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
                         },
                         specialFeatures: vendor.purposes?.map {
-                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
                         },
                         policyUrl: policyUrl
                     )
                 } ?? [],
+                theme: PurposesView.Props.Theme(
+                    bodyBackgroundColor: .white,
+                    contentColor: modalContentColor,
+                    linkColor: modalContentColor
+                )
+            )
+
+//            let purposes = PurposesView.Props(
+//                bodyTitle: item.config.bodyTitle ?? String(),
+//                bodyDescription: item.config.bodyDescription ?? String(),
+//                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
+//                purposes: config.purposes?.map { purpose in
+//                    ModalView.Props.Purpose(
+//                        code: purpose.code,
+//                        consent: consent.purposes[purpose.code] ?? false,
+//                        required: purpose.requiresOptIn ?? false,
+//                        title: purpose.name ?? String(),
+//                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
+//                        purposeDescription: purpose.description ?? String(),
+//                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
+//                        categories: purpose.categories?.map { category in
+//                            CategoriesView.Props.Category(
+//                                name: category.name,
+//                                retentionPeriod: category.retentionPeriod,
+//                                externalTransfers: category.externalTransfers,
+//                                description: category.description
+//                            )
+//                        } ?? []
+//                    )
+//                } ?? [],
+//                vendors: config.vendors?.map { vendor in
+//                    var policyUrl: URL?
+//                    if let policy = vendor.policyUrl {
+//                        policyUrl = URL(string: policy)
+//                    }
+//
+//                    return PurposesView.Props.Vendor(
+//                        id: vendor.id,
+//                        name: vendor.name,
+//                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
+//                        purposes: vendor.purposes?.map {
+//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        specialPurposes: vendor.purposes?.map {
+//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        features: vendor.purposes?.map {
+//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        specialFeatures: vendor.purposes?.map {
+//                            PurposesView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        policyUrl: policyUrl
+//                    )
+//                } ?? [],
+//                theme: PurposesView.Props.Theme(
+//                    bodyBackgroundColor: .white,
+//                    contentColor: modalContentColor,
+//                    linkColor: modalContentColor
+//                )
+//            )
+
+            let modalProps = ModalView.Props(
+                title: item.config.title,
+                showCloseIcon: item.config.showCloseIcon ?? false,
+                purposes: purposesProps,
                 saveButton: ModalView.Props.Button(
                     text: item.config.buttonText,
                     textColor: firstButtonTextColor,
                     borderColor: firstButtonBorderColor,
                     backgroundColor: firstButtonBackgroundColor
                 ),
-                theme: modalTheme,
-                actionHandler: { action in
-                    switch action {
-                    case .save(let purposesConsent, let vendors):
-                        item.actionHandler(
-                            .save(
-                                purposesConsent: KetchSDK.ConsentStatus(
-                                    purposes: purposesConsent,
-                                    vendors: vendors
-                                )
+                theme: modalTheme
+            ) { action in
+                switch action {
+                case .save(let purposesConsent, let vendors):
+                    item.actionHandler(
+                        .save(
+                            purposesConsent: KetchSDK.ConsentStatus(
+                                purposes: purposesConsent,
+                                vendors: vendors
                             )
                         )
-
-                    case .close: break
-                    case .openUrl(let url): return child(with: url)
-                    }
-
-                    return nil
+                    )
+                    
+                case .close: break
+                case .openUrl(let url): return child(with: url)
                 }
-            )
+                
+                return nil
+            }
+
+
+//            let modalProps2 = ModalView.Props(
+//                title: item.config.title,
+//                showCloseIcon: item.config.showCloseIcon ?? false,
+//                bodyTitle: item.config.bodyTitle ?? String(),
+//                bodyDescription: item.config.bodyDescription ?? String(),
+//                consentTitle: hideConsentTitle ? nil : item.config.consentTitle,
+//                purposes: config.purposes?.map { purpose in
+//                    ModalView.Props.Purpose(
+//                        code: purpose.code,
+//                        consent: consent.purposes[purpose.code] ?? false,
+//                        required: purpose.requiresOptIn ?? false,
+//                        title: purpose.name ?? String(),
+//                        legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
+//                        purposeDescription: purpose.description ?? String(),
+//                        legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription,
+//                        categories: purpose.categories?.map { category in
+//                            CategoriesView.Props.Category(
+//                                name: category.name,
+//                                retentionPeriod: category.retentionPeriod,
+//                                externalTransfers: category.externalTransfers,
+//                                description: category.description
+//                            )
+//                        } ?? []
+//                    )
+//                } ?? [],
+//                vendors: config.vendors?.map { vendor in
+//                    var policyUrl: URL?
+//                    if let policy = vendor.policyUrl {
+//                        policyUrl = URL(string: policy)
+//                    }
+//
+//                    return ModalView.Props.Vendor(
+//                        id: vendor.id,
+//                        name: vendor.name,
+//                        isAccepted: consent.vendors?.contains(vendor.id) ?? false,
+//                        purposes: vendor.purposes?.map {
+//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        specialPurposes: vendor.purposes?.map {
+//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        features: vendor.purposes?.map {
+//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        specialFeatures: vendor.purposes?.map {
+//                            ModalView.Props.Vendor.VendorPurpose(name: $0.name, legalBasis: $0.legalBasis)
+//                        },
+//                        policyUrl: policyUrl
+//                    )
+//                } ?? [],
+//                saveButton: ModalView.Props.Button(
+//                    text: item.config.buttonText,
+//                    textColor: firstButtonTextColor,
+//                    borderColor: firstButtonBorderColor,
+//                    backgroundColor: firstButtonBackgroundColor
+//                ),
+//                theme: modalTheme,
+//                actionHandler: { action in
+//                    switch action {
+//                    case .save(let purposesConsent, let vendors):
+//                        item.actionHandler(
+//                            .save(
+//                                purposesConsent: KetchSDK.ConsentStatus(
+//                                    purposes: purposesConsent,
+//                                    vendors: vendors
+//                                )
+//                            )
+//                        )
+//
+//                    case .close: break
+//                    case .openUrl(let url): return child(with: url)
+//                    }
+//
+//                    return nil
+//                }
+//            )
 
             return ModalView(props: modalProps)
                 .asResponsiveSheet(style: .popUp)
@@ -257,8 +427,92 @@ extension KetchUI {
                 .asResponsiveSheet(style: .popUp)
         }
 
-        var preference: some View {
-            PreferenceView()
+        func preference(item: ItemType.PreferenceItem) -> some View {
+            let theme = config.theme
+
+            let preferenceTheme = PreferenceView.Props.Theme(
+                contentColor: .white,
+                backgroundColor: .black,
+                linkColor: .red,
+                borderRadius: 5,
+                firstButtonTextColor: .white,
+                firstButtonBorderColor: .blue,
+                firstButtonBackgroundColor: .blue,
+                secondButtonTextColor: .blue,
+                secondButtonBorderColor: .blue,
+                secondButtonBackgroundColor: .white
+            )
+
+//            let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+//            let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
+//            let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
+//            let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
+//            let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
+//
+//            let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
+//            let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
+//            let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+//
+//            let modalTheme = ModalView.Props.Theme(
+//                headerBackgroundColor: modalHeaderBackgroundColor,
+//                headerTextColor: modalHeaderContentColor,
+//                bodyBackgroundColor: .white,
+//                contentColor: modalContentColor,
+//                linkColor: modalContentColor,
+//                switchOffColor: switchOffColor,
+//                switchOnColor: switchOnColor,
+//                borderRadius: theme?.buttonBorderRadius ?? 0
+//            )
+
+            let preferenceProps = PreferenceView.Props(
+                title: item.config.title,
+                privacyPolicy: .init(
+                    tabName: item.config.overview.tabName,
+                    title: item.config.overview.bodyTitle,
+                    text: item.config.overview.bodyDescription
+                ),
+                preferences: .init(
+                    tabName: item.config.consents.tabName,
+                    purposes: PurposesView.Props(
+                        bodyTitle: item.config.consents.bodyTitle ?? "",
+                        bodyDescription: item.config.consents.bodyDescription ?? "",
+                        consentTitle: nil,
+                        purposes: [],
+                        vendors: [],
+                        theme: PurposesView.Props.Theme(
+                            bodyBackgroundColor: .white,
+                            contentColor: .black,
+                            linkColor: .red
+                        )
+                    )
+                ),
+                dataRights: .init(
+                    tabName: item.config.rights.tabName,
+                    title: item.config.rights.bodyTitle,
+                    text: item.config.rights.bodyDescription
+                ),
+                theme: preferenceTheme,
+                actionHandler: { action in
+                    switch action {
+//                    case .save(let purposesConsent, let vendors):
+//                        item.actionHandler(
+//                            .save(
+//                                purposesConsent: KetchSDK.ConsentStatus(
+//                                    purposes: purposesConsent,
+//                                    vendors: vendors
+//                                )
+//                            )
+//                        )
+
+                    case .close: break
+                    case .openUrl(let url): return child(with: url)
+                    }
+
+                    return nil
+                }
+            )
+
+            return PreferenceView(props: preferenceProps)
                 .asResponsiveSheet(style: .screenCover)
         }
 

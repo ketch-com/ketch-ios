@@ -38,7 +38,6 @@
 		3A1C7C2A2920691000621B25 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		3A1C7C2C2921BAE400621B25 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3A3C329F2911014500E65788 /* TCF_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCF_Tests.swift; sourceTree = "<group>"; };
-		3A4424A428EE46AE00F197A0 /* KetchSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; name = KetchSDK.podspec; path = "../../../../.cocoapods/repos-art/ios/Specs/KetchSDK/0.1.0/KetchSDK.podspec"; sourceTree = "<group>"; };
 		3A63EA5A29080301004B1421 /* CCPA_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCPA_Tests.swift; sourceTree = "<group>"; };
 		3A89296928F7139700C5EC6C /* ApiClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientMock.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* KetchSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KetchSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -148,7 +147,6 @@
 			isa = PBXGroup;
 			children = (
 				21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */,
-				3A4424A428EE46AE00F197A0 /* KetchSDK.podspec */,
 				FA84A940B0FA429895A596DF /* README.md */,
 				ED4A52D2059E10C5E3A33215 /* LICENSE */,
 			);

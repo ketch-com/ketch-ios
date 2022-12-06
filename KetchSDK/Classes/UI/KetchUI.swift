@@ -107,14 +107,21 @@ public class KetchUI: ObservableObject {
     public func showPreference() {
         guard
             let configuration,
-            let consentStatus
+            let consentStatus,
+            let preference = configuration.experiences?.preference
+
         else { return }
 
-        presentationItem = PresentationItem(
-            itemType: .preference,
+        presentationItem = PresentationItem.preference(
+            preferenceConfig: preference,
             config: configuration,
             consent: consentStatus
-        )
+        ) { action in
+            switch action {
+            case .save(let purposesConsent):
+                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+            }
+        }
     }
 }
 

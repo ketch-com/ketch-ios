@@ -128,18 +128,35 @@ struct PreferenceView: View {
 
     @ViewBuilder
     var preferences: some View {
-        PurposesView(
-            props: props.preferences.purposes,
-            purposeConsents: $consentsList.purposeConsents,
-            vendorConsents: $consentsList.vendorConsents
-        ) { action in
-
+        NavigationView {
+            PurposesView(
+                props: props.preferences.purposes,
+                purposeConsents: $consentsList.purposeConsents,
+                vendorConsents: $consentsList.vendorConsents
+            ) { action in
+                switch action {
+                case .openUrl(let url): handle(action: .openUrl(url))
+                case .close: handle(action: .close)
+                }
+            }
         }
+        .accentColor(props.theme.contentColor)
     }
 
     @ViewBuilder
     var dataRights: some View {
-        Spacer()
+        DataRightsView(
+            props: .init(
+                bodyTitle: props.dataRights.title,
+                bodyDescription: props.dataRights.text,
+                theme: props.theme.dataRightsTheme
+            )
+        ) { action in
+            switch action {
+            case .openUrl(let url): handle(action: .openUrl(url))
+            case .close: handle(action: .close)
+            }
+        }
     }
 
     @ViewBuilder

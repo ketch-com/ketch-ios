@@ -72,7 +72,6 @@ struct VendorsView: View {
             .background(props.theme.bodyBackgroundColor)
         }
         .navigationTitle("Vendors")
-        .animation(.easeInOut(duration: 0.15))
     }
 
     func setAllVendorIsAccept(_ value: Bool) {

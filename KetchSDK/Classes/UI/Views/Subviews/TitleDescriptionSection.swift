@@ -98,6 +98,16 @@ extension Props.Banner {
     }
 }
 
+extension Props.DataRightsView {
+    var titleDescriptionSectionProps: Props.TitleDescriptionSection {
+        .init(
+            bodyTitle: bodyTitle,
+            bodyDescription: bodyDescription ?? "",
+            theme: theme.titleDescriptionSectionTheme
+        )
+    }
+}
+
 extension Props.PurposesList.Theme {
     var titleDescriptionSectionTheme: Props.TitleDescriptionSection.Theme {
         .init(
@@ -158,3 +168,13 @@ extension Props.Banner.Theme {
         )
     }
 }
+
+extension Props.DataRightsView.Theme {
+    var titleDescriptionSectionTheme: Props.TitleDescriptionSection.Theme {
+        .init(
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
+}
+

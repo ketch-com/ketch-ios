@@ -63,4 +63,12 @@ extension Props.Preference.Theme {
             backgroundColor: firstButtonTextColor
         )
     }
+
+    var dataRightsTheme: Props.DataRightsView.Theme {
+        .init(
+            bodyBackgroundColor: bodyBackgroundColor,
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
 }

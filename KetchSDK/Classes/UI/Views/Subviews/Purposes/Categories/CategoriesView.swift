@@ -51,6 +51,5 @@ struct CategoriesView: View {
             .background(props.theme.bodyBackgroundColor)
         }
         .navigationTitle("Data Categories")
-        .animation(.easeInOut(duration: 0.15))
     }
 }

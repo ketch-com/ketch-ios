@@ -19,10 +19,18 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
         content
             .padding(.horizontal)
             .frame(maxWidth: .infinity)
-            .onTapGesture { isExpanded.toggle() }
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    isExpanded.toggle()
+                }
+            }
             .background(
                 Color.white
-                    .onTapGesture { isExpanded.toggle() }
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            isExpanded.toggle()
+                        }
+                    }
             )
     }
 

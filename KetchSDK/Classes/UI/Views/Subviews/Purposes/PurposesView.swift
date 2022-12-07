@@ -18,8 +18,6 @@ struct PurposesView: View {
     @Binding var vendorConsents: [PurposesView.VendorConsent]
     let actionHandler: (Action) -> Void
 
-    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
-
     var body: some View {
         ScrollView(showsIndicators: true) {
             TitleDescriptionSection(
@@ -108,7 +106,6 @@ struct PurposesView: View {
                 )
             }
         }
-        .animation(.easeInOut(duration: 0.15))
     }
 
     func setAllPurposeConsents(_ value: Bool) {

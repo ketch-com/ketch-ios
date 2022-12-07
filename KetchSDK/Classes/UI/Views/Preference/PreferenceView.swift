@@ -93,31 +93,18 @@ struct PreferenceView: View {
         ScrollView {
             VStack {
                 VStack {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if let title = props.privacyPolicy.title {
-                            HStack {
-                                Text(title)
-                                    .font(.system(size: props.theme.titleFontSize, weight: .heavy))
-                                    .foregroundColor(props.theme.contentColor)
-                                Spacer()
-                            }
+                    TitleDescriptionSection(
+                        props: props.titleDescriptionSectionProps
+                    ) { action in
+                        switch action {
+                        case .openUrl(let url): handle(action: .openUrl(url))
                         }
-
-                        DescriptionMarkupText(
-                            description: props.privacyPolicy.text ?? ""
-                        ) { url in
-                            handle(action: .openUrl(url))
-                        }
-                        .font(.system(size: props.theme.textFontSize))
-                        .padding(.bottom, 12)
-                        .foregroundColor(props.theme.contentColor)
-                        .accentColor(props.theme.linkColor)
-
-                        Spacer()
                     }
                     .fullScreenCover(item: $presentationItem) { item in
                         item.content
                     }
+
+                    Spacer()
 
                     button(
                         text: "Exit Settings",

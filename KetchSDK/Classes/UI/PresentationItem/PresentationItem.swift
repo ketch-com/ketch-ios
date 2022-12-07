@@ -121,60 +121,32 @@ extension KetchUI {
         }
 
         func banner(item: ItemType.BannerItem) -> some View {
-            let bannerBackgroundColor = Color(hex: config.theme?.bannerBackgroundColor ?? String())
-            let bannerButtonColor = Color(hex: config.theme?.bannerButtonColor ?? String())
-            let bannerSecondaryButtonColor = Color(hex: config.theme?.bannerSecondaryButtonColor ?? String())
-            let bannerContentColor = Color(hex: config.theme?.bannerContentColor ?? String())
+            let theme = Props.Banner.Theme(with: config.theme)
 
-            var primaryButton: BannerView.Props.Button?
+            var primaryButton: Props.Button?
+            var secondaryButton: Props.Button?
 
             if item.config.buttonText.isEmpty == false {
-                primaryButton = .init(
-                    text: item.config.buttonText,
-                    textColor: bannerBackgroundColor,
-                    borderColor: bannerButtonColor,
-                    backgroundColor: bannerButtonColor,
-                    action: .primary
-                )
+                primaryButton = .init(text: item.config.buttonText, theme: theme.primaryButtonTheme)
             }
 
-            var secondaryButton: BannerView.Props.Button?
-
-            if let secondaryButtonText = item.config.secondaryButtonText, secondaryButtonText.isEmpty == false {
-                secondaryButton = .init(
-                    text: secondaryButtonText,
-                    textColor: bannerButtonColor,
-                    borderColor: bannerButtonColor,
-                    backgroundColor: bannerSecondaryButtonColor,
-                    action: .secondary
-                )
+            if
+                let secondaryButtonText = item.config.secondaryButtonText,
+                secondaryButtonText.isEmpty == false
+            {
+                secondaryButton = .init(text: secondaryButtonText, theme: theme.secondaryButtonTheme)
             }
 
-            let bannerProps = BannerView.Props(
+            let bannerProps = Props.Banner(
                 title: item.config.title ?? String(),
                 text: item.config.footerDescription,
                 primaryButton: primaryButton,
                 secondaryButton: secondaryButton,
-                theme: BannerView.Props.Theme(
-                    contentColor: bannerContentColor,
-                    backgroundColor: bannerBackgroundColor,
-                    linkColor: bannerButtonColor,
-                    borderRadius: config.theme?.buttonBorderRadius ?? 0
-                ),
-                actionHandler: { action in
-                    switch action {
-                    case .primary: item.actionHandler(.primary)
-                    case .secondary: item.actionHandler(.secondary)
-                    case .close: break
-                    case .openUrl(let url): return child(with: url)
-                    }
-
-                    return nil
-                }
+                theme: theme
             )
 
-            return BannerView(props: bannerProps)
-                .asResponsiveSheet(style: .bottomSheet(backgroundColor: bannerBackgroundColor))
+            return BannerView(props: bannerProps, actionHandler: handleAction(for: item))
+                .asResponsiveSheet(style: .bottomSheet(backgroundColor: theme.backgroundColor))
         }
 
         func modal(item: ItemType.ModalItem) -> some View {
@@ -266,6 +238,21 @@ extension KetchUI {
                 
             default:
                 UIApplication.shared.open(url)
+                return nil
+            }
+        }
+
+        private func handleAction(
+            for item: ItemType.BannerItem
+        ) -> ((BannerView.Action) -> KetchUI.PresentationItem?) {
+            { action in
+                switch action {
+                case .primary: item.actionHandler(.primary)
+                case .secondary: item.actionHandler(.secondary)
+                case .close: break
+                case .openUrl(let url): return child(with: url)
+                }
+
                 return nil
             }
         }

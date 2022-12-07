@@ -8,45 +8,15 @@
 import SwiftUI
 
 struct BannerView: View {
-    struct Props {
-        let title: String
-        let text: String
-        let primaryButton: Button?
-        let secondaryButton: Button?
-        let theme: Theme
-        let actionHandler: (Action) -> KetchUI.PresentationItem?
-
-        struct Button {
-            let fontSize: CGFloat = 14
-            let height: CGFloat = 44
-            let borderWidth: CGFloat = 1
-
-            let text: String
-            let textColor: Color
-            let borderColor: Color
-            let backgroundColor: Color
-            let action: Action
-        }
-
-        struct Theme {
-            let titleFontSize: CGFloat = 20
-            let textFontSize: CGFloat = 14
-
-            let contentColor: Color
-            let backgroundColor: Color
-            let linkColor: Color
-            let borderRadius: Int
-        }
-
-        enum Action {
-            case primary
-            case secondary
-            case close
-            case openUrl(URL)
-        }
+    enum Action {
+        case primary
+        case secondary
+        case close
+        case openUrl(URL)
     }
 
-    let props: Props
+    let props: Props.Banner
+    let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
     @Environment(\.openURL) var openURL
@@ -68,22 +38,24 @@ struct BannerView: View {
                 .foregroundColor(props.theme.contentColor)
             }
 
-            DescriptionMarkupText(description: props.text) { url in
-                handle(action: .openUrl(url))
+            TitleDescriptionSection(
+                props: props.titleDescriptionSectionProps
+            ) { action in
+                switch action {
+                case .openUrl(let url): handle(action: .openUrl(url))
+                }
             }
-            .font(.system(size: props.theme.textFontSize))
             .padding(.bottom, 12)
-            .foregroundColor(props.theme.contentColor)
-            .accentColor(props.theme.linkColor)
+
 
             if let primaryButton = props.primaryButton {
-                button(props: primaryButton, cornerRadius: props.theme.borderRadius) {
+                button(props: primaryButton) {
                     self.handle(action: .primary)
                 }
             }
 
             if let secondaryButton = props.secondaryButton {
-                button(props: secondaryButton, cornerRadius: props.theme.borderRadius) {
+                button(props: secondaryButton) {
                     self.handle(action: .secondary)
                 }
             }
@@ -103,7 +75,6 @@ struct BannerView: View {
     @ViewBuilder
     private func button(
         props: Props.Button,
-        cornerRadius: Int,
         actionHandler: @escaping () -> Void
     ) -> some View {
         Button {
@@ -111,62 +82,62 @@ struct BannerView: View {
             presentationMode.wrappedValue.dismiss()
         } label: {
             Text(props.text)
-                .font(.system(size: props.fontSize, weight: .semibold))
-                .foregroundColor(props.textColor)
-                .frame(height: props.height)
+                .font(.system(size: props.theme.fontSize, weight: .semibold))
+                .foregroundColor(props.theme.textColor)
+                .frame(height: props.theme.height)
                 .frame(maxWidth: .infinity)
                 .overlay(
-                    RoundedRectangle(cornerRadius: CGFloat(cornerRadius))
+                    RoundedRectangle(cornerRadius: CGFloat(self.props.theme.borderRadius))
                         .stroke(
-                            props.borderColor,
-                            lineWidth: props.borderWidth
+                            props.theme.borderColor,
+                            lineWidth: props.theme.borderWidth
                         )
                 )
         }
         .background(
-            props.backgroundColor
-                .cornerRadius(CGFloat(cornerRadius))
+            props.theme.backgroundColor
+                .cornerRadius(CGFloat(self.props.theme.borderRadius))
         )
     }
 
-    private func handle(action: Props.Action) {
-        presentationItem = props.actionHandler(action)
+    private func handle(action: Action) {
+        presentationItem = actionHandler(action)
     }
 }
 
-struct BannerView_Previews: PreviewProvider {
-    static var previews: some View {
-        ZStack {
-            Color.gray
-            BannerView(
-                props: BannerView.Props(
-                    title: "Your Privacy",
-                    text: "Welcome! We’re glad you’re here and want you to know that we respect your privacy and your right to control how we collect, use, and share your personal data.\n\nGoogle site: http://google.com.  fjjjjjjjjj\nMy phone: +380671111111.\n\n[Trigger Modal](triggerModal)\n\n[Privacy Policy](privacyPolicy)\n[Terms & Conditions](termsOfService)\n\n[Custom Link](http://google.com)",
-                    primaryButton: BannerView.Props.Button(
-                        text: "I understand",
-                        textColor: .white,
-                        borderColor: .blue,
-                        backgroundColor: .blue,
-                        action: .primary
-                    ),
-                    secondaryButton: BannerView.Props.Button(
-                        text: "Cancel",
-                        textColor: .blue,
-                        borderColor: .blue,
-                        backgroundColor: .white,
-                        action: .secondary
-                    ),
-                    theme: BannerView.Props.Theme(
-                        contentColor: .black,
-                        backgroundColor: .white,
-                        linkColor: .red,
-                        borderRadius: 5
-                    ),
-                    actionHandler: { action in
-                        nil
-                    }
-                )
-            )
-        }
-    }
-}
+//struct BannerView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ZStack {
+//            Color.gray
+//            BannerView(
+//                props: BannerView.Props(
+//                    title: "Your Privacy",
+//                    text: "Welcome! We’re glad you’re here and want you to know that we respect your privacy and your right to control how we collect, use, and share your personal data.\n\nGoogle site: http://google.com.  fjjjjjjjjj\nMy phone: +380671111111.\n\n[Trigger Modal](triggerModal)\n\n[Privacy Policy](privacyPolicy)\n[Terms & Conditions](termsOfService)\n\n[Custom Link](http://google.com)",
+//                    primaryButton: BannerView.Props.Button(
+//                        text: "I understand",
+//                        textColor: .white,
+//                        borderColor: .blue,
+//                        backgroundColor: .blue,
+//                        action: .primary
+//                    ),
+//                    secondaryButton: BannerView.Props.Button(
+//                        text: "Cancel",
+//                        textColor: .blue,
+//                        borderColor: .blue,
+//                        backgroundColor: .white,
+//                        action: .secondary
+//                    ),
+//                    theme: BannerView.Props.Theme(
+//                        contentColor: .black,
+//                        backgroundColor: .white,
+//                        linkColor: .red,
+//                        borderRadius: 5
+//                    ),
+//                    actionHandler: { action in
+//                        nil
+//                    }
+//                )
+//            )
+//        }
+//    }
+//}

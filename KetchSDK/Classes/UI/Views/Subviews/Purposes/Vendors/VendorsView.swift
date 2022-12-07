@@ -22,16 +22,12 @@ struct VendorsView: View {
     var body: some View {
         VStack {
             ScrollView(showsIndicators: true) {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(props.title)
-                        .font(.system(size: 16, weight: .bold))
-
-                    DescriptionMarkupText(description: props.description) { url in
-                        actionHandler(.openUrl(url))
+                TitleDescriptionSection(
+                    props: props.titleDescriptionSectionProps
+                ) { action in
+                    switch action {
+                    case .openUrl(let url): actionHandler(.openUrl(url))
                     }
-                    .font(.system(size: props.theme.textFontSize))
-                    .foregroundColor(props.theme.contentColor)
-                    .accentColor(props.theme.linkColor)
                 }
                 .padding(18)
 

@@ -17,6 +17,7 @@ extension Props {
             let height: CGFloat = 44
             let borderWidth: CGFloat = 1
 
+            let borderRadius: Int
             let textColor: Color
             let borderColor: Color
             let backgroundColor: Color

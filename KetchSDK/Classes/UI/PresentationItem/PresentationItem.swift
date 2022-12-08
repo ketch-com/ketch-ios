@@ -285,6 +285,16 @@ extension KetchUI {
         ) -> ((PreferenceView.Action) -> KetchUI.PresentationItem?) {
             { action in
                 switch action {
+                case .save(let purposesConsent, let vendors):
+                    item.actionHandler(
+                        .save(
+                            purposesConsent: KetchSDK.ConsentStatus(
+                                purposes: purposesConsent,
+                                vendors: vendors
+                            )
+                        )
+                    )
+
                 case .close: break
                 case .openUrl(let url): return child(with: url)
                 }

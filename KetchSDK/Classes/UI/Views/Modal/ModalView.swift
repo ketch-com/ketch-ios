@@ -18,7 +18,7 @@ struct ModalView: View {
     let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
-    @ObservedObject private var consentsList = PurposesView.UserConsentsList()
+    @ObservedObject private var consentsList = UserConsentsList()
 
     @Environment(\.openURL) var openURL
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
@@ -57,7 +57,9 @@ struct ModalView: View {
                             props: props.purposes,
                             purposeConsents: $consentsList.purposeConsents,
                             vendorConsents: $consentsList.vendorConsents
-                        ) { action in
+                        ) {
+
+                        } actionHandler: { action in
                             switch action {
                             case .close: handle(action: .close)
                             case .openUrl(let url): handle(action: .openUrl(url))
@@ -66,10 +68,7 @@ struct ModalView: View {
 
                         VStack(spacing: 24) {
                             if let saveButton = props.saveButton {
-                                button(
-                                    props: saveButton,
-                                    cornerRadius: props.theme.borderRadius
-                                ) {
+                                CustomButton(props: saveButton) {
                                     handle(
                                         action: .save(
                                             purposeCodeConsents: consentsList.purposeConsents.reduce(
@@ -99,35 +98,6 @@ struct ModalView: View {
                 .accentColor(props.theme.contentColor)
             }
         }
-    }
-
-    @ViewBuilder
-    private func button(
-        props: Props.Button,
-        cornerRadius: Int,
-        actionHandler: @escaping () -> Void
-    ) -> some View {
-        Button {
-            actionHandler()
-            presentationMode.wrappedValue.dismiss()
-        } label: {
-            Text(props.text)
-                .font(.system(size: props.theme.fontSize, weight: .semibold))
-                .foregroundColor(props.theme.textColor)
-                .frame(height: props.theme.height)
-                .frame(maxWidth: .infinity)
-                .overlay(
-                    RoundedRectangle(cornerRadius: CGFloat(cornerRadius))
-                        .stroke(
-                            props.theme.borderColor,
-                            lineWidth: props.theme.borderWidth
-                        )
-                )
-        }
-        .background(
-            props.theme.backgroundColor
-                .cornerRadius(CGFloat(cornerRadius))
-        )
     }
 
     private func handle(action: Action) {

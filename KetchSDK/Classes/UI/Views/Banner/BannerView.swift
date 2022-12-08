@@ -49,14 +49,16 @@ struct BannerView: View {
 
 
             if let primaryButton = props.primaryButton {
-                button(props: primaryButton) {
+                CustomButton(props: primaryButton) {
                     self.handle(action: .primary)
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
 
             if let secondaryButton = props.secondaryButton {
-                button(props: secondaryButton) {
+                CustomButton(props: secondaryButton) {
                     self.handle(action: .secondary)
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
             
@@ -70,34 +72,6 @@ struct BannerView: View {
         .fullScreenCover(item: $presentationItem) { item in
             item.content
         }
-    }
-
-    @ViewBuilder
-    private func button(
-        props: Props.Button,
-        actionHandler: @escaping () -> Void
-    ) -> some View {
-        Button {
-            actionHandler()
-            presentationMode.wrappedValue.dismiss()
-        } label: {
-            Text(props.text)
-                .font(.system(size: props.theme.fontSize, weight: .semibold))
-                .foregroundColor(props.theme.textColor)
-                .frame(height: props.theme.height)
-                .frame(maxWidth: .infinity)
-                .overlay(
-                    RoundedRectangle(cornerRadius: CGFloat(self.props.theme.borderRadius))
-                        .stroke(
-                            props.theme.borderColor,
-                            lineWidth: props.theme.borderWidth
-                        )
-                )
-        }
-        .background(
-            props.theme.backgroundColor
-                .cornerRadius(CGFloat(self.props.theme.borderRadius))
-        )
     }
 
     private func handle(action: Action) {

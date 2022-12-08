@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PreferenceView: View {
     enum Action {
+        case save(purposeCodeConsents: [String: Bool], vendors: [String])
         case close
         case openUrl(URL)
     }
@@ -18,7 +19,7 @@ struct PreferenceView: View {
 
     @State var presentationItem: KetchUI.PresentationItem?
     @State private var selectedTab = Props.Preference.TabType.privacyPolicy
-    @ObservedObject private var consentsList = PurposesView.UserConsentsList()
+    @ObservedObject private var consentsList = UserConsentsList()
 
     @Environment(\.openURL) var openURL
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
@@ -106,11 +107,14 @@ struct PreferenceView: View {
 
                     Spacer()
 
-                    button(
-                        text: "Exit Settings",
-                        theme: props.theme.firstButtonTheme
+                    CustomButton(
+                        props: Props.Button(
+                            text: "Exit Settings",
+                            theme: props.theme.firstButtonTheme
+                        )
                     ) {
                         handle(action: .close)
+                        presentationMode.wrappedValue.dismiss()
                     }
                 }
                 .padding(18)
@@ -123,7 +127,6 @@ struct PreferenceView: View {
             .padding(.bottom, 12)
         }
         .background(Color(UIColor.systemGray6))
-        .ignoresSafeArea()
     }
 
     @ViewBuilder
@@ -133,7 +136,41 @@ struct PreferenceView: View {
                 props: props.preferences.purposes,
                 purposeConsents: $consentsList.purposeConsents,
                 vendorConsents: $consentsList.vendorConsents
-            ) { action in
+            ) {
+                VStack(spacing: 24) {
+                    CustomButton(
+                        props: .init(
+                            text: "Save",
+                            theme: props.theme.firstButtonTheme
+                        )
+                    ) {
+                        handle(
+                            action: .save(
+                                purposeCodeConsents: consentsList.purposeConsents.reduce(
+                                    into: [String: Bool]()
+                                ) { result, purposeConsent in
+                                    result[purposeConsent.purpose.code] = purposeConsent.consent
+                                },
+                                vendors: consentsList.vendorConsents
+                                    .filter(\.isAccepted)
+                                    .map(\.id)
+                            )
+                        )
+                        presentationMode.wrappedValue.dismiss()
+                    }
+
+                    CustomButton(
+                        props: .init(
+                            text: "Cancel",
+                            theme: props.theme.secondaryButtonTheme
+                        )
+                    ) {
+
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                .padding(24)
+            } actionHandler: { action in
                 switch action {
                 case .openUrl(let url): handle(action: .openUrl(url))
                 case .close: handle(action: .close)
@@ -157,35 +194,6 @@ struct PreferenceView: View {
             case .close: handle(action: .close)
             }
         }
-    }
-
-    @ViewBuilder
-    private func button(
-        text: String,
-        theme: Props.Button.Theme,
-        actionHandler: @escaping () -> Void
-    ) -> some View {
-        Button {
-            actionHandler()
-            presentationMode.wrappedValue.dismiss()
-        } label: {
-            Text(text)
-                .font(.system(size: theme.fontSize, weight: .semibold))
-                .foregroundColor(theme.textColor)
-                .frame(height: theme.height)
-                .frame(maxWidth: .infinity)
-                .overlay(
-                    RoundedRectangle(cornerRadius: CGFloat(props.theme.borderRadius))
-                        .stroke(
-                            theme.borderColor,
-                            lineWidth: theme.borderWidth
-                        )
-                )
-        }
-        .background(
-            theme.backgroundColor
-                .cornerRadius(CGFloat(props.theme.borderRadius))
-        )
     }
 
     private func handle(action: Action) {

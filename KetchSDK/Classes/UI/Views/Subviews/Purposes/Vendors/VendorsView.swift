@@ -15,7 +15,7 @@ struct VendorsView: View {
 
     let props: Props.VendorList
 
-    @Binding var vendorConsents: [PurposesView.VendorConsent]
+    @Binding var vendorConsents: [UserConsentsList.VendorConsent]
 
     let actionHandler: (Action) -> Void
 

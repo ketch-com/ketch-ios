@@ -154,6 +154,7 @@ extension Props.Banner.Theme {
 
     var primaryButtonTheme: Props.Button.Theme {
         .init(
+            borderRadius: borderRadius,
             textColor: backgroundColor,
             borderColor: buttonColor,
             backgroundColor: buttonColor
@@ -162,6 +163,7 @@ extension Props.Banner.Theme {
 
     var secondaryButtonTheme: Props.Button.Theme {
         .init(
+            borderRadius: borderRadius,
             textColor: buttonColor,
             borderColor: buttonColor,
             backgroundColor: secondaryButtonColor

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-extension PurposesView {
+class UserConsentsList: ObservableObject {
     struct PurposeConsent: Hashable, Identifiable {
         var id: String { purpose.id }
 
@@ -23,32 +23,30 @@ extension PurposesView {
         let vendor: Props.Vendor
     }
 
-    class UserConsentsList: ObservableObject {
-        @Published var purposeConsents: [PurposeConsent]
-        @Published var vendorConsents: [VendorConsent]
+    @Published var purposeConsents: [PurposeConsent]
+    @Published var vendorConsents: [VendorConsent]
 
-        init(
-            purposeConsents: [PurposeConsent] = [],
-            vendorConsents: [VendorConsent] = []
-        ) {
-            self.purposeConsents = purposeConsents
-            self.vendorConsents = vendorConsents
-        }
+    init(
+        purposeConsents: [PurposeConsent] = [],
+        vendorConsents: [VendorConsent] = []
+    ) {
+        self.purposeConsents = purposeConsents
+        self.vendorConsents = vendorConsents
     }
 }
 
 extension Props.PurposesList {
-    var consentsList: PurposesView.UserConsentsList {
-        PurposesView.UserConsentsList(
+    var consentsList: UserConsentsList {
+        UserConsentsList(
             purposeConsents: purposes.map { purpose in
-                PurposesView.PurposeConsent(
+                UserConsentsList.PurposeConsent(
                     consent: purpose.consent || purpose.required,
                     required: purpose.required,
                     purpose: purpose
                 )
             },
             vendorConsents: vendors.map { vendor in
-                PurposesView.VendorConsent(
+                UserConsentsList.VendorConsent(
                     isAccepted: vendor.isAccepted,
                     vendor: vendor
                 )

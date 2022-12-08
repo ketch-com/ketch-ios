@@ -7,15 +7,16 @@
 
 import SwiftUI
 
-struct PurposesView: View {
+struct PurposesView<ContentView: View>: View {
     enum Action {
         case close
         case openUrl(URL)
     }
 
     let props: Props.PurposesList
-    @Binding var purposeConsents: [PurposesView.PurposeConsent]
-    @Binding var vendorConsents: [PurposesView.VendorConsent]
+    @Binding var purposeConsents: [UserConsentsList.PurposeConsent]
+    @Binding var vendorConsents: [UserConsentsList.VendorConsent]
+    @ViewBuilder let content: ContentView?
     let actionHandler: (Action) -> Void
 
     var body: some View {
@@ -30,6 +31,8 @@ struct PurposesView: View {
             .padding(18)
 
             purposesView()
+
+            content
         }
         .background(props.theme.bodyBackgroundColor)
     }

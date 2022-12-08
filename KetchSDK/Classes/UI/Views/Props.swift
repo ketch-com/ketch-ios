@@ -20,6 +20,7 @@ extension Props.Modal.Theme {
 
     var firstButtonTheme: Props.Button.Theme {
         .init(
+            borderRadius: borderRadius,
             textColor: firstButtonBackgroundColor,
             borderColor: firstButtonBorderColor,
             backgroundColor: firstButtonTextColor
@@ -58,9 +59,19 @@ extension Props.Preference.Theme {
 
     var firstButtonTheme: Props.Button.Theme {
         .init(
+            borderRadius: borderRadius,
             textColor: firstButtonBackgroundColor,
             borderColor: firstButtonBorderColor,
             backgroundColor: firstButtonTextColor
+        )
+    }
+
+    var secondaryButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: secondButtonBackgroundColor,
+            borderColor: secondButtonBorderColor,
+            backgroundColor: secondButtonTextColor
         )
     }
 

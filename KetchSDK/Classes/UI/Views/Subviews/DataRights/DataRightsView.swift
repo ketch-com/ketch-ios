@@ -15,6 +15,8 @@ struct DataRightsView: View {
 
     let props: Props.DataRightsView
     let actionHandler: (Action) -> Void
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+
 //    @ObservedObject private var keyboard = KeyboardResponder()
     @State private var keyboardHeight: CGFloat = 0
     private let showPublisher = NotificationCenter.Publisher.init(
@@ -65,8 +67,31 @@ struct DataRightsView: View {
 
                         countrySelectionSection(title: "Name", hint: nil, value: $requestDetails)
                     }
+                    .padding(.bottom, 8)
+
+                    VStack(spacing: 24) {
+                        CustomButton(
+                            props: .init(
+                                text: "Submit",
+                                theme: props.theme.firstButtonTheme
+                            )
+                        ) {
+
+                        }
+
+                        CustomButton(
+                            props: .init(
+                                text: "Cancel",
+                                theme: props.theme.secondaryButtonTheme
+                            )
+                        ) {
+                            actionHandler(.close)
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    }
                 }
                 .padding(18)
+                .padding(.bottom, 40)
                 .onChange(of: selectedId) { newValue in
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         withAnimation(.easeInOut(duration: 0.15)) {
@@ -74,9 +99,6 @@ struct DataRightsView: View {
                         }
                     }
                 }
-
-
-                
             }
         }
         .padding(.bottom, keyboardHeight)
@@ -244,6 +266,16 @@ extension Props {
             let bodyBackgroundColor: Color
             let contentColor: Color
             let linkColor: Color
+
+            let borderRadius: Int
+
+            let firstButtonBackgroundColor: Color
+            let firstButtonBorderColor: Color
+            let firstButtonTextColor: Color
+
+            let secondButtonBackgroundColor: Color
+            let secondButtonBorderColor: Color
+            let secondButtonTextColor: Color
         }
     }
 }
@@ -263,7 +295,14 @@ struct DataRightsView_Previews: PreviewProvider {
                 theme: Props.DataRightsView.Theme(
                     bodyBackgroundColor: .white,
                     contentColor: .black,
-                    linkColor: .blue
+                    linkColor: .blue,
+                    borderRadius: 5,
+                    firstButtonBackgroundColor: .blue,
+                    firstButtonBorderColor: .blue,
+                    firstButtonTextColor: .white,
+                    secondButtonBackgroundColor: .white,
+                    secondButtonBorderColor: .blue,
+                    secondButtonTextColor: .blue
                 )
             )
         ) { _ in }

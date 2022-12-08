@@ -79,7 +79,34 @@ extension Props.Preference.Theme {
         .init(
             bodyBackgroundColor: bodyBackgroundColor,
             contentColor: contentColor,
-            linkColor: linkColor
+            linkColor: linkColor,
+            borderRadius: borderRadius,
+            firstButtonBackgroundColor: firstButtonBackgroundColor,
+            firstButtonBorderColor: firstButtonBorderColor,
+            firstButtonTextColor: firstButtonTextColor,
+            secondButtonBackgroundColor: secondButtonBackgroundColor,
+            secondButtonBorderColor: secondButtonBorderColor,
+            secondButtonTextColor: secondButtonTextColor
+        )
+    }
+}
+
+extension Props.DataRightsView.Theme {
+    var firstButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: firstButtonBackgroundColor,
+            borderColor: firstButtonBorderColor,
+            backgroundColor: firstButtonTextColor
+        )
+    }
+
+    var secondaryButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: secondButtonBackgroundColor,
+            borderColor: secondButtonBorderColor,
+            backgroundColor: secondButtonTextColor
         )
     }
 }

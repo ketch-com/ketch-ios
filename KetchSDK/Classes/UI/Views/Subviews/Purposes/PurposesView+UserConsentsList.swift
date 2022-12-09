@@ -36,7 +36,7 @@ class UserConsentsList: ObservableObject {
 }
 
 extension Props.PurposesList {
-    var consentsList: UserConsentsList {
+    func generateConsentsList() -> UserConsentsList {
         UserConsentsList(
             purposeConsents: purposes.map { purpose in
                 UserConsentsList.PurposeConsent(

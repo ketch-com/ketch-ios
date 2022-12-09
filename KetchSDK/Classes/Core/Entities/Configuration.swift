@@ -76,9 +76,9 @@ extension KetchSDK.Configuration {
     }
 
     public struct Right: Codable {
-        public let code: String?
-        public let name: String?
-        public let description: String?
+        public let code: String
+        public let name: String
+        public let description: String
     }
 
     public struct Theme: Codable {

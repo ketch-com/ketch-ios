@@ -12,7 +12,12 @@ struct CountrySelectionSection: View {
     let contentColor: Color
     let value: Binding<String?>
 
-    @State private var selectedCountry = Country(code: nil, name: nil)
+    @State private var selectedCountry: Country = {
+        guard let code = Locale.current.regionCode,
+              let name = Locale.current.localizedString(forRegionCode: code) else { return Country(code: nil, name: nil) }
+
+        return Country(code: code, name: name)
+    }()
 
     private struct Country: Hashable {
         let code: String?

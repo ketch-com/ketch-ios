@@ -26,7 +26,7 @@ struct ModalView: View {
     init(props: Props.Modal, actionHandler: @escaping (Action) -> KetchUI.PresentationItem?) {
         self.props = props
         self.actionHandler = actionHandler
-        consentsList = props.purposes.consentsList
+        consentsList = props.purposes.generateConsentsList()
     }
 
     var body: some View {

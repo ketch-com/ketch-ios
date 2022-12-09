@@ -44,16 +44,16 @@ struct SubmittedDataRightsView: View {
     private func bottomButtonsSection() -> some View {
         VStack(spacing: 24) {
             CustomButton(
-                props: .init(text: "Submit", theme: props.theme.firstButtonTheme)
-            ) {
-
-            }
-
-            CustomButton(
-                props: .init(text: "Cancel", theme: props.theme.secondaryButtonTheme)
+                props: .init(text: "Exit Settings", theme: props.theme.firstButtonTheme)
             ) {
                 actionHandler(.close)
                 presentationMode.wrappedValue.dismiss()
+            }
+
+            CustomButton(
+                props: .init(text: "Submit New Request", theme: props.theme.secondaryButtonTheme)
+            ) {
+                actionHandler(.submitNew)
             }
         }
     }

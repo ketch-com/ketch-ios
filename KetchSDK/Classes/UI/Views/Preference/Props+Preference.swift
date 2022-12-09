@@ -10,20 +10,12 @@ import SwiftUI
 extension Props {
     struct Preference {
         let title: String
-        let privacyPolicy: Tab
-        let preferences: PreferencesTab
-        let dataRights: Tab
+        let overview: OverviewTab
+        let consents: ConsentsTab
+        let rights:   RightsTab
         let theme: Theme
 
-        enum TabType: String, Identifiable, Hashable, CaseIterable {
-            case privacyPolicy
-            case preferences
-            case dataRights
-
-            var id: String { rawValue }
-        }
-
-        struct Tab: Identifiable, Hashable {
+        struct OverviewTab: Identifiable, Hashable {
             var id: String { tabName }
 
             let tabName: String
@@ -31,11 +23,28 @@ extension Props {
             let text: String?
         }
 
-        struct PreferencesTab: Identifiable {
+        struct ConsentsTab: Identifiable {
             var id: String { tabName }
 
             let tabName: String
+            let buttonText: String
             let purposes: PurposesList
+        }
+
+        struct RightsTab: Identifiable, Hashable {
+            var id: String { tabName }
+
+            let tabName: String
+            let title: String?
+            let text: String?
+            let buttonText: String
+            let rights: [DataRightsView.Right]
+        }
+
+        struct Right: Hashable {
+            let code: String?
+            let name: String?
+            let description: String?
         }
 
         struct Theme {
@@ -61,12 +70,30 @@ extension Props {
             let secondButtonTextColor: Color
         }
 
-        func tabTitle(with tab: TabType) -> String {
+        enum Tab: String, Identifiable, Hashable, CaseIterable {
+            case overview
+            case consents
+            case rights
+
+            var id: String { rawValue }
+        }
+
+        func tabName(with tab: Tab) -> String {
             switch tab {
-            case .privacyPolicy: return privacyPolicy.tabName
-            case .preferences: return preferences.tabName
-            case .dataRights: return dataRights.tabName
+            case .overview: return overview.tabName
+            case .consents: return consents.tabName
+            case .rights: return rights.tabName
             }
         }
+    }
+}
+
+extension KetchSDK.Configuration.Right {
+    var props: Props.DataRightsView.Right {
+        .init(
+            code: code,
+            name: name,
+            description: description
+        )
     }
 }

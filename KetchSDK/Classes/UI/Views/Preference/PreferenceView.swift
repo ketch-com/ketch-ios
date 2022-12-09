@@ -18,7 +18,7 @@ struct PreferenceView: View {
     let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
-    @State private var selectedTab = Props.Preference.TabType.privacyPolicy
+    @State private var selectedTab: Props.Preference.Tab = .overview
     @ObservedObject private var consentsList = UserConsentsList()
 
     @Environment(\.openURL) var openURL
@@ -27,7 +27,7 @@ struct PreferenceView: View {
     init(props: Props.Preference, actionHandler: @escaping (Action) -> KetchUI.PresentationItem?) {
         self.props = props
         self.actionHandler = actionHandler
-        consentsList = props.preferences.purposes.consentsList
+        consentsList = props.consents.purposes.generateConsentsList()
     }
 
     var body: some View {
@@ -56,9 +56,9 @@ struct PreferenceView: View {
 
             VStack {
                 switch selectedTab {
-                case .privacyPolicy: privacyPolicy
-                case .preferences: preferences
-                case .dataRights: dataRights
+                case .overview: overview
+                case .consents: consents
+                case .rights: rights
                 }
             }
         }
@@ -68,10 +68,10 @@ struct PreferenceView: View {
     @ViewBuilder
     var tabBar: some View {
         HStack(alignment: .top, spacing: 0) {
-            ForEach(Props.Preference.TabType.allCases) { tab in
+            ForEach(Props.Preference.Tab.allCases) { tab in
                 let isSelectedTab = selectedTab == tab
                 VStack {
-                    Text(props.tabTitle(with: tab))
+                    Text(props.tabName(with: tab))
                         .foregroundColor(props.theme.headerTextColor)
                         .frame(maxWidth: .infinity)
                         .opacity(isSelectedTab ? 1 : 0.5)
@@ -90,7 +90,7 @@ struct PreferenceView: View {
     }
 
     @ViewBuilder
-    var privacyPolicy: some View {
+    var overview: some View {
         ScrollView {
             VStack {
                 VStack {
@@ -130,10 +130,10 @@ struct PreferenceView: View {
     }
 
     @ViewBuilder
-    var preferences: some View {
+    var consents: some View {
         NavigationView {
             PurposesView(
-                props: props.preferences.purposes,
+                props: props.consents.purposes,
                 purposeConsents: $consentsList.purposeConsents,
                 vendorConsents: $consentsList.vendorConsents
             ) {
@@ -181,12 +181,13 @@ struct PreferenceView: View {
     }
 
     @ViewBuilder
-    var dataRights: some View {
+    var rights: some View {
         DataRightsView(
             props: .init(
-                bodyTitle: props.dataRights.title,
-                bodyDescription: props.dataRights.text,
-                theme: props.theme.dataRightsTheme
+                bodyTitle: props.rights.title,
+                bodyDescription: props.rights.text,
+                theme: props.theme.dataRightsTheme,
+                rights: props.rights.rights
             )
         ) { action in
             switch action {

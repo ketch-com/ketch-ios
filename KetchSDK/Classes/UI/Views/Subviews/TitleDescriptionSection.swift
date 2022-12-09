@@ -71,8 +71,8 @@ extension Props.VendorList {
 extension Props.Preference {
     var titleDescriptionSectionProps: Props.TitleDescriptionSection {
         .init(
-            bodyTitle: privacyPolicy.title,
-            bodyDescription: privacyPolicy.text ?? "",
+            bodyTitle: overview.title,
+            bodyDescription: overview.text ?? "",
             theme: theme.titleDescriptionSectionTheme
         )
     }
@@ -109,8 +109,12 @@ extension Props.DataRightsView {
 
     var submittedViewProps: Props.SubmittedDataRightsView {
         .init(
-            bodyTitle: bodyTitle,
-            bodyDescription: bodyDescription,
+            bodyTitle: "Thank You!",
+            bodyDescription: """
+            We have received your request and will reach out to the provided email address if we have any questions. \
+
+            Once we have completed your request, we will send you an email to confirm.
+            """,
             theme: Props.SubmittedDataRightsView.Theme(
                 bodyBackgroundColor: theme.bodyBackgroundColor,
                 contentColor: theme.contentColor,

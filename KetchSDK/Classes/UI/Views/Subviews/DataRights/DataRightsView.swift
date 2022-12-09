@@ -27,8 +27,15 @@ struct DataRightsView: View {
     @State private var viewState: ViewState = .userDataForm
 
     @State private var selectedId: Int = 0
-    @State private var selectedOption: String?
+    @State private var selectedRight: Props.DataRightsView.Right?
     @State private var requestDetails = String()
+    @State private var firstName = String()
+    @State private var lastName = String()
+    @State private var email = String()
+    @State private var phone = String()
+    @State private var postalCode = String()
+    @State private var addressLine1 = String()
+    @State private var addressLine2 = String()
     @State private var selectedCountryCode: String?
 
 
@@ -44,61 +51,75 @@ struct DataRightsView: View {
         ScrollView(showsIndicators: true) {
             ScrollViewReader { proxy in
                 VStack(spacing: 24) {
-                    TitleDescriptionSection(
-                        props: props.titleDescriptionSectionProps
-                    ) { action in
-                        switch action {
-                        case .openUrl(let url): actionHandler(.openUrl(url))
+                    VStack(spacing: 24) {
+                        TitleDescriptionSection(
+                            props: props.titleDescriptionSectionProps
+                        ) { action in
+                            switch action {
+                            case .openUrl(let url): actionHandler(.openUrl(url))
+                            }
+                        }
+
+                        radioButtonsSelectorSection(title: "Request", value: $selectedRight)
+                    }
+
+                    VStack(alignment: .leading, spacing: 24) {
+                        TextEditorSection(title: "Request details", accentColor: props.theme.contentColor, validations: [.notEmpty], value: $requestDetails)
+                            .onTapGesture {
+                                selectedId = 1
+                            }
+                            .id(1)
+                            .padding(.bottom, 24)
+
+                        Text("Personal Details")
+                            .font(.system(size: props.theme.titleFontSize, weight: .bold))
+                            .foregroundColor(props.theme.contentColor)
+
+                        TextFieldSection(title: "First Name", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty], value: $firstName)
+                            .onTapGesture { selectedId = 2 }
+                            .id(2)
+
+                        TextFieldSection(title: "Last Name", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty], value: $lastName)
+                            .onTapGesture { selectedId = 3 }
+                            .id(3)
+
+                        TextFieldSection(title: "Email", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty, .email], value: $email)
+                            .onTapGesture { selectedId = 4 }
+                            .id(4)
+
+                        TextFieldSection(title: "Phone", hint: nil, accentColor: props.theme.contentColor, value: $phone)
+                            .onTapGesture { selectedId = 5 }
+                            .id(5)
+
+                        CountrySelectionSection(title: "Country", contentColor: props.theme.contentColor, value: $selectedCountryCode)
+
+                        TextFieldSection(title: "Postal Code", hint: nil, accentColor: props.theme.contentColor, value: $postalCode)
+                            .onTapGesture { selectedId = 6 }
+                            .id(6)
+
+                        TextFieldSection(title: "Address Line 1", hint: nil, accentColor: props.theme.contentColor, value: $addressLine1)
+                            .onTapGesture { selectedId = 7 }
+                            .id(7)
+
+                        TextFieldSection(title: "Address Line 2", hint: nil, accentColor: props.theme.contentColor, value: $addressLine2)
+                            .onTapGesture { selectedId = 8 }
+                            .id(8)
+                    }
+                    .onChange(of: selectedId) { newValue in
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                proxy.scrollTo(selectedId, anchor: .center)
+                            }
                         }
                     }
+                    .padding(.bottom, 18)
 
-                    radioButtonsSelectorSection(title: "Name", value: $selectedOption)
-
-                    TextEditorSection(title: "Name", accentColor: props.theme.contentColor, value: $requestDetails)
-                        .onTapGesture {
-                            selectedId = 1
-                        }
-                        .id(1)
-
-                    TextFieldSection(
-                        title: "Name",
-                        hint: nil,
-                        accentColor: props.theme.contentColor,
-                        value: $requestDetails
-                    )
-                    .onTapGesture {
-                        selectedId = 2
+                    VStack(spacing: 24) {
+                        bottomButtonsSection()
                     }
-                    .id(2)
-
-                    TextFieldSection(
-                        title: "Name",
-                        hint: nil,
-                        accentColor: props.theme.contentColor,
-                        value: $requestDetails
-                    )
-                    .onTapGesture {
-                        selectedId = 3
-                    }
-                    .id(3)
-
-                    CountrySelectionSection(
-                        title: "Country",
-                        contentColor: props.theme.contentColor,
-                        value: $selectedCountryCode
-                    )
-
-                    bottomButtonsSection()
                 }
                 .padding(18)
                 .padding(.bottom, 40)
-                .onChange(of: selectedId) { newValue in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            proxy.scrollTo(selectedId, anchor: .center)
-                        }
-                    }
-                }
             }
         }
         .padding(.bottom, keyboard.currentHeight)
@@ -112,12 +133,16 @@ struct DataRightsView: View {
         SubmittedDataRightsView(
             props: props.submittedViewProps
         ) { action in
-
+            switch action {
+            case .close: actionHandler(.close)
+            case .openUrl(let url): actionHandler(.openUrl(url))
+            case .submitNew: viewState = .userDataForm
+            }
         }
     }
 
     @ViewBuilder
-    private func radioButtonsSelectorSection(title: String?, value: Binding<String?>) -> some View {
+    private func radioButtonsSelectorSection(title: String?, value: Binding<Props.DataRightsView.Right?>) -> some View {
         VStack {
             if let title = title {
                 HStack {
@@ -127,7 +152,7 @@ struct DataRightsView: View {
                 }
 
                 RadioButtonsGroup(
-                    options: ["First", "Second", "Third"],
+                    options: props.rights,
                     selected: value
                 )
                 .foregroundColor(props.theme.contentColor)
@@ -159,8 +184,17 @@ extension Props {
         let bodyTitle: String?
         let bodyDescription: String?
         let theme: Theme
+        let rights: [Right]
+
+        struct Right: Hashable, RightDescription {
+            let code: String
+            let name: String
+            let description: String
+        }
 
         struct Theme {
+            let titleFontSize: CGFloat = 16
+
             let bodyBackgroundColor: Color
             let contentColor: Color
             let linkColor: Color
@@ -201,7 +235,11 @@ struct DataRightsView_Previews: PreviewProvider {
                     secondButtonBackgroundColor: .white,
                     secondButtonBorderColor: .blue,
                     secondButtonTextColor: .blue
-                )
+                ),
+                rights: [
+                    .init(code: "f", name: "First", description: "First"),
+                    .init(code: "s", name: "Second", description: "First")
+                ]
             )
         ) { _ in }
     }

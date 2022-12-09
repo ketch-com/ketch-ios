@@ -205,19 +205,22 @@ extension KetchUI {
 
             let preferenceProps = Props.Preference(
                 title: item.config.title,
-                privacyPolicy: .init(
+                overview: .init(
                     tabName: item.config.overview.tabName,
                     title: item.config.overview.bodyTitle,
                     text: item.config.overview.bodyDescription
                 ),
-                preferences: .init(
+                consents: .init(
                     tabName: item.config.consents.tabName,
+                    buttonText: item.config.consents.buttonText,
                     purposes: purposesProps
                 ),
-                dataRights: .init(
+                rights: .init(
                     tabName: item.config.rights.tabName,
                     title: item.config.rights.bodyTitle,
-                    text: item.config.rights.bodyDescription
+                    text: item.config.rights.bodyDescription,
+                    buttonText: item.config.rights.buttonText,
+                    rights: config.rights?.map(\.props) ?? []
                 ),
                 theme: theme
             )

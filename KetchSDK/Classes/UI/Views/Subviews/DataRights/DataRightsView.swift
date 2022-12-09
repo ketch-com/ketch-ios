@@ -17,26 +17,12 @@ struct DataRightsView: View {
     let actionHandler: (Action) -> Void
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
 
-//    @ObservedObject private var keyboard = KeyboardResponder()
-    @State private var keyboardHeight: CGFloat = 0
-    private let showPublisher = NotificationCenter.Publisher.init(
-        center: .default,
-        name: UIResponder.keyboardWillShowNotification
-    ).map { (notification) -> CGFloat in
-        if let rect = notification.userInfo?["UIKeyboardFrameEndUserInfoKey"] as? CGRect {
-            return rect.size.height
-        } else {
-            return 0
-        }
-    }
+    @ObservedObject private var keyboard = KeyboardResponder()
 
-    private let hidePublisher = NotificationCenter.Publisher.init(
-        center: .default,
-        name: UIResponder.keyboardWillHideNotification
-    ).map {_ -> CGFloat in 0}
-
-    @State var selectedId: Int = 0
-    @State var selectedOption: String?
+    @State private var selectedId: Int = 0
+    @State private var selectedOption: String?
+    @State private var requestDetails = String()
+    @State private var selectedCountryCode: String?
 
     var body: some View {
         ScrollView(showsIndicators: true) {
@@ -50,45 +36,43 @@ struct DataRightsView: View {
                         }
                     }
 
-                    VStack(spacing: 24) {
-                        radioButtonsSelectorSection(title: "Name", value: $selectedOption)
+                    radioButtonsSelectorSection(title: "Name", value: $selectedOption)
 
-                        textEditorSection(title: "Name", hint: nil, value: $requestDetails)
-                            .onTapGesture {
-                                selectedId = 1
-                            }
-                            .id(1)
-
-                        textFieldSection(title: "Name", hint: nil, value: $requestDetails)
-                            .onTapGesture {
-                                selectedId = 2
-                            }
-                            .id(2)
-
-                        countrySelectionSection(title: "Name", hint: nil, value: $requestDetails)
-                    }
-                    .padding(.bottom, 8)
-
-                    VStack(spacing: 24) {
-                        CustomButton(
-                            props: .init(
-                                text: "Submit",
-                                theme: props.theme.firstButtonTheme
-                            )
-                        ) {
-
+                    TextEditorSection(title: "Name", accentColor: props.theme.contentColor, value: $requestDetails)
+                        .onTapGesture {
+                            selectedId = 1
                         }
+                        .id(1)
 
-                        CustomButton(
-                            props: .init(
-                                text: "Cancel",
-                                theme: props.theme.secondaryButtonTheme
-                            )
-                        ) {
-                            actionHandler(.close)
-                            presentationMode.wrappedValue.dismiss()
-                        }
+                    TextFieldSection(
+                        title: "Name",
+                        hint: nil,
+                        accentColor: props.theme.contentColor,
+                        value: $requestDetails
+                    )
+                    .onTapGesture {
+                        selectedId = 2
                     }
+                    .id(2)
+
+                    TextFieldSection(
+                        title: "Name",
+                        hint: nil,
+                        accentColor: props.theme.contentColor,
+                        value: $requestDetails
+                    )
+                    .onTapGesture {
+                        selectedId = 3
+                    }
+                    .id(3)
+
+                    CountrySelectionSection(
+                        title: "Country",
+                        contentColor: props.theme.contentColor,
+                        value: $selectedCountryCode
+                    )
+
+                    bottomButtonsSection()
                 }
                 .padding(18)
                 .padding(.bottom, 40)
@@ -101,32 +85,11 @@ struct DataRightsView: View {
                 }
             }
         }
-        .padding(.bottom, keyboardHeight)
+        .padding(.bottom, keyboard.currentHeight)
         .background(props.theme.bodyBackgroundColor)
         .ignoresSafeArea()
-        .onTapGesture {
-            UIApplication.shared
-                .sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
-        .onReceive(showPublisher.merge(with: hidePublisher)) { (height) in
-            self.keyboardHeight = height
-        }
+        .onTapGesture(perform: hideKeyboard)
     }
-
-    @State private var selectedStrength = "Select state"
-    let strengths = {
-        var countries: [String] = []
-
-        for code in NSLocale.isoCountryCodes  {
-            let id = NSLocale.localeIdentifier(fromComponents: [NSLocale.Key.countryCode.rawValue: code])
-            let name = NSLocale(localeIdentifier: "en_UK").displayName(forKey: NSLocale.Key.identifier, value: id) ?? "Country not found for code: \(code)"
-            countries.append(name)
-        }
-
-        return countries.sorted()
-    }()
-
-    @State var requestDetails = String()
 
     @ViewBuilder
     private func radioButtonsSelectorSection(title: String?, value: Binding<String?>) -> some View {
@@ -148,110 +111,20 @@ struct DataRightsView: View {
     }
 
     @ViewBuilder
-    private func textFieldSection(title: String?, hint: String?, value: Binding<String>) -> some View {
-        VStack {
-            if let title = title {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 14, weight: .bold))
-                    Spacer()
-                }
-            }
-
-            TextField(hint ?? "", text: value)
-                .font(.system(size: 14))
-                .frame(height: 44)
-                .padding(.horizontal, 10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(
-                            props.theme.contentColor,
-                            lineWidth: 1
-                        )
-                )
-        }
-    }
-
-    @ViewBuilder
-    private func textEditorSection(title: String?, hint: String?, value: Binding<String>) -> some View {
-        VStack {
-            if let title = title {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 14, weight: .bold))
-                    Spacer()
-                }
-            }
-
-            TextEditor(text: value)
-                .font(.system(size: 14))
-                .frame(minHeight:80)
-                .padding(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(
-                            props.theme.contentColor,
-                            lineWidth: 1
-                        )
-                )
-        }
-    }
-
-    @ViewBuilder
-    private func countrySelectionSection(title: String?, hint: String?, value: Binding<String>) -> some View {
-        VStack {
-            if let title = title {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 14, weight: .bold))
-                    Spacer()
-                }
-            }
-
-            Menu {
-                Picker(
-                    selection: $selectedStrength,
-                    label: Text(selectedStrength),
-                    content: {
-                        ForEach(strengths, id: \.self) {
-                            Text($0)
-                        }
-                    }
-                )
-                .pickerStyle(.automatic)
-                .accentColor(.white)
-            } label: {
-                HStack {
-                    Text(selectedStrength)
-                        .font(.system(size: 14))
-                        .foregroundColor(props.theme.contentColor)
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .foregroundColor(props.theme.contentColor)
-                }
-                .frame(height: 44)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(
-                            props.theme.contentColor,
-                            lineWidth: 1
-                        )
-                )
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func userForm() -> some View {
+    private func bottomButtonsSection() -> some View {
         VStack(spacing: 24) {
-            textEditorSection(title: "Name", hint: nil, value: $requestDetails)
-            textFieldSection(title: "Name", hint: nil, value: $requestDetails)
-                .onTapGesture {
+            CustomButton(
+                props: .init(text: "Submit", theme: props.theme.firstButtonTheme)
+            ) {
 
-                }
-            countrySelectionSection(title: "Name", hint: nil, value: $requestDetails)
+            }
+
+            CustomButton(
+                props: .init(text: "Cancel", theme: props.theme.secondaryButtonTheme)
+            ) {
+                actionHandler(.close)
+                presentationMode.wrappedValue.dismiss()
+            }
         }
     }
 }
@@ -308,30 +181,3 @@ struct DataRightsView_Previews: PreviewProvider {
         ) { _ in }
     }
 }
-
-
-//
-//final class KeyboardResponder: ObservableObject {
-//    private var notificationCenter: NotificationCenter
-//    @Published private(set) var currentHeight: CGFloat = 0
-//
-//    init(center: NotificationCenter = .default) {
-//        notificationCenter = center
-//        notificationCenter.addObserver(self, selector: #selector(keyBoardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-//        notificationCenter.addObserver(self, selector: #selector(keyBoardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-//    }
-//
-//    deinit {
-//        notificationCenter.removeObserver(self)
-//    }
-//
-//    @objc func keyBoardWillShow(notification: Notification) {
-//        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-//            currentHeight = keyboardSize.height
-//        }
-//    }
-//
-//    @objc func keyBoardWillHide(notification: Notification) {
-//        currentHeight = 0
-//    }
-//}

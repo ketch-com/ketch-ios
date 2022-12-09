@@ -16,7 +16,7 @@ struct TitleDescriptionSection: View {
     let actionHandler: (Action) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 24) {
             if let title = props.bodyTitle {
                 Text(title)
                     .font(.system(size: props.theme.titleFontSize, weight: .bold))
@@ -106,6 +106,35 @@ extension Props.DataRightsView {
             theme: theme.titleDescriptionSectionTheme
         )
     }
+
+    var submittedViewProps: Props.SubmittedDataRightsView {
+        .init(
+            bodyTitle: bodyTitle,
+            bodyDescription: bodyDescription,
+            theme: Props.SubmittedDataRightsView.Theme(
+                bodyBackgroundColor: theme.bodyBackgroundColor,
+                contentColor: theme.contentColor,
+                linkColor: theme.linkColor,
+                borderRadius: theme.borderRadius,
+                firstButtonBackgroundColor: theme.firstButtonBackgroundColor,
+                firstButtonBorderColor: theme.firstButtonBorderColor,
+                firstButtonTextColor: theme.firstButtonTextColor,
+                secondButtonBackgroundColor: theme.secondButtonBackgroundColor,
+                secondButtonBorderColor: theme.secondButtonBorderColor,
+                secondButtonTextColor: theme.secondButtonTextColor
+            )
+        )
+    }
+}
+
+extension Props.SubmittedDataRightsView {
+    var titleDescriptionSectionProps: Props.TitleDescriptionSection {
+        .init(
+            bodyTitle: bodyTitle,
+            bodyDescription: bodyDescription ?? "",
+            theme: theme.titleDescriptionSectionTheme
+        )
+    }
 }
 
 extension Props.PurposesList.Theme {
@@ -172,6 +201,15 @@ extension Props.Banner.Theme {
 }
 
 extension Props.DataRightsView.Theme {
+    var titleDescriptionSectionTheme: Props.TitleDescriptionSection.Theme {
+        .init(
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
+}
+
+extension Props.SubmittedDataRightsView.Theme {
     var titleDescriptionSectionTheme: Props.TitleDescriptionSection.Theme {
         .init(
             contentColor: contentColor,

@@ -19,12 +19,28 @@ struct DataRightsView: View {
 
     @ObservedObject private var keyboard = KeyboardResponder()
 
+    private enum ViewState {
+        case userDataForm
+        case submitted
+    }
+
+    @State private var viewState: ViewState = .userDataForm
+
     @State private var selectedId: Int = 0
     @State private var selectedOption: String?
     @State private var requestDetails = String()
     @State private var selectedCountryCode: String?
 
+
     var body: some View {
+        switch viewState {
+        case .userDataForm: userDataForm
+        case .submitted: submittedView
+        }
+    }
+
+    @ViewBuilder
+    var userDataForm: some View {
         ScrollView(showsIndicators: true) {
             ScrollViewReader { proxy in
                 VStack(spacing: 24) {
@@ -92,6 +108,15 @@ struct DataRightsView: View {
     }
 
     @ViewBuilder
+    var submittedView: some View {
+        SubmittedDataRightsView(
+            props: props.submittedViewProps
+        ) { action in
+
+        }
+    }
+
+    @ViewBuilder
     private func radioButtonsSelectorSection(title: String?, value: Binding<String?>) -> some View {
         VStack {
             if let title = title {
@@ -116,7 +141,7 @@ struct DataRightsView: View {
             CustomButton(
                 props: .init(text: "Submit", theme: props.theme.firstButtonTheme)
             ) {
-
+                viewState = .submitted
             }
 
             CustomButton(

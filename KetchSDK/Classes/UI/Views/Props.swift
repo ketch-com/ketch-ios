@@ -110,3 +110,23 @@ extension Props.DataRightsView.Theme {
         )
     }
 }
+
+extension Props.SubmittedDataRightsView.Theme {
+    var firstButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: firstButtonBackgroundColor,
+            borderColor: firstButtonBorderColor,
+            backgroundColor: firstButtonTextColor
+        )
+    }
+
+    var secondaryButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: secondButtonBackgroundColor,
+            borderColor: secondButtonBorderColor,
+            backgroundColor: secondButtonTextColor
+        )
+    }
+}

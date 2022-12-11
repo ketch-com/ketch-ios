@@ -12,6 +12,13 @@ struct CountrySelectionSection: View {
     let contentColor: Color
     let value: Binding<String>
 
+    init(title: String?, contentColor: Color, value: Binding<String>) {
+        self.title = title
+        self.contentColor = contentColor
+        self.value = value
+        value.wrappedValue = selectedCountry.code ?? String()
+    }
+
     @State private var selectedCountry: Country = {
         guard let code = Locale.current.regionCode,
               let name = Locale.current.localizedString(forRegionCode: code) else { return Country(code: nil, name: nil) }

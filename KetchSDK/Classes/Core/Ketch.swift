@@ -124,7 +124,7 @@ public class Ketch {
             )
             .sink { result in
                 if case .failure(let error) = result {
-                    // TODO: - handle invokeRights error
+                    print(error)
                 }
             } receiveValue: {
                 self.rightInvoked(
@@ -223,7 +223,7 @@ public class Ketch {
             )
             .sink { result in
                 if case .failure(let error) = result {
-                    // TODO: - handle updateConsent error
+                    print(error)
                 }
             } receiveValue: {
                 let purposesUpdate = purposes?.reduce(into: [String: Bool](), { result, purpose in

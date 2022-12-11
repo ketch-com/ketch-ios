@@ -8,6 +8,19 @@
 import Foundation
 
 extension DataRightsView {
+    struct UserData: UserDataCoding {
+        let firstName: String
+        let lastName: String
+        let email: String
+        let country: String?
+        let stateRegion: String?
+        let description: String?
+        let phone: String?
+        let postalCode: String?
+        let addressLine1: String?
+        let addressLine2: String?
+    }
+
     class FieldEntry: ObservableObject, Identifiable {
         var id = UUID()
         let title: String
@@ -45,7 +58,7 @@ extension DataRightsView {
         let addressLine2 = FieldEntry(title: "Address Line 2")
 
         enum Result {
-            case isValid(DataRightsView.Action.Request)
+            case isValid(DataRightsView.UserData)
             case error(title: String, message: String)
         }
 
@@ -69,8 +82,8 @@ extension DataRightsView {
             }
         }
 
-        var request: DataRightsView.Action.Request {
-            DataRightsView.Action.Request(
+        var request: DataRightsView.UserData {
+            DataRightsView.UserData(
                 firstName: firstName.value,
                 lastName: lastName.value,
                 email: email.value,
@@ -83,5 +96,35 @@ extension DataRightsView {
                 addressLine2: addressLine2.value
             )
         }
+    }
+}
+
+protocol UserDataCoding {
+    var firstName: String { get }
+    var lastName: String { get }
+    var email: String { get }
+    var country: String? { get }
+    var stateRegion: String? { get }
+    var description: String? { get }
+    var phone: String? { get }
+    var postalCode: String? { get }
+    var addressLine1: String? { get }
+    var addressLine2: String? { get }
+}
+
+extension UserDataCoding {
+    var configUserData: KetchSDK.InvokeRightConfig.User {
+        .init(
+            email: email,
+            first: firstName,
+            last: lastName,
+            country: country,
+            stateRegion: stateRegion,
+            description: description,
+            phone: phone,
+            postalCode: postalCode,
+            addressLine1: addressLine1,
+            addressLine2: addressLine2
+        )
     }
 }

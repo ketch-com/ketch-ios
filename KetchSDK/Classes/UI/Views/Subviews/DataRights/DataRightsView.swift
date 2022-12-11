@@ -8,22 +8,17 @@
 import SwiftUI
 
 struct DataRightsView: View {
+    typealias ViewProps = Props.DataRightsView
+
     enum Action {
         case close
         case openUrl(URL)
-        case submit(Request)
+        case submit(DataRightCoding, UserDataCoding)
 
-        struct Request {
-            let firstName: String
-            let lastName: String
-            let email: String
-            let country: String?
-            let stateRegion: String?
-            let description: String?
-            let phone: String?
-            let postalCode: String?
-            let addressLine1: String?
-            let addressLine2: String?
+        struct Right: Hashable {
+            let code: String
+            let name: String
+            let description: String
         }
     }
 
@@ -38,7 +33,7 @@ struct DataRightsView: View {
         let message: String
     }
 
-    let props: Props.DataRightsView
+    let props: ViewProps
     let actionHandler: (Action) -> Void
 
     @State private var validationErrorAlert: ErrorAlert?
@@ -149,7 +144,10 @@ struct DataRightsView: View {
         CountrySelectionSection(
             title: field.title,
             contentColor: props.theme.contentColor,
-            value: Binding<String>(get: { field.value }, set: { field.value = $0 })
+            value: Binding<String>(
+                get: { field.value },
+                set: { field.value = $0; field.error = field.validationErrorText(for: $0) }
+            )
         )
     }
 
@@ -167,7 +165,7 @@ struct DataRightsView: View {
     }
 
     @ViewBuilder
-    private func radioButtonsSelectorSection(title: String?, value: Binding<Props.DataRightsView.Right?>) -> some View {
+    private func radioButtonsSelectorSection(title: String?, value: Binding<ViewProps.Right?>) -> some View {
         VStack {
             if let title = title {
                 HStack {
@@ -200,7 +198,11 @@ struct DataRightsView: View {
                     )
                 }
 
-                actionHandler(.submit(entry.request))
+                guard let selected = entry.selectedRight else { return }
+
+                let actionRight = ViewProps.Right(code: selected.code, name: selected.name, description: selected.description)
+
+                actionHandler(.submit(actionRight, entry.request))
                 viewState = .submitted
             }
 
@@ -215,9 +217,11 @@ struct DataRightsView: View {
 }
 
 struct DataRightsView_Previews: PreviewProvider {
+    typealias ViewProps = Props.DataRightsView
+
     static var previews: some View {
         DataRightsView(
-            props: Props.DataRightsView(
+            props: ViewProps(
                 bodyTitle: "Choose how we use your data",
                 bodyDescription:
                 """
@@ -226,7 +230,7 @@ struct DataRightsView_Previews: PreviewProvider {
                 Please indicate whether or not that's ok with you by
                 toggling the switches below.
                 """,
-                theme: Props.DataRightsView.Theme(
+                theme: ViewProps.Theme(
                     bodyBackgroundColor: .white,
                     contentColor: .black,
                     linkColor: .blue,

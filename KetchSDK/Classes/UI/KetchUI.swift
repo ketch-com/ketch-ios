@@ -120,6 +120,8 @@ public class KetchUI: ObservableObject {
             switch action {
             case .save(let purposesConsent):
                 self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+            case .request(let right, let user):
+                self.invokeRight(right: right.configRight, user: user.configUserData)
             }
         }
     }

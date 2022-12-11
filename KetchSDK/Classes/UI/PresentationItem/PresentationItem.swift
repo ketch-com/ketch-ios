@@ -52,6 +52,7 @@ extension KetchUI {
 
                 enum Action {
                     case save(purposesConsent: KetchSDK.ConsentStatus)
+                    case request(right: DataRightCoding, user: UserDataCoding)
                 }
             }
         }
@@ -245,6 +246,7 @@ extension KetchUI {
             }
         }
 
+// MARK: - Actions processing -
         private func handleAction(
             for item: ItemType.BannerItem
         ) -> ((BannerView.Action) -> KetchUI.PresentationItem?) {
@@ -300,6 +302,7 @@ extension KetchUI {
 
                 case .close: break
                 case .openUrl(let url): return child(with: url)
+                case .request(let right, let user): item.actionHandler(.request(right: right, user: user))
                 }
 
                 return nil

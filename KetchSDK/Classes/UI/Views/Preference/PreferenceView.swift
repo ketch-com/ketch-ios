@@ -9,9 +9,10 @@ import SwiftUI
 
 struct PreferenceView: View {
     enum Action {
-        case save(purposeCodeConsents: [String: Bool], vendors: [String])
         case close
         case openUrl(URL)
+        case save(purposeCodeConsents: [String: Bool], vendors: [String])
+        case request(right: DataRightCoding, user: UserDataCoding)
     }
 
     let props: Props.Preference
@@ -193,8 +194,7 @@ struct PreferenceView: View {
             switch action {
             case .openUrl(let url): handle(action: .openUrl(url))
             case .close: handle(action: .close)
-            case .submit(let request):
-                break
+            case .submit(let right, let user): handle(action: .request(right: right, user: user))
             }
         }
     }

@@ -58,6 +58,7 @@ extension Props.PurposesList {
     }
 }
 
+
 extension Props.VendorList {
     var titleDescriptionSectionProps: Props.TitleDescriptionSection {
         .init(
@@ -93,6 +94,16 @@ extension Props.Banner {
         .init(
             bodyTitle: nil,
             bodyDescription: text,
+            theme: theme.titleDescriptionSectionTheme
+        )
+    }
+}
+
+extension Props.Jit {
+    var titleDescriptionSectionProps: Props.TitleDescriptionSection {
+        .init(
+            bodyTitle: title,
+            bodyDescription: description ?? "",
             theme: theme.titleDescriptionSectionTheme
         )
     }
@@ -200,6 +211,33 @@ extension Props.Banner.Theme {
             textColor: buttonColor,
             borderColor: buttonColor,
             backgroundColor: secondaryButtonColor
+        )
+    }
+}
+
+extension Props.Jit.Theme {
+    var titleDescriptionSectionTheme: Props.TitleDescriptionSection.Theme {
+        .init(
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
+
+    var primaryButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: firstButtonTextColor,
+            borderColor: firstButtonBorderColor,
+            backgroundColor: firstButtonBackgroundColor
+        )
+    }
+
+    var secondaryButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: secondButtonTextColor,
+            borderColor: secondButtonBorderColor,
+            backgroundColor: secondButtonBackgroundColor
         )
     }
 }

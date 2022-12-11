@@ -90,6 +90,41 @@ extension Props.Modal.Theme {
     }
 }
 
+extension Props.Jit.Theme {
+    init(with theme: KetchSDK.Configuration.Theme?) {
+        let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+        let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
+        let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
+        let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
+        let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
+
+        let firstButtonBackgroundColor = Color(hex: theme?.modalButtonColor ?? String())
+        let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
+        let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+
+        let secondButtonBackgroundColor = Color.white
+        let secondButtonBorderColor = Color(hex: theme?.formButtonColor ?? String())
+        let secondButtonTextColor = Color(hex: theme?.formButtonColor ?? String())
+
+        self.init(
+            headerBackgroundColor: modalHeaderBackgroundColor,
+            headerTextColor: modalHeaderContentColor,
+            backgroundColor: .white,
+            contentColor: modalContentColor,
+            linkColor: modalContentColor,
+            switchOffColor: switchOffColor,
+            switchOnColor: switchOnColor,
+            borderRadius: theme?.buttonBorderRadius ?? 0,
+            firstButtonBackgroundColor: firstButtonBackgroundColor,
+            firstButtonBorderColor: firstButtonBorderColor,
+            firstButtonTextColor: firstButtonTextColor,
+            secondButtonBackgroundColor: secondButtonBackgroundColor,
+            secondButtonBorderColor: secondButtonBorderColor,
+            secondButtonTextColor: secondButtonTextColor
+        )
+    }
+}
+
 extension Props.Preference.Theme {
     init(with theme: KetchSDK.Configuration.Theme?) {
         let headerBackgroundColor = Color(hex: theme?.formHeaderBackgroundColor ?? String())

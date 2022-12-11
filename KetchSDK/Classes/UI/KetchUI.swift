@@ -94,14 +94,18 @@ public class KetchUI: ObservableObject {
     public func showJIT() {
         guard
             let configuration,
-            let consentStatus
+            let consentStatus,
+            let jit = configuration.experiences?.consent?.jit
+
         else { return }
 
-        presentationItem = PresentationItem(
-            itemType: .jit,
+        presentationItem = PresentationItem.jit(
+            jitConfig: jit,
             config: configuration,
             consent: consentStatus
-        )
+        ) { action in
+
+        }
     }
 
     public func showPreference() {

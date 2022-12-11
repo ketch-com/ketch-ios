@@ -181,6 +181,7 @@ extension KetchSDK.Configuration {
 
             public struct JIT: Codable {
                 public let title: String?
+                public let showCloseIcon: Bool?
                 public let bodyDescription: String?
                 public let acceptButtonText: String
                 public let declineButtonText: String

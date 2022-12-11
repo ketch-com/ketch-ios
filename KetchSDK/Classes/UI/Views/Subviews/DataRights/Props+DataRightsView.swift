@@ -1,5 +1,5 @@
 //
-//  DataRightsView+Props.swift
+//  Props+DataRightsView.swift
 //  KetchSDK
 //
 //  Created by Anton Lyfar on 11.12.2022.

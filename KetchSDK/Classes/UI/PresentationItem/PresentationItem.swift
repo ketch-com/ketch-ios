@@ -24,7 +24,7 @@ extension KetchUI {
         enum ItemType {
             case banner(BannerItem)
             case modal(ModalItem)
-            case jit
+            case jit(JitItem)
             case preference(PreferenceItem)
 
             struct BannerItem {
@@ -43,6 +43,15 @@ extension KetchUI {
 
                 enum Action {
                     case save(purposesConsent: KetchSDK.ConsentStatus)
+                }
+            }
+
+            struct JitItem {
+                let config: KetchSDK.Configuration.Experience.ConsentExperience.JIT
+                let actionHandler: (Action) -> Void
+
+                enum Action {
+
                 }
             }
 
@@ -111,12 +120,30 @@ extension KetchUI {
             )
         }
 
+        static func jit(
+            jitConfig: KetchSDK.Configuration.Experience.ConsentExperience.JIT,
+            config: KetchSDK.Configuration,
+            consent: KetchSDK.ConsentStatus,
+            actionHandler: @escaping (ItemType.JitItem.Action) -> Void
+        ) -> PresentationItem {
+            PresentationItem(
+                itemType: .jit(
+                    ItemType.JitItem(
+                        config: jitConfig,
+                        actionHandler: actionHandler
+                    )
+                ),
+                config: config,
+                consent: consent
+            )
+        }
+
         @ViewBuilder
         public var content: some View {
             switch itemType {
             case .banner(let bannerItem): banner(item: bannerItem)
             case .modal(let modalItem): modal(item: modalItem)
-            case .jit: jit
+            case .jit(let jitItem): jit(item: jitItem)
             case .preference(let preferenceItem): preference(item: preferenceItem)
             }
         }
@@ -185,8 +212,37 @@ extension KetchUI {
                 .asResponsiveSheet(style: .popUp)
         }
 
-        var jit: some View {
-            JitView()
+        func jit(item: ItemType.JitItem) -> some View {
+            let theme = Props.Jit.Theme(with: config.theme)
+
+            let vendors = config.vendors?.map { vendor in
+                Props.Vendor(
+                    with: vendor,
+                    consent: consent.vendors?.contains(vendor.id) ?? false
+                )
+            }
+
+            let jitProps = Props.Jit(
+                title: item.config.title,
+                showCloseIcon: item.config.showCloseIcon ?? false,
+                description: item.config.bodyDescription,
+                purpose: nil,
+                vendors: vendors,
+                acceptButtonText: item.config.acceptButtonText,
+                declineButtonText: item.config.declineButtonText,
+                moreInfoText: item.config.moreInfoText,
+                moreInfoDestination: {
+                    guard let moreInfoDestination = item.config.moreInfoDestination else { return nil }
+                    switch moreInfoDestination {
+                    case .gotoModal: return Props.Destination.modal
+                    case .gotoPreference: return Props.Destination.preference
+                    case .rejectAll: return Props.Destination.rejectAll
+                    }
+                }(),
+                theme: theme
+            )
+
+            return JitView(props: jitProps, actionHandler: handleAction(for: item))
                 .asResponsiveSheet(style: .popUp)
         }
 
@@ -277,6 +333,19 @@ extension KetchUI {
                         )
                     )
 
+                case .close: break
+                case .openUrl(let url): return child(with: url)
+                }
+
+                return nil
+            }
+        }
+
+        private func handleAction(
+            for item: ItemType.JitItem
+        ) -> ((JitView.Action) -> KetchUI.PresentationItem?) {
+            { action in
+                switch action {
                 case .close: break
                 case .openUrl(let url): return child(with: url)
                 }

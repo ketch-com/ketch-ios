@@ -11,19 +11,17 @@ struct TextFieldSection: View {
     let title: String
     let hint: String?
     let accentColor: Color
-    let validations: [String.Validation]
-    var value: Binding<String>
+    let error: Binding<String?>
+    let value: Binding<String>
 
-    @State private var color: Color = .black
-    @State private var error: String?
+    @State private var isChanged = false
 
-    init(title: String, hint: String?, accentColor: Color, validations: [String.Validation] = [], value: Binding<String>) {
-        self.title = title
-        self.hint = hint
-        self.accentColor = accentColor
-        self.value = value
-        self.color = accentColor
-        self.validations = validations
+    var color: Color {
+        if isChanged {
+            return .orange
+        } else {
+            return error.wrappedValue == nil ? accentColor : .red
+        }
     }
 
     var body: some View {
@@ -33,7 +31,7 @@ struct TextFieldSection: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(color)
                 Spacer()
-                if let error = error {
+                if let error = error.wrappedValue, isChanged == false {
                     Text(error)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.red)
@@ -41,12 +39,7 @@ struct TextFieldSection: View {
             }
 
             TextField(hint ?? "", text: value, onEditingChanged: { changed in
-                if changed {
-                    color = .orange
-                } else {
-                    error = validationErrorText(for: value.wrappedValue)
-                    color = error == nil ? accentColor : .red
-                }
+                isChanged = changed
               })
                 .font(.system(size: 14))
                 .frame(height: 44)
@@ -56,12 +49,6 @@ struct TextFieldSection: View {
                         .stroke(color, lineWidth: 1)
                 )
         }
-    }
-
-    private func validationErrorText(for text: String) -> String? {
-        validations.first { validation in
-            validation.isValid(text) == false
-        }?.errorText
     }
 }
 
@@ -73,13 +60,14 @@ struct TextFieldSection_Preview: PreviewProvider {
 
     private struct Test_TextFieldSection: View {
         @State var value: String = ""
+        @State var error: String? = "Required"
 
         var body: some View {
             TextFieldSection(
                 title: "Title",
                 hint: "Hint",
                 accentColor: .black,
-                validations: [.notEmpty, .email],
+                error: $error,
                 value: $value
             )
         }

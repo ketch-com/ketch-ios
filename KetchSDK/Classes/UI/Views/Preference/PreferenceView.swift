@@ -193,6 +193,8 @@ struct PreferenceView: View {
             switch action {
             case .openUrl(let url): handle(action: .openUrl(url))
             case .close: handle(action: .close)
+            case .submit(let request):
+                break
             }
         }
     }

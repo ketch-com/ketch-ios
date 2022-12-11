@@ -11,33 +11,42 @@ struct DataRightsView: View {
     enum Action {
         case close
         case openUrl(URL)
+        case submit(Request)
+
+        struct Request {
+            let firstName: String
+            let lastName: String
+            let email: String
+            let country: String?
+            let stateRegion: String?
+            let description: String?
+            let phone: String?
+            let postalCode: String?
+            let addressLine1: String?
+            let addressLine2: String?
+        }
     }
-
-    let props: Props.DataRightsView
-    let actionHandler: (Action) -> Void
-    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
-
-    @ObservedObject private var keyboard = KeyboardResponder()
 
     private enum ViewState {
         case userDataForm
         case submitted
     }
 
+    private struct ErrorAlert: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+
+    let props: Props.DataRightsView
+    let actionHandler: (Action) -> Void
+
+    @State private var validationErrorAlert: ErrorAlert?
     @State private var viewState: ViewState = .userDataForm
-
     @State private var selectedId: Int = 0
-    @State private var selectedRight: Props.DataRightsView.Right?
-    @State private var requestDetails = String()
-    @State private var firstName = String()
-    @State private var lastName = String()
-    @State private var email = String()
-    @State private var phone = String()
-    @State private var postalCode = String()
-    @State private var addressLine1 = String()
-    @State private var addressLine2 = String()
-    @State private var selectedCountryCode: String?
-
+    @StateObject private var entry = DataRightsEntry()
+    @ObservedObject private var keyboard = KeyboardResponder()
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
 
     var body: some View {
         switch viewState {
@@ -60,50 +69,25 @@ struct DataRightsView: View {
                             }
                         }
 
-                        radioButtonsSelectorSection(title: "Request", value: $selectedRight)
+                        radioButtonsSelectorSection(title: "Request", value: $entry.selectedRight)
                     }
 
                     VStack(alignment: .leading, spacing: 24) {
-                        TextEditorSection(title: "Request details", accentColor: props.theme.contentColor, validations: [.notEmpty], value: $requestDetails)
-                            .onTapGesture {
-                                selectedId = 1
-                            }
-                            .id(1)
-                            .padding(.bottom, 24)
+                        textEditorSection(field: entry.requestDetails, id: 1)
+                        .padding(.bottom, 24)
 
                         Text("Personal Details")
                             .font(.system(size: props.theme.titleFontSize, weight: .bold))
                             .foregroundColor(props.theme.contentColor)
 
-                        TextFieldSection(title: "First Name", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty], value: $firstName)
-                            .onTapGesture { selectedId = 2 }
-                            .id(2)
-
-                        TextFieldSection(title: "Last Name", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty], value: $lastName)
-                            .onTapGesture { selectedId = 3 }
-                            .id(3)
-
-                        TextFieldSection(title: "Email", hint: nil, accentColor: props.theme.contentColor, validations: [.notEmpty, .email], value: $email)
-                            .onTapGesture { selectedId = 4 }
-                            .id(4)
-
-                        TextFieldSection(title: "Phone", hint: nil, accentColor: props.theme.contentColor, value: $phone)
-                            .onTapGesture { selectedId = 5 }
-                            .id(5)
-
-                        CountrySelectionSection(title: "Country", contentColor: props.theme.contentColor, value: $selectedCountryCode)
-
-                        TextFieldSection(title: "Postal Code", hint: nil, accentColor: props.theme.contentColor, value: $postalCode)
-                            .onTapGesture { selectedId = 6 }
-                            .id(6)
-
-                        TextFieldSection(title: "Address Line 1", hint: nil, accentColor: props.theme.contentColor, value: $addressLine1)
-                            .onTapGesture { selectedId = 7 }
-                            .id(7)
-
-                        TextFieldSection(title: "Address Line 2", hint: nil, accentColor: props.theme.contentColor, value: $addressLine2)
-                            .onTapGesture { selectedId = 8 }
-                            .id(8)
+                        textFieldSection(field: entry.firstName, id: 2)
+                        textFieldSection(field: entry.lastName, id: 3)
+                        textFieldSection(field: entry.email, id: 4)
+                        textFieldSection(field: entry.phone, id: 5)
+                        pickerListSection(field: entry.country)
+                        textFieldSection(field: entry.postalCode, id: 6)
+                        textFieldSection(field: entry.addressLine1, id: 7)
+                        textFieldSection(field: entry.addressLine2, id: 8)
                     }
                     .onChange(of: selectedId) { newValue in
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -125,7 +109,48 @@ struct DataRightsView: View {
         .padding(.bottom, keyboard.currentHeight)
         .background(props.theme.bodyBackgroundColor)
         .ignoresSafeArea()
+        .onAppear { entry.selectedRight = props.rights.first }
         .onTapGesture(perform: hideKeyboard)
+        .alert(item: $validationErrorAlert) { alert in
+            Alert(title: Text(alert.title), message: Text(alert.message))
+        }
+    }
+
+    @ViewBuilder
+    func textFieldSection(field: FieldEntry, id: Int) -> some View {
+        TextFieldSection(
+            title: field.title,
+            hint: nil,
+            accentColor: props.theme.contentColor,
+            error: Binding<String?>(get: { field.error }, set: { _, _ in }),
+            value: Binding<String>(get: { field.value }, set: {field.value = $0; field.error = field.validationErrorText(for: $0) })
+        )
+        .onTapGesture { selectedId = id }
+        .id(id)
+    }
+
+    @ViewBuilder
+    func textEditorSection(field: FieldEntry, id: Int) -> some View {
+        TextEditorSection(
+            title: field.title,
+            accentColor: props.theme.contentColor,
+            error: Binding<String?>(get: { field.error }, set: { _, _ in }),
+            value: Binding<String>(
+                get: { field.value },
+                set: { field.value = $0; field.error = field.validationErrorText(for: $0) }
+            )
+        )
+        .onTapGesture { selectedId = id }
+        .id(id)
+    }
+
+    @ViewBuilder
+    func pickerListSection(field: FieldEntry) -> some View {
+        CountrySelectionSection(
+            title: field.title,
+            contentColor: props.theme.contentColor,
+            value: Binding<String>(get: { field.value }, set: { field.value = $0 })
+        )
     }
 
     @ViewBuilder
@@ -166,6 +191,16 @@ struct DataRightsView: View {
             CustomButton(
                 props: .init(text: "Submit", theme: props.theme.firstButtonTheme)
             ) {
+                if let firstNotValid = entry.firstNotValid {
+                    hideKeyboard()
+                    firstNotValid.setError()
+                    return validationErrorAlert = ErrorAlert(
+                        title: firstNotValid.title,
+                        message: "Please, enter valid value"
+                    )
+                }
+
+                actionHandler(.submit(entry.request))
                 viewState = .submitted
             }
 
@@ -175,39 +210,6 @@ struct DataRightsView: View {
                 actionHandler(.close)
                 presentationMode.wrappedValue.dismiss()
             }
-        }
-    }
-}
-
-extension Props {
-    struct DataRightsView {
-        let bodyTitle: String?
-        let bodyDescription: String?
-        let theme: Theme
-        let rights: [Right]
-
-        struct Right: Hashable, RightDescription {
-            let code: String
-            let name: String
-            let description: String
-        }
-
-        struct Theme {
-            let titleFontSize: CGFloat = 16
-
-            let bodyBackgroundColor: Color
-            let contentColor: Color
-            let linkColor: Color
-
-            let borderRadius: Int
-
-            let firstButtonBackgroundColor: Color
-            let firstButtonBorderColor: Color
-            let firstButtonTextColor: Color
-
-            let secondButtonBackgroundColor: Color
-            let secondButtonBorderColor: Color
-            let secondButtonTextColor: Color
         }
     }
 }

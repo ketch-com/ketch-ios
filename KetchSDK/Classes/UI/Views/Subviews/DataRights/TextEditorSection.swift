@@ -10,18 +10,17 @@ import SwiftUI
 struct TextEditorSection: View {
     let title: String
     let accentColor: Color
-    let validations: [String.Validation]
-    var value: Binding<String>
+    let error: Binding<String?>
+    let value: Binding<String>
 
-    @State private var color: Color = .black
-    @State private var error: String?
+    @State private var isChanged = false
 
-    init(title: String, accentColor: Color, validations: [String.Validation] = [], value: Binding<String>) {
-        self.title = title
-        self.accentColor = accentColor
-        self.value = value
-        self.color = accentColor
-        self.validations = validations
+    var color: Color {
+        if isChanged {
+            return .orange
+        } else {
+            return error.wrappedValue == nil ? accentColor : .red
+        }
     }
 
     var body: some View {
@@ -31,7 +30,7 @@ struct TextEditorSection: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(color)
                 Spacer()
-                if let error = error {
+                if let error = error.wrappedValue, isChanged == false {
                     Text(error)
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.red)
@@ -44,15 +43,17 @@ struct TextEditorSection: View {
                     title: title,
                     accentColor: accentColor,
                     value: value,
-                    error: $error,
-                    color: $color,
-                    validations: validations
+                    error: error,
+                    isChanged: $isChanged,
+                    color: color
                 )
             } else {
-                TextEditor(text: value)
+                TextField("", text: value, onEditingChanged: { changed in
+                    isChanged = changed
+                  })
                     .font(.system(size: 14))
-                    .frame(minHeight:80)
-                    .padding(6)
+                    .frame(height: 44)
+                    .padding(.horizontal, 10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(color, lineWidth: 1)
@@ -68,8 +69,8 @@ private struct FocusableTextEditor: View {
     let accentColor: Color
     var value: Binding<String>
     var error: Binding<String?>
-    var color: Binding<Color>
-    let validations: [String.Validation]
+    var isChanged: Binding<Bool>
+    var color: Color
 
     @FocusState private var isFocused: Bool
 
@@ -81,22 +82,10 @@ private struct FocusableTextEditor: View {
             .padding(6)
             .overlay(
                 RoundedRectangle(cornerRadius: 5)
-                    .stroke(color.wrappedValue, lineWidth: 1)
+                    .stroke(color, lineWidth: 1)
             )
             .onChange(of: isFocused) { focused in
-                if focused {
-                    color.wrappedValue = .orange
-                } else {
-                    error.wrappedValue = validationErrorText(for: value.wrappedValue)
-                    color.wrappedValue = error.wrappedValue == nil ? accentColor : .red
-                }
+                isChanged.wrappedValue = focused
             }
-    }
-
-
-    private func validationErrorText(for text: String) -> String? {
-        validations.first { validation in
-            validation.isValid(text) == false
-        }?.errorText
     }
 }

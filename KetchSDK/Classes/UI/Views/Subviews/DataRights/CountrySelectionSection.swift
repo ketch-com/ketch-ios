@@ -10,7 +10,7 @@ import SwiftUI
 struct CountrySelectionSection: View {
     let title: String?
     let contentColor: Color
-    let value: Binding<String?>
+    let value: Binding<String>
 
     @State private var selectedCountry: Country = {
         guard let code = Locale.current.regionCode,
@@ -73,7 +73,9 @@ struct CountrySelectionSection: View {
             }
         }
         .onChange(of: selectedCountry) { newValue in
-            value.wrappedValue = newValue.code
+            if let code = newValue.code {
+                value.wrappedValue = code
+            }
         }
     }
 }

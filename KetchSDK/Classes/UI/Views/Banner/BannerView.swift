@@ -63,7 +63,8 @@ struct BannerView: View {
             }
             
             HStack {
-                Text("Powered by")
+                LogoSection()
+                    .foregroundColor(props.theme.contentColor)
                 Spacer()
             }
         }

@@ -36,7 +36,7 @@ struct PreferenceView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Spacer()
-                    Text("Powered by")
+                    LogoSection()
                         .foregroundColor(props.theme.headerTextColor)
                 }
 

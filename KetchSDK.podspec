@@ -47,6 +47,7 @@ TODO: Add long description of the pod here.
 
   s.subspec 'UI' do |ui|
     ui.source_files = 'KetchSDK/Classes/UI/**/*.{swift}'
+    ui.resource_bundle = { 'KetchUI' => ['KetchSDK/Assets/**/*.{xcassets}'] }
     ui.dependency 'KetchSDK/Core'
   end
 end

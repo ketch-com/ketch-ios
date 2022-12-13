@@ -112,10 +112,12 @@ extension Props.PurposesList {
         vendorsConsent: [String]?,
         theme: Theme
     ) {
-        let purposes = purposes?.map { purpose in
-            Props.Purpose(
+        let purposes: [Props.Purpose]? = purposes?.compactMap { purpose in
+            guard purpose.requiresDisplay ?? true else { return nil }
+
+            return Props.Purpose(
                 with: purpose,
-                consent: purposesConsent[purpose.code] ?? false,
+                consent: purposesConsent[purpose.code] ?? purpose.requiresOptIn == false,
                 legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
                 legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription
             )
@@ -149,7 +151,7 @@ extension Props.Purpose {
         self.init(
             code: purpose.code,
             consent: consent,
-            required: purpose.requiresOptIn ?? false,
+            required: purpose.allowsOptOut ?? false,
             title: purpose.name ?? String(),
             legalBasisName: legalBasisName,
             purposeDescription: purpose.description ?? String(),

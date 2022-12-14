@@ -40,94 +40,171 @@ public class KetchUI: ObservableObject {
     }
 
     public func showBanner() {
+        presentationItem = banner()
+    }
+
+    public func showModal() {
+        presentationItem = modal()
+    }
+
+    public func showJIT() {
+        presentationItem = jit()
+    }
+
+    public func showPreference() {
+        presentationItem = preference()
+    }
+
+    private func banner() -> PresentationItem? {
         guard
             let configuration,
             let consentStatus,
             let banner = configuration.experiences?.consent?.banner
-        else { return }
+        else { return nil }
 
-        presentationItem = PresentationItem.banner(
+        return .banner(
             bannerConfig: banner,
             config: configuration,
-            consent: consentStatus
-        ) { action in
-            switch action {
-            case .primary:
-                if let primaryButtonAction = banner.primaryButtonAction {
-                    switch primaryButtonAction {
-                    case .saveCurrentState: self.saveConsentState(configuration: configuration, consentStatus: consentStatus)
-                    case .acceptAll: self.acceptAll(configuration: configuration)
-                    }
-                }
-
-            case .secondary:
-                if let secondaryButtonDestination = banner.secondaryButtonDestination {
-                    switch secondaryButtonDestination {
-                    case .gotoModal: self.showModal()
-                    case .gotoPreference: break
-                    case .rejectAll: self.rejectAll(configuration: configuration)
-                    }
-                }
-            }
-        }
+            consent: consentStatus,
+            actionHandler: actionHandler
+        )
     }
 
-    public func showModal() {
+    private func modal() -> PresentationItem? {
         guard
             let configuration,
             let consentStatus,
             let modal = configuration.experiences?.consent?.modal
-        else { return }
+        else { return nil }
 
-        presentationItem = PresentationItem.modal(
+        return .modal(
             modalConfig: modal,
             config: configuration,
-            consent: consentStatus
-        ) { action in
-            switch action {
-            case .save(let purposesConsent):
-                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
-            }
-        }
+            consent: consentStatus,
+            actionHandler: actionHandler
+        )
     }
 
-    public func showJIT() {
+    private func jit() -> PresentationItem? {
         guard
             let configuration,
             let consentStatus,
             let jit = configuration.experiences?.consent?.jit
 
-        else { return }
+        else { return nil }
 
-        presentationItem = PresentationItem.jit(
+        return .jit(
             jitConfig: jit,
             config: configuration,
-            consent: consentStatus
-        ) { action in
-
-        }
+            consent: consentStatus,
+            actionHandler: actionHandler
+        )
     }
 
-    public func showPreference() {
+    private func preference() -> PresentationItem? {
         guard
             let configuration,
             let consentStatus,
             let preference = configuration.experiences?.preference
 
-        else { return }
+        else { return nil }
 
-        presentationItem = PresentationItem.preference(
+        return .preference(
             preferenceConfig: preference,
             config: configuration,
-            consent: consentStatus
-        ) { action in
-            switch action {
-            case .save(let purposesConsent):
-                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
-            case .request(let right, let user):
-                self.invokeRight(right: right.configRight, user: user.configUserData)
+            consent: consentStatus,
+            actionHandler: actionHandler
+        )
+    }
+
+    private func child(with url: URL) -> PresentationItem? {
+        let externalUrlString: String?
+        switch PresentationItem.Link(rawValue: url) {
+        case .triggerModal:
+            return modal()
+
+        case .url(let urlToOpen):
+            UIApplication.shared.open(urlToOpen)
+            return nil
+
+        case .privacyPolicy:
+            externalUrlString = configuration?.privacyPolicy?.url
+
+        case .termsOfService:
+            externalUrlString = configuration?.termsOfService?.url
+        }
+
+        if let externalUrlString, let externalUrl = URL(string: externalUrlString) {
+            UIApplication.shared.open(externalUrl)
+        }
+
+        return nil
+    }
+
+
+    private func actionHandler(_ action: PresentationItem.ItemType.BannerItem.Action) -> PresentationItem? {
+        switch action {
+        case .openUrl(let url): return child(with: url)
+
+        case .primary:
+            if let configuration = configuration,
+               let consentStatus = consentStatus,
+               let banner = configuration.experiences?.consent?.banner,
+               let primaryButtonAction = banner.primaryButtonAction {
+                switch primaryButtonAction {
+                case .saveCurrentState: self.saveConsentState(configuration: configuration, consentStatus: consentStatus)
+                case .acceptAll: self.acceptAll(configuration: configuration)
+                }
+            }
+
+        case .secondary:
+            if let configuration = configuration,
+               let banner = configuration.experiences?.consent?.banner,
+               let secondaryButtonDestination = banner.secondaryButtonDestination {
+                switch secondaryButtonDestination {
+                case .gotoModal: self.showModal()
+                case .gotoPreference: break
+                case .rejectAll: self.rejectAll(configuration: configuration)
+                }
             }
         }
+
+        return nil
+    }
+
+    private func actionHandler(_ action: PresentationItem.ItemType.ModalItem.Action) -> PresentationItem? {
+        switch action {
+        case .openUrl(let url): return child(with: url)
+
+        case .save(let purposesConsent):
+            if let configuration = configuration {
+                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+            }
+        }
+
+        return nil
+    }
+
+    private func actionHandler(_ action: PresentationItem.ItemType.JitItem.Action) -> PresentationItem? {
+        switch action {
+        case .openUrl(let url): return child(with: url)
+        }
+    }
+
+    private func actionHandler(_ action: PresentationItem.ItemType.PreferenceItem.Action) -> PresentationItem? {
+        switch action {
+        case .openUrl(let url): return child(with: url)
+
+        case .save(let purposesConsent):
+            if let configuration = configuration {
+                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+            }
+
+        case .request(let right, let user):
+            self.invokeRight(right: right.configRight, user: user.configUserData)
+        }
+
+        return nil
     }
 }
 

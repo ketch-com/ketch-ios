@@ -157,34 +157,17 @@ extension KetchUI.PresentationItem {
             .asResponsiveSheet(style: .screenCover)
     }
 
-    private func child(with url: URL) -> Self? {
-        switch url.absoluteString {
-            //            case "triggerModal", "privacyPolicy", "termsOfService":
-            //                return .init(
-            //                    itemType: .modal(),
-            //                    config: config,
-            //                    consent: consent
-            //                ) { _ in }
-
-        default:
-            UIApplication.shared.open(url)
-            return nil
-        }
-    }
-
     // MARK: - Actions processing -
     private func handleAction(
         for item: ItemType.BannerItem
     ) -> ((BannerView.Action) -> KetchUI.PresentationItem?) {
         { action in
             switch action {
-            case .primary: item.actionHandler(.primary)
-            case .secondary: item.actionHandler(.secondary)
-            case .close: break
-            case .openUrl(let url): return child(with: url)
+            case .primary: return item.actionHandler(.primary)
+            case .secondary: return item.actionHandler(.secondary)
+            case .close:  return nil
+            case .openUrl(let url): return item.actionHandler(.openUrl(url))
             }
-
-            return nil
         }
     }
 
@@ -194,7 +177,7 @@ extension KetchUI.PresentationItem {
         { action in
             switch action {
             case .save(let purposesConsent, let vendors):
-                item.actionHandler(
+                return item.actionHandler(
                     .save(
                         purposesConsent: KetchSDK.ConsentStatus(
                             purposes: purposesConsent,
@@ -203,11 +186,9 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close: break
-            case .openUrl(let url): return child(with: url)
+            case .close:  return nil
+            case .openUrl(let url):  return item.actionHandler(.openUrl(url))
             }
-
-            return nil
         }
     }
 
@@ -216,11 +197,9 @@ extension KetchUI.PresentationItem {
     ) -> ((JitView.Action) -> KetchUI.PresentationItem?) {
         { action in
             switch action {
-            case .close: break
-            case .openUrl(let url): return child(with: url)
+            case .close:  return nil
+            case .openUrl(let url):  return item.actionHandler(.openUrl(url))
             }
-
-            return nil
         }
     }
 
@@ -230,7 +209,7 @@ extension KetchUI.PresentationItem {
         { action in
             switch action {
             case .save(let purposesConsent, let vendors):
-                item.actionHandler(
+                return item.actionHandler(
                     .save(
                         purposesConsent: KetchSDK.ConsentStatus(
                             purposes: purposesConsent,
@@ -239,12 +218,28 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close: break
-            case .openUrl(let url): return child(with: url)
-            case .request(let right, let user): item.actionHandler(.request(right: right, user: user))
+            case .close:  return nil
+            case .openUrl(let url): return item.actionHandler(.openUrl(url))
+            case .request(let right, let user): return item.actionHandler(.request(right: right, user: user))
             }
+        }
+    }
+}
 
-            return nil
+extension KetchUI.PresentationItem {
+    enum Link {
+        case url(URL)
+        case triggerModal
+        case privacyPolicy
+        case termsOfService
+
+        init(rawValue: URL) {
+            switch rawValue.absoluteString {
+            case "triggerModal": self = .triggerModal
+            case "privacyPolicy": self = .privacyPolicy
+            case "termsOfService": self = .termsOfService
+            default: self = .url(rawValue)
+            }
         }
     }
 }

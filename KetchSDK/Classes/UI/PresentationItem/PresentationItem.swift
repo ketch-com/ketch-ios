@@ -30,9 +30,10 @@ extension KetchUI.PresentationItem {
 extension KetchUI.PresentationItem.ItemType {
     struct BannerItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
-        let actionHandler: (Action) -> Void
+        let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
+            case openUrl(URL)
             case primary
             case secondary
         }
@@ -40,27 +41,29 @@ extension KetchUI.PresentationItem.ItemType {
 
     struct ModalItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Modal
-        let actionHandler: (Action) -> Void
+        let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
+            case openUrl(URL)
             case save(purposesConsent: KetchSDK.ConsentStatus)
         }
     }
 
     struct JitItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.JIT
-        let actionHandler: (Action) -> Void
+        let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
-
+            case openUrl(URL)
         }
     }
 
     struct PreferenceItem {
         let config: KetchSDK.Configuration.PreferenceExperience
-        let actionHandler: (Action) -> Void
+        let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
+            case openUrl(URL)
             case save(purposesConsent: KetchSDK.ConsentStatus)
             case request(right: DataRightCoding, user: UserDataCoding)
         }
@@ -72,7 +75,7 @@ extension KetchUI.PresentationItem {
         bannerConfig: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
         config: KetchSDK.Configuration,
         consent: KetchSDK.ConsentStatus,
-        actionHandler: @escaping (ItemType.BannerItem.Action) -> Void
+        actionHandler: @escaping (ItemType.BannerItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
         Self(
             itemType: .banner(
@@ -90,7 +93,7 @@ extension KetchUI.PresentationItem {
         modalConfig: KetchSDK.Configuration.Experience.ConsentExperience.Modal,
         config: KetchSDK.Configuration,
         consent: KetchSDK.ConsentStatus,
-        actionHandler: @escaping (ItemType.ModalItem.Action) -> Void
+        actionHandler: @escaping (ItemType.ModalItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
         Self(
             itemType: .modal(
@@ -108,7 +111,7 @@ extension KetchUI.PresentationItem {
         preferenceConfig: KetchSDK.Configuration.PreferenceExperience,
         config: KetchSDK.Configuration,
         consent: KetchSDK.ConsentStatus,
-        actionHandler: @escaping (ItemType.PreferenceItem.Action) -> Void
+        actionHandler: @escaping (ItemType.PreferenceItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
         Self(
             itemType: .preference(
@@ -126,7 +129,7 @@ extension KetchUI.PresentationItem {
         jitConfig: KetchSDK.Configuration.Experience.ConsentExperience.JIT,
         config: KetchSDK.Configuration,
         consent: KetchSDK.ConsentStatus,
-        actionHandler: @escaping (ItemType.JitItem.Action) -> Void
+        actionHandler: @escaping (ItemType.JitItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
         Self(
             itemType: .jit(

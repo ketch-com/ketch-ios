@@ -121,10 +121,93 @@ struct TestView: View {
     }
 }
 
+//@available(iOS 15.0, *)
+struct TestView2: View {
+    @Environment(\.openURL) private var openURL
 
+    var body: some View {
+//        let privacyPolicyText = "Read our [Privacy Policy](https://example.com) here."
+//        Text(LocalizedStringKey(privacyPolicyText))
+//            .environment(\.openURL, OpenURLAction { url in
+//                    .systemAction(url)
+//            })
+
+        Button {
+            if let url = URL(string: "https://www.example.com") {
+                openURL(url)
+            }
+        } label: {
+            Label("Get Help", systemImage: "person.fill.questionmark")
+        }
+        .onOpenURL { url in
+            print("ulr")
+        }
+
+
+//        Link("Go to the main blog", destination: URL(string: "https://fivestars.blog/")!)
+//        Text("Visit [Example Company](https://www.example.com) for details.")
+//            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+//                guard let url = userActivity.webpageURL else { return }
+//                print("Inside onContinueUserActivity....")
+//            }
+//            .onOpenURL { url in
+//                print("")
+//            }
+//            .environment(\.openURL, OpenURLAction { url in
+//                handleURL(url)
+//                return .handled
+//            })
+    }
+
+    private func handleURL(_ url: URL) {
+
+    }
+}
+
+@available(iOS 15.0, *)
 struct TestView_Previews: PreviewProvider {
     static var previews: some View {
-        TestView()
-//            .environmentObject(ModalManager())
+        testExpand
+//        TestView()
+        TestView2()
+    }
+
+    @ViewBuilder
+    static var testExpand: some View {
+        List(0...10, id: \.self) { idx in
+            DisclosureGroup {
+                HStack {
+                    Image(systemName: "person.circle.fill")
+                    VStack(alignment: .leading) {
+                        Text("ABC")
+                        Text("Test Test")
+                    }
+                }
+                HStack {
+                    Image(systemName: "globe")
+                    VStack(alignment: .leading) {
+                        Text("ABC")
+                        Text("X Y Z")
+                    }
+                }
+                HStack {
+                    Image(systemName: "water.waves")
+                    VStack(alignment: .leading) {
+                        Text("Bla Bla")
+                        Text("123")
+                    }
+                }
+                HStack{
+                    Button("Cancel") {}
+                    Spacer()
+                    Button("Book") {}
+                }
+            } label: {
+                HStack {
+                    Text("Expand")
+                    Spacer()
+                }
+            }
+        }
     }
 }

@@ -53,7 +53,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
                             .font(.system(size: 14))
 
                         if let legalBasisDescription = purpose.legalBasisDescription {
-                            Text("Legal Basic: ")
+                            Text("Legal Basis: ")
                                 .font(.system(size: 14, weight: .bold))
                             + Text(legalBasisDescription)
                                 .font(.system(size: 14))

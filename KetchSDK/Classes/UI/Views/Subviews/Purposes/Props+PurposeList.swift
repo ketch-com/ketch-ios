@@ -30,6 +30,7 @@ extension Props {
         let code: String
         let consent: Bool
         let required: Bool
+        let requiresDisplay: Bool
         let id: String = UUID().uuidString
         let title: String
         let legalBasisName: String?
@@ -99,6 +100,16 @@ extension Props {
     }
 }
 
+extension KetchSDK.Configuration.Purpose {
+    var needsDisplay: Bool { requiresDisplay ?? false }
+
+    var isRequired: Bool { (allowsOptOut ?? false) == false }
+
+    var requiresAccept: Bool { requiresOptIn ?? false }
+
+    var defaultConsent: Bool { !needsDisplay || isRequired || !requiresAccept }
+}
+
 extension Props.PurposesList {
     init(
         bodyTitle: String,
@@ -112,12 +123,10 @@ extension Props.PurposesList {
         vendorsConsent: [String]?,
         theme: Theme
     ) {
-        let purposes: [Props.Purpose]? = purposes?.compactMap { purpose in
-            guard purpose.requiresDisplay ?? true else { return nil }
-
-            return Props.Purpose(
+        let purposes: [Props.Purpose]? = purposes?.map { purpose in
+            Props.Purpose(
                 with: purpose,
-                consent: purposesConsent[purpose.code] ?? purpose.requiresOptIn == false,
+                consent: purposesConsent[purpose.code] ?? purpose.defaultConsent,
                 legalBasisName: hideLegalBases ? nil : purpose.legalBasisName,
                 legalBasisDescription: hideLegalBases ? nil : purpose.legalBasisDescription
             )
@@ -151,7 +160,8 @@ extension Props.Purpose {
         self.init(
             code: purpose.code,
             consent: consent,
-            required: purpose.allowsOptOut ?? false,
+            required: purpose.isRequired,
+            requiresDisplay: purpose.needsDisplay,
             title: purpose.name ?? String(),
             legalBasisName: legalBasisName,
             purposeDescription: purpose.description ?? String(),

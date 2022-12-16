@@ -85,6 +85,13 @@ extension KetchUI.PresentationItem {
     private func jit(item: ItemType.JitItem) -> some View {
         let theme = Props.Jit.Theme(with: config.theme)
 
+        let purpose = Props.Purpose(
+            with: item.purpose,
+            consent: false,
+            legalBasisName: item.purpose.legalBasisName,
+            legalBasisDescription: item.purpose.legalBasisDescription
+        )
+
         let vendors = config.vendors?.map { vendor in
             Props.Vendor(
                 with: vendor,
@@ -96,19 +103,12 @@ extension KetchUI.PresentationItem {
             title: item.config.title,
             showCloseIcon: item.config.showCloseIcon ?? false,
             description: item.config.bodyDescription,
-            purpose: nil,
-            vendors: vendors,
+            purpose: purpose,
+            vendors: vendors ?? [],
             acceptButtonText: item.config.acceptButtonText,
             declineButtonText: item.config.declineButtonText,
             moreInfoText: item.config.moreInfoText,
-            moreInfoDestination: {
-                guard let moreInfoDestination = item.config.moreInfoDestination else { return nil }
-                switch moreInfoDestination {
-                case .gotoModal: return Props.Destination.modal
-                case .gotoPreference: return Props.Destination.preference
-                case .rejectAll: return Props.Destination.rejectAll
-                }
-            }(),
+            moreInfoDestinationEnabled: item.config.moreInfoDestination != nil,
             theme: theme
         )
 
@@ -152,7 +152,6 @@ extension KetchUI.PresentationItem {
             theme: theme
         )
 
-
         return PreferenceView(props: preferenceProps, actionHandler: handleAction(for: item))
             .asResponsiveSheet(style: .screenCover)
     }
@@ -165,7 +164,7 @@ extension KetchUI.PresentationItem {
             switch action {
             case .primary: return item.actionHandler(.primary)
             case .secondary: return item.actionHandler(.secondary)
-            case .close:  return nil
+            case .close: return nil
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             }
         }
@@ -186,8 +185,8 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close:  return nil
-            case .openUrl(let url):  return item.actionHandler(.openUrl(url))
+            case .close: return nil
+            case .openUrl(let url): return item.actionHandler(.openUrl(url))
             }
         }
     }
@@ -197,8 +196,17 @@ extension KetchUI.PresentationItem {
     ) -> ((JitView.Action) -> KetchUI.PresentationItem?) {
         { action in
             switch action {
-            case .close:  return nil
-            case .openUrl(let url):  return item.actionHandler(.openUrl(url))
+            case .moreInfo: return item.actionHandler(.moreInfo)
+            case .close: return nil
+            case .openUrl(let url): return item.actionHandler(.openUrl(url))
+            case .save(purposeCodeConsent: let purposeCodeConsent, vendors: let vendors):
+                return item.actionHandler(
+                    .save(
+                        purposeCode: item.purpose.code,
+                        consent: purposeCodeConsent,
+                        vendors: vendors
+                    )
+                )
             }
         }
     }
@@ -218,7 +226,7 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close:  return nil
+            case .close: return nil
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             case .request(let right, let user): return item.actionHandler(.request(right: right, user: user))
             }

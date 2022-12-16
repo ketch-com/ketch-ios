@@ -18,7 +18,7 @@ struct ModalView: View {
     let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
-    @ObservedObject private var consentsList = UserConsentsList()
+    @ObservedObject private var consents = UserConsents()
 
     @Environment(\.openURL) var openURL
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
@@ -26,7 +26,7 @@ struct ModalView: View {
     init(props: Props.Modal, actionHandler: @escaping (Action) -> KetchUI.PresentationItem?) {
         self.props = props
         self.actionHandler = actionHandler
-        consentsList = props.purposes.generateConsentsList()
+        consents = props.purposes.generateConsents()
     }
 
     var body: some View {
@@ -55,8 +55,8 @@ struct ModalView: View {
                     VStack {
                         PurposesView(
                             props: props.purposes,
-                            purposeConsents: $consentsList.purposeConsents,
-                            vendorConsents: $consentsList.vendorConsents
+                            purposeConsents: $consents.purposeConsents,
+                            vendorConsents: $consents.vendorConsents
                         ) {
 
                         } actionHandler: { action in
@@ -71,12 +71,12 @@ struct ModalView: View {
                                 CustomButton(props: saveButton) {
                                     handle(
                                         action: .save(
-                                            purposeCodeConsents: consentsList.purposeConsents.reduce(
+                                            purposeCodeConsents: consents.purposeConsents.reduce(
                                                 into: [String: Bool]()
                                             ) { result, purposeConsent in
                                                 result[purposeConsent.purpose.code] = purposeConsent.consent
                                             },
-                                            vendors: consentsList.vendorConsents
+                                            vendors: consents.vendorConsents
                                                 .filter(\.isAccepted)
                                                 .map(\.id)
                                         )

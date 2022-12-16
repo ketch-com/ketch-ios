@@ -102,9 +102,9 @@ extension Props.Jit.Theme {
         let firstButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
         let firstButtonTextColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
 
-        let secondButtonBackgroundColor = Color.white
-        let secondButtonBorderColor = Color(hex: theme?.formButtonColor ?? String())
-        let secondButtonTextColor = Color(hex: theme?.formButtonColor ?? String())
+        let secondButtonBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
+        let secondButtonBorderColor = Color(hex: theme?.modalButtonColor ?? String())
+        let secondButtonTextColor = Color(hex: theme?.modalButtonColor ?? String())
 
         self.init(
             headerBackgroundColor: modalHeaderBackgroundColor,

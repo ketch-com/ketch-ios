@@ -102,7 +102,7 @@ extension Props.Banner {
 extension Props.Jit {
     var titleDescriptionSectionProps: Props.TitleDescriptionSection {
         .init(
-            bodyTitle: title,
+            bodyTitle: nil,
             bodyDescription: description ?? "",
             theme: theme.titleDescriptionSectionTheme
         )
@@ -238,6 +238,15 @@ extension Props.Jit.Theme {
             textColor: secondButtonTextColor,
             borderColor: secondButtonBorderColor,
             backgroundColor: secondButtonBackgroundColor
+        )
+    }
+
+    var thirdButtonTheme: Props.Button.Theme {
+        .init(
+            borderRadius: borderRadius,
+            textColor: secondButtonTextColor,
+            borderColor: .clear,
+            backgroundColor: .clear
         )
     }
 }

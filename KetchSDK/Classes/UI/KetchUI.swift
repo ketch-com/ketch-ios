@@ -88,14 +88,15 @@ public class KetchUI: ObservableObject {
     private func jit() -> PresentationItem? {
         guard
             let configuration,
+            let purpose = configuration.purposes?.first,
             let consentStatus,
             let jit = configuration.experiences?.consent?.jit
-
         else { return nil }
 
         return .jit(
             jitConfig: jit,
             config: configuration,
+            purpose: purpose,
             consent: consentStatus,
             actionHandler: actionHandler
         )
@@ -106,7 +107,6 @@ public class KetchUI: ObservableObject {
             let configuration,
             let consentStatus,
             let preference = configuration.experiences?.preference
-
         else { return nil }
 
         return .preference(
@@ -141,7 +141,6 @@ public class KetchUI: ObservableObject {
         return nil
     }
 
-
     private func actionHandler(_ action: PresentationItem.ItemType.BannerItem.Action) -> PresentationItem? {
         switch action {
         case .openUrl(let url): return child(with: url)
@@ -152,8 +151,8 @@ public class KetchUI: ObservableObject {
                let banner = configuration.experiences?.consent?.banner,
                let primaryButtonAction = banner.primaryButtonAction {
                 switch primaryButtonAction {
-                case .saveCurrentState: self.saveConsentState(configuration: configuration, consentStatus: consentStatus)
-                case .acceptAll: self.acceptAll(configuration: configuration)
+                case .saveCurrentState: saveConsentState(configuration: configuration, consentStatus: consentStatus)
+                case .acceptAll: acceptAll(configuration: configuration)
                 }
             }
 
@@ -162,9 +161,9 @@ public class KetchUI: ObservableObject {
                let banner = configuration.experiences?.consent?.banner,
                let secondaryButtonDestination = banner.secondaryButtonDestination {
                 switch secondaryButtonDestination {
-                case .gotoModal: self.showModal()
-                case .gotoPreference: break
-                case .rejectAll: self.rejectAll(configuration: configuration)
+                case .gotoModal: return modal()
+                case .gotoPreference: return preference()
+                case .rejectAll: rejectAll(configuration: configuration)
                 }
             }
         }
@@ -188,7 +187,28 @@ public class KetchUI: ObservableObject {
     private func actionHandler(_ action: PresentationItem.ItemType.JitItem.Action) -> PresentationItem? {
         switch action {
         case .openUrl(let url): return child(with: url)
+        case .save(let purposeCode, let consent, let vendors):
+            if let configuration = configuration {
+                var purposes = consentStatus?.purposes ?? [:]
+                purposes[purposeCode] = consent
+                let purposesConsent = KetchSDK.ConsentStatus(purposes: purposes, vendors: vendors)
+
+                saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+            }
+
+        case .moreInfo:
+            if let configuration = configuration,
+               let jit = configuration.experiences?.consent?.jit,
+               let moreInfoDestination = jit.moreInfoDestination {
+                switch moreInfoDestination {
+                case .gotoModal: return modal()
+                case .gotoPreference: return preference()
+                case .rejectAll: rejectAll(configuration: configuration)
+                }
+            }
         }
+
+        return nil
     }
 
     private func actionHandler(_ action: PresentationItem.ItemType.PreferenceItem.Action) -> PresentationItem? {
@@ -197,11 +217,11 @@ public class KetchUI: ObservableObject {
 
         case .save(let purposesConsent):
             if let configuration = configuration {
-                self.saveConsentState(configuration: configuration, consentStatus: purposesConsent)
+                saveConsentState(configuration: configuration, consentStatus: purposesConsent)
             }
 
         case .request(let right, let user):
-            self.invokeRight(right: right.configRight, user: user.configUserData)
+            invokeRight(right: right.configRight, user: user.configUserData)
         }
 
         return nil

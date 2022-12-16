@@ -51,10 +51,13 @@ extension KetchUI.PresentationItem.ItemType {
 
     struct JitItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.JIT
+        let purpose: KetchSDK.Configuration.Purpose
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
             case openUrl(URL)
+            case save(purposeCode: String, consent: Bool, vendors: [String]?)
+            case moreInfo
         }
     }
 
@@ -128,6 +131,7 @@ extension KetchUI.PresentationItem {
     static func jit(
         jitConfig: KetchSDK.Configuration.Experience.ConsentExperience.JIT,
         config: KetchSDK.Configuration,
+        purpose: KetchSDK.Configuration.Purpose,
         consent: KetchSDK.ConsentStatus,
         actionHandler: @escaping (ItemType.JitItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
@@ -135,6 +139,7 @@ extension KetchUI.PresentationItem {
             itemType: .jit(
                 ItemType.JitItem(
                     config: jitConfig,
+                    purpose: purpose,
                     actionHandler: actionHandler
                 )
             ),

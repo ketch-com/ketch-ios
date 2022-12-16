@@ -130,3 +130,23 @@ extension Props.SubmittedDataRightsView.Theme {
         )
     }
 }
+
+extension Props.Jit.Theme {
+    var vendorListTheme: Props.VendorList.Theme {
+        .init(
+            bodyBackgroundColor: backgroundColor,
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
+}
+
+extension Props.Jit.Theme {
+    var categoryListTheme: Props.CategoryList.Theme {
+        .init(
+            bodyBackgroundColor: backgroundColor,
+            contentColor: contentColor,
+            linkColor: linkColor
+        )
+    }
+}

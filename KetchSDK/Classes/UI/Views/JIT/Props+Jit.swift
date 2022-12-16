@@ -12,22 +12,13 @@ extension Props {
         let title: String?
         let showCloseIcon: Bool
         let description: String?
-        let purpose: Purpose?
-        let vendors: [Vendor]?
+        let purpose: Purpose
+        let vendors: [Vendor]
         let acceptButtonText: String
         let declineButtonText: String
         let moreInfoText: String?
-        let moreInfoDestination: Destination?
+        let moreInfoDestinationEnabled: Bool
         let theme: Theme
-
-        struct Purpose: Hashable, Identifiable {
-            let id = UUID()
-            let title: String
-            let legalBasisName: String?
-            let purposeDescription: String
-            let legalBasisDescription: String?
-            let categories: [Category]
-        }
 
         struct Theme {
             let titleFontSize: CGFloat = 20
@@ -52,30 +43,4 @@ extension Props {
             let secondButtonTextColor: Color
         }
     }
-
-    enum Destination {
-        case modal
-        case preference
-        case rejectAll
-    }
-}
-
-extension Props.Jit {
-//    func generateConsentsList() -> UserConsentsList {
-//        UserConsentsList(
-//            purposeConsents: [purpose].map { purpose in
-//                UserConsentsList.PurposeConsent(
-//                    consent: purpose.consent || purpose.required,
-//                    required: purpose.required,
-//                    purpose: purpose
-//                )
-//            },
-//            vendorConsents: vendors.map { vendor in
-//                UserConsentsList.VendorConsent(
-//                    isAccepted: vendor.isAccepted,
-//                    vendor: vendor
-//                )
-//            }
-//        )
-//    }
 }

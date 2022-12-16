@@ -14,8 +14,8 @@ struct PurposesView<ContentView: View>: View {
     }
 
     let props: Props.PurposesList
-    @Binding var purposeConsents: [UserConsentsList.PurposeConsent]
-    @Binding var vendorConsents: [UserConsentsList.VendorConsent]
+    @Binding var purposeConsents: [UserConsents.PurposeConsent]
+    @Binding var vendorConsents: [UserConsents.VendorConsent]
     @ViewBuilder let content: ContentView?
     let actionHandler: (Action) -> Void
 
@@ -74,46 +74,48 @@ struct PurposesView<ContentView: View>: View {
             ForEach($purposeConsents) { index, purposeConsent in
                 let purpose = purposeConsent.wrappedValue.purpose
 
-                PurposeCell(
-                    consent: purposeConsent.consent,
-                    purpose: purpose,
-                    vendorsDestination: props.vendors.isEmpty ? nil : {
-                        VendorsView(
-                            props: Props.VendorList(
-                                title: purpose.title,
-                                description: purpose.purposeDescription,
-                                theme: props.theme.vendorListTheme
-                            ),
-                            vendorConsents: $vendorConsents
-                        ) { action in
-                            switch action {
-                            case .close: actionHandler(.close)
-                            case .openUrl(let url): actionHandler(.openUrl(url))
+                if purpose.requiresDisplay {
+                    PurposeCell(
+                        consent: purposeConsent.consent,
+                        purpose: purpose,
+                        vendorsDestination: props.vendors.isEmpty ? nil : {
+                            VendorsView(
+                                props: Props.VendorList(
+                                    title: purpose.title,
+                                    description: purpose.purposeDescription,
+                                    theme: props.theme.vendorListTheme
+                                ),
+                                vendorConsents: $vendorConsents
+                            ) { action in
+                                switch action {
+                                case .close: actionHandler(.close)
+                                case .openUrl(let url): actionHandler(.openUrl(url))
+                                }
+                            }
+                        },
+                        categoriesDestination: purpose.categories.isEmpty ? nil : {
+                            CategoriesView(
+                                props: Props.CategoryList(
+                                    title: purpose.title,
+                                    description: purpose.purposeDescription,
+                                    theme: props.theme.categoryListTheme,
+                                    categories: purpose.categories
+                                )
+                            ) { action in
+                                switch action {
+                                case .openUrl(let url): actionHandler(.openUrl(url))
+                                }
                             }
                         }
-                    },
-                    categoriesDestination: purpose.categories.isEmpty ? nil : {
-                        CategoriesView(
-                            props: Props.CategoryList(
-                                title: purpose.title,
-                                description: purpose.purposeDescription,
-                                theme: props.theme.categoryListTheme,
-                                categories: purpose.categories
-                            )
-                        ) { action in
-                            switch action {
-                            case .openUrl(let url): actionHandler(.openUrl(url))
-                            }
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }
 
     func setAllPurposeConsents(_ value: Bool) {
         purposeConsents.enumerated().forEach { (index, _) in
-            if purposeConsents[index].required { return }
+            if purposeConsents[index].isRequired { return }
 
             purposeConsents[index].consent = value
         }

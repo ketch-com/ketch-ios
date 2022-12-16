@@ -34,7 +34,7 @@
 /* Begin PBXFileReference section */
 		0B7B7E8842724A7E1BE28E33 /* Pods-KetchSDK_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KetchSDK_Example.debug.xcconfig"; path = "Target Support Files/Pods-KetchSDK_Example/Pods-KetchSDK_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		202904CFF8E24AFBFC8ED74C /* Pods-KetchSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KetchSDK_Example.release.xcconfig"; path = "Target Support Files/Pods-KetchSDK_Example/Pods-KetchSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
-		21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = KetchSDK.podspec; path = ../KetchSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = KetchSDK.podspec; path = ../KetchSDK.podspec; sourceTree = "<group>"; };
 		3A1C7C2A2920691000621B25 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		3A1C7C2C2921BAE400621B25 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3A3C329F2911014500E65788 /* TCF_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCF_Tests.swift; sourceTree = "<group>"; };

@@ -32,22 +32,22 @@ TODO: Add long description of the pod here.
   s.swift_version = '5.0'
 
   s.subspec 'Core' do |core|
-    core.source_files = 'Sources/Core/**/*.{swift}'
+    core.source_files = 'Sources/KetchSDK/Core/**/*.{swift}'
   end
 
   s.subspec 'CCPA' do |ccpa|
-    ccpa.source_files = 'Sources/CCPA/**/*.{swift}'
+    ccpa.source_files = 'Sources/KetchSDK/CCPA/**/*.{swift}'
     ccpa.dependency 'KetchSDK/Core'
   end
 
   s.subspec 'TCF' do |tcf|
-    tcf.source_files = 'Sources/TCF/**/*.{swift}'
+    tcf.source_files = 'Sources/KetchSDK/TCF/**/*.{swift}'
     tcf.dependency 'KetchSDK/Core'
   end
 
   s.subspec 'UI' do |ui|
-    ui.source_files = 'Sources/UI/**/*.{swift}'
-    ui.resource_bundle = { 'KetchUI' => ['Sources/Assets/**/*.{xcassets}'] }
+    ui.source_files = 'Sources/KetchSDK/UI/**/*.{swift}'
+    ui.resource_bundle = { 'KetchUI' => ['Assets/**/*.{xcassets}'] }
     ui.dependency 'KetchSDK/Core'
   end
 end

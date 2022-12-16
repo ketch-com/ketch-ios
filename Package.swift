@@ -4,6 +4,9 @@ import PackageDescription
 
 let package = Package(
     name: "KetchSDK",
+    platforms: [
+        .iOS(.v14)
+    ],
     products: [
         .library(
             name: "KetchSDK",
@@ -14,7 +17,8 @@ let package = Package(
     targets: [
         .target(
             name: "KetchSDK",
-            dependencies: []),
+            dependencies: []
+        ),
         .testTarget(
             name: "KetchSDKTests",
             dependencies: ["KetchSDK"]),

@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 public class Ketch {
     public let organizationCode: String

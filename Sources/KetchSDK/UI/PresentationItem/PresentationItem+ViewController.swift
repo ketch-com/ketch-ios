@@ -9,7 +9,7 @@ import UIKit
 import SwiftUI
 
 extension KetchUI.PresentationItem {
-    public var viewController: UIViewController? {
+    public var viewController: UIViewController {
         let vc = UIHostingController(rootView: content)
         vc.modalPresentationStyle = .overFullScreen
 

@@ -8,15 +8,38 @@
 import Combine
 import Foundation
 
-public class Ketch {
+public class Ketch: ObservableObject {
+    public enum Identity {
+        case idfa(String)
+
+        var key: String {
+            switch self {
+            case .idfa: return "idfa"
+            }
+        }
+
+        var value: String {
+            switch self {
+            case .idfa(let id): return id
+            }
+        }
+    }
+
     public let organizationCode: String
     public let propertyCode: String
     public let environmentCode: String
     public let controllerCode: String
-    public let identities: [String: String]
+    public let identities: [Identity]
+
+    private var plugins = Set<PolicyPlugin>()
+
+    private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
+    @Published public var configuration: KetchSDK.Configuration?
+
+    private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
+    @Published public var consent: KetchSDK.ConsentStatus?
 
     private var subscriptions = Set<AnyCancellable>()
-    private var plugins = Set<PolicyPlugin>()
 
     let userDefaults: UserDefaults
 
@@ -25,7 +48,7 @@ public class Ketch {
         propertyCode: String,
         environmentCode: String,
         controllerCode: String,
-        identities: [String : String],
+        identities: [Identity],
         userDefaults: UserDefaults = .standard
     ) {
         self.organizationCode = organizationCode
@@ -42,6 +65,10 @@ public class Ketch {
                 self.plugins.forEach { plugin in
                     plugin.configLoaded(configuration)
                 }
+
+                DispatchQueue.main.async {
+                    self.configuration = configuration
+                }
             }
             .store(in: &subscriptions)
 
@@ -52,18 +79,12 @@ public class Ketch {
                 self.plugins.forEach { plugin in
                     plugin.consentChanged(consentStatus)
                 }
+
+                DispatchQueue.main.async {
+                    self.consent = consentStatus
+                }
             }
             .store(in: &subscriptions)
-    }
-
-    private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
-    var configurationPublisher: AnyPublisher<KetchSDK.Configuration?, KetchSDK.KetchError> {
-        configurationSubject.eraseToAnyPublisher()
-    }
-
-    private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
-    var consentPublisher: AnyPublisher<KetchSDK.ConsentStatus?, KetchSDK.KetchError> {
-        consentSubject.eraseToAnyPublisher()
     }
 
     public func loadConfiguration() {
@@ -108,6 +129,9 @@ public class Ketch {
         guard let jurisdictionCode = configurationSubject.value?.jurisdiction?.code else { return }
 
         let invokedAt = Int(Date().timeIntervalSince1970 * 1000)
+        let identities = [String: String](
+            uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
+        )
 
         return KetchApiRequest()
             .invokeRights(
@@ -133,7 +157,7 @@ public class Ketch {
                     property: self.propertyCode,
                     environment: self.environmentCode,
                     invokedAt: invokedAt,
-                    identities: self.identities,
+                    identities: identities,
                     right: right,
                     user: user
                 )
@@ -173,6 +197,10 @@ public class Ketch {
                 })
         else { return }
 
+        let identities = [String: String](
+            uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
+        )
+
         KetchApiRequest()
             .getConsent(
                 config: .init(
@@ -207,7 +235,10 @@ public class Ketch {
             })
 
         let vendors = vendors ?? configurationSubject.value?.vendors?.map(\.id)
-
+        let identities = [String: String](
+            uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
+        )
+        
         return KetchApiRequest()
             .updateConsent(
                 update: .init(

@@ -10,12 +10,13 @@ import Combine
 
 public class KetchUI: ObservableObject {
     @Published public var presentationItem: PresentationItem?
+    @Published public var consentStatus: KetchSDK.ConsentStatus?
 
-    private let ketch: Ketch
+    public var showDialogsIfNeeded = false
 
-    private var subscriptions = Set<AnyCancellable>()
+    private var ketch: Ketch
     private var configuration: KetchSDK.Configuration?
-    private var consentStatus: KetchSDK.ConsentStatus?
+    private var subscriptions = Set<AnyCancellable>()
 
     public init(ketch: Ketch) {
         self.ketch = ketch
@@ -24,17 +25,18 @@ public class KetchUI: ObservableObject {
     }
 
     public func bindInput() {
-        ketch.configurationPublisher
-            .replaceError(with: nil)
+        ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
             }
             .store(in: &subscriptions)
 
-        ketch.consentPublisher
-            .replaceError(with: nil)
+        ketch.$consent
             .sink { consentStatus in
                 self.consentStatus = consentStatus
+                if self.showDialogsIfNeeded {
+                    self.showConsentExperience()
+                }
             }
             .store(in: &subscriptions)
     }
@@ -66,7 +68,9 @@ public class KetchUI: ObservableObject {
             bannerConfig: banner,
             config: configuration,
             consent: consentStatus,
-            actionHandler: actionHandler
+            actionHandler: { [weak self] action in
+                self?.actionHandler(action)
+            }
         )
     }
 
@@ -81,7 +85,9 @@ public class KetchUI: ObservableObject {
             modalConfig: modal,
             config: configuration,
             consent: consentStatus,
-            actionHandler: actionHandler
+            actionHandler: { [weak self] action in
+                self?.actionHandler(action)
+            }
         )
     }
 
@@ -98,7 +104,9 @@ public class KetchUI: ObservableObject {
             config: configuration,
             purpose: purpose,
             consent: consentStatus,
-            actionHandler: actionHandler
+            actionHandler: { [weak self] action in
+                self?.actionHandler(action)
+            }
         )
     }
 
@@ -113,7 +121,9 @@ public class KetchUI: ObservableObject {
             preferenceConfig: preference,
             config: configuration,
             consent: consentStatus,
-            actionHandler: actionHandler
+            actionHandler: { [weak self] action in
+                self?.actionHandler(action, preferenceVersion: preference.version)
+            }
         )
     }
 
@@ -143,6 +153,8 @@ public class KetchUI: ObservableObject {
 
     private func actionHandler(_ action: PresentationItem.ItemType.BannerItem.Action) -> PresentationItem? {
         switch action {
+        case .close: if shouldShowPreference { showPreference() }
+
         case .openUrl(let url): return child(with: url)
 
         case .primary:
@@ -173,6 +185,8 @@ public class KetchUI: ObservableObject {
 
     private func actionHandler(_ action: PresentationItem.ItemType.ModalItem.Action) -> PresentationItem? {
         switch action {
+        case .close: if shouldShowPreference { showPreference() }
+
         case .openUrl(let url): return child(with: url)
 
         case .save(let purposesConsent):
@@ -186,7 +200,10 @@ public class KetchUI: ObservableObject {
 
     private func actionHandler(_ action: PresentationItem.ItemType.JitItem.Action) -> PresentationItem? {
         switch action {
+        case .close: if shouldShowPreference { showPreference() }
+
         case .openUrl(let url): return child(with: url)
+
         case .save(let purposeCode, let consent, let vendors):
             if let configuration = configuration {
                 var purposes = consentStatus?.purposes ?? [:]
@@ -211,8 +228,15 @@ public class KetchUI: ObservableObject {
         return nil
     }
 
-    private func actionHandler(_ action: PresentationItem.ItemType.PreferenceItem.Action) -> PresentationItem? {
+    private func actionHandler(
+        _ action: PresentationItem.ItemType.PreferenceItem.Action,
+        preferenceVersion: Int
+    ) -> PresentationItem? {
         switch action {
+        case .onShow: ketch.updatePreferenceVersion(version: preferenceVersion)
+
+        case .close: if shouldShowPreference { showPreference() }
+
         case .openUrl(let url): return child(with: url)
 
         case .save(let purposesConsent):
@@ -225,6 +249,52 @@ public class KetchUI: ObservableObject {
         }
 
         return nil
+    }
+
+    private func showConsentExperience() {
+        if let defaultExperience = configuration?.experiences?.consent?.experienceDefault {
+            switch defaultExperience {
+            case .banner:
+                if shouldShowBanner { showBanner() }
+                else if shouldShowPreference { showPreference() }
+
+            case .modal:
+                if shouldShowModal { showModal() }
+                else if shouldShowPreference { showPreference() }
+            }
+        }
+    }
+
+    private var shouldShowBanner: Bool {
+        guard let consentVersion = ketch.getConsentVersion() else { return true }
+
+        return consentVersion != configuration?.experiences?.consent?.version
+    }
+
+    private var shouldShowModal: Bool {
+        guard let consentVersion = ketch.getConsentVersion() else { return true }
+
+        if consentVersion != configuration?.experiences?.consent?.version { return true }
+
+        return shouldShowConsent
+    }
+
+    private var shouldShowPreference: Bool {
+        guard let preferenceVersion = ketch.getPreferenceVersion() else { return true }
+
+        if preferenceVersion != configuration?.experiences?.preference?.version { return true }
+
+        guard let consentVersion = ketch.getConsentVersion() else { return true }
+
+        if consentVersion != configuration?.experiences?.consent?.version { return true }
+
+        return shouldShowConsent
+    }
+
+    private var shouldShowConsent: Bool {
+        configuration?.purposes?.contains { purpose in
+            consentStatus?.purposes.first(where: { $0.key == purpose.code })?.value == nil
+        } ?? false
     }
 }
 

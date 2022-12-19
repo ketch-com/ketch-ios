@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PreferenceView: View {
     enum Action {
+        case onShow
         case close
         case openUrl(URL)
         case save(purposeCodeConsents: [String: Bool], vendors: [String])
@@ -64,6 +65,7 @@ struct PreferenceView: View {
             }
         }
         .background(props.theme.bodyBackgroundColor)
+        .onAppear { handle(action: .onShow) }
     }
 
     @ViewBuilder

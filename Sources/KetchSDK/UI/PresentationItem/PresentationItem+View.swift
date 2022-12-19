@@ -164,7 +164,7 @@ extension KetchUI.PresentationItem {
             switch action {
             case .primary: return item.actionHandler(.primary)
             case .secondary: return item.actionHandler(.secondary)
-            case .close: return nil
+            case .close: return item.actionHandler(.close)
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             }
         }
@@ -185,7 +185,7 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close: return nil
+            case .close: return item.actionHandler(.close)
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             }
         }
@@ -197,7 +197,7 @@ extension KetchUI.PresentationItem {
         { action in
             switch action {
             case .moreInfo: return item.actionHandler(.moreInfo)
-            case .close: return nil
+            case .close: return item.actionHandler(.close)
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             case .save(purposeCodeConsent: let purposeCodeConsent, vendors: let vendors):
                 return item.actionHandler(
@@ -216,6 +216,7 @@ extension KetchUI.PresentationItem {
     ) -> ((PreferenceView.Action) -> KetchUI.PresentationItem?) {
         { action in
             switch action {
+            case .onShow: return item.actionHandler(.onShow)
             case .save(let purposesConsent, let vendors):
                 return item.actionHandler(
                     .save(
@@ -226,7 +227,7 @@ extension KetchUI.PresentationItem {
                     )
                 )
 
-            case .close: return nil
+            case .close: return item.actionHandler(.close)
             case .openUrl(let url): return item.actionHandler(.openUrl(url))
             case .request(let right, let user): return item.actionHandler(.request(right: right, user: user))
             }

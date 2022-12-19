@@ -13,7 +13,7 @@ public enum KetchSDK {
         propertyCode: String,
         environmentCode: String,
         controllerCode: String,
-        identities: [String : String]
+        identities: [Ketch.Identity]
     ) -> Ketch {
         Ketch(
             organizationCode: organizationCode,

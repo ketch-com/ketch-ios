@@ -36,6 +36,7 @@ extension KetchUI.PresentationItem.ItemType {
             case openUrl(URL)
             case primary
             case secondary
+            case close
         }
     }
 
@@ -46,6 +47,7 @@ extension KetchUI.PresentationItem.ItemType {
         enum Action {
             case openUrl(URL)
             case save(purposesConsent: KetchSDK.ConsentStatus)
+            case close
         }
     }
 
@@ -58,6 +60,7 @@ extension KetchUI.PresentationItem.ItemType {
             case openUrl(URL)
             case save(purposeCode: String, consent: Bool, vendors: [String]?)
             case moreInfo
+            case close
         }
     }
 
@@ -66,9 +69,11 @@ extension KetchUI.PresentationItem.ItemType {
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
+            case onShow
             case openUrl(URL)
             case save(purposesConsent: KetchSDK.ConsentStatus)
             case request(right: DataRightCoding, user: UserDataCoding)
+            case close
         }
     }
 }

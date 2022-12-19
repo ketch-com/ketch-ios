@@ -199,7 +199,7 @@ public class KetchUI: ObservableObject {
 
     private func actionHandler(_ action: PresentationItem.ItemType.JitItem.Action) -> PresentationItem? {
         switch action {
-        case .close: if shouldShowPreference { showPreference() }
+        case .close: break
 
         case .openUrl(let url): return child(with: url)
 
@@ -234,7 +234,7 @@ public class KetchUI: ObservableObject {
         switch action {
         case .onShow: ketch.updatePreferenceVersion(version: preferenceVersion)
 
-        case .close: if shouldShowPreference { showPreference() }
+        case .close: break
 
         case .openUrl(let url): return child(with: url)
 

@@ -17,7 +17,10 @@ let package = Package(
     targets: [
         .target(
             name: "KetchSDK",
-            dependencies: []
+            dependencies: [],
+            resources: [
+                .copy("Assets.xcassets")
+            ]
         ),
         .testTarget(
             name: "KetchSDKTests",

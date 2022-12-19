@@ -14,7 +14,7 @@ struct LogoSection: View {
         HStack {
             Text("Powered by")
                 .font(.system(size: 12))
-            Image("Logo", bundle: .module)
+            Image("Logo", bundle: .ketchUI)
         }
         .onTapGesture {
             UIApplication.shared.open(ketchUrl)

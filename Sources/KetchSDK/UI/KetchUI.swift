@@ -10,12 +10,12 @@ import Combine
 
 public class KetchUI: ObservableObject {
     @Published public var presentationItem: PresentationItem?
+    @Published public var configuration: KetchSDK.Configuration?
     @Published public var consentStatus: KetchSDK.ConsentStatus?
 
     public var showDialogsIfNeeded = false
 
     private var ketch: Ketch
-    private var configuration: KetchSDK.Configuration?
     private var subscriptions = Set<AnyCancellable>()
 
     public init(ketch: Ketch) {
@@ -49,8 +49,8 @@ public class KetchUI: ObservableObject {
         presentationItem = modal()
     }
 
-    public func showJIT() {
-        presentationItem = jit()
+    public func showJIT(purpose: KetchSDK.Configuration.Purpose) {
+        presentationItem = jit(purpose: purpose)
     }
 
     public func showPreference() {
@@ -91,10 +91,9 @@ public class KetchUI: ObservableObject {
         )
     }
 
-    private func jit() -> PresentationItem? {
+    private func jit(purpose: KetchSDK.Configuration.Purpose) -> PresentationItem? {
         guard
             let configuration,
-            let purpose = configuration.purposes?.first,
             let consentStatus,
             let jit = configuration.experiences?.consent?.jit
         else { return nil }
@@ -245,7 +244,7 @@ public class KetchUI: ObservableObject {
             }
 
         case .request(let right, let user):
-            invokeRight(right: right.configRight, user: user.configUserData)
+            ketch.invokeRights(right: right.configRight, user: user.configUserData)
         }
 
         return nil
@@ -341,9 +340,5 @@ extension KetchUI {
         let vendors = consentStatus.vendors
 
         ketch.updateConsent(purposes: purposes, vendors: vendors)
-    }
-
-    private func invokeRight(right: KetchSDK.Configuration.Right, user: KetchSDK.InvokeRightConfig.User) {
-        ketch.invokeRights(right: right.code, user: user)
     }
 }

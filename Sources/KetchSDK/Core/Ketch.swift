@@ -25,23 +25,20 @@ public class Ketch: ObservableObject {
         }
     }
 
-    public let organizationCode: String
-    public let propertyCode: String
-    public let environmentCode: String
-    public let controllerCode: String
-    public let identities: [Identity]
+    @Published public var configuration: KetchSDK.Configuration?
+    @Published public var consent: KetchSDK.ConsentStatus?
 
+    private let organizationCode: String
+    private let propertyCode: String
+    private let environmentCode: String
+    private let controllerCode: String
+    private let identities: [Identity]
+    private let userDefaults: UserDefaults
     private var plugins = Set<PolicyPlugin>()
 
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
-    @Published public var configuration: KetchSDK.Configuration?
-
     private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
-    @Published public var consent: KetchSDK.ConsentStatus?
-
     private var subscriptions = Set<AnyCancellable>()
-
-    let userDefaults: UserDefaults
 
     init(
         organizationCode: String,
@@ -123,7 +120,7 @@ public class Ketch: ObservableObject {
     }
 
     public func invokeRights(
-        right: String? = nil,
+        right: KetchSDK.Configuration.Right?,
         user: KetchSDK.InvokeRightConfig.User
     ) {
         guard let jurisdictionCode = configurationSubject.value?.jurisdiction?.code else { return }
@@ -143,7 +140,7 @@ public class Ketch: ObservableObject {
                     jurisdictionCode: jurisdictionCode,
                     invokedAt: invokedAt,
                     identities: identities,
-                    rightCode: right ?? configurationSubject.value?.rights?.first?.code,
+                    rightCode: right?.code,
                     user: user
                 )
             )
@@ -158,7 +155,7 @@ public class Ketch: ObservableObject {
                     environment: self.environmentCode,
                     invokedAt: invokedAt,
                     identities: identities,
-                    right: right,
+                    right: right?.code,
                     user: user
                 )
             }
@@ -224,17 +221,11 @@ public class Ketch: ObservableObject {
     }
 
     public func updateConsent(
-        purposes: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]? = nil,
-        vendors: [String]? = nil
+        purposes: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]?,
+        vendors: [String]?
     ) {
         guard let jurisdictionCode = configurationSubject.value?.jurisdiction?.code else { return }
 
-        let purposes = purposes ?? configurationSubject.value?.purposes?
-            .reduce(into: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis](), { result, purpose in
-                result[purpose.code] = .init(allowed: true, legalBasisCode: purpose.legalBasisCode)
-            })
-
-        let vendors = vendors ?? configurationSubject.value?.vendors?.map(\.id)
         let identities = [String: String](
             uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
         )
@@ -269,6 +260,16 @@ public class Ketch: ObservableObject {
                 self.consentSubject.send(consentUpdate)
             }
             .store(in: &subscriptions)
+    }
+}
+
+extension Ketch {
+    public var configurationPublisher: AnyPublisher<KetchSDK.Configuration?, KetchSDK.KetchError> {
+        configurationSubject.eraseToAnyPublisher()
+    }
+
+    public var consentPublisher: AnyPublisher<KetchSDK.ConsentStatus?, KetchSDK.KetchError> {
+        consentSubject.eraseToAnyPublisher()
     }
 }
 

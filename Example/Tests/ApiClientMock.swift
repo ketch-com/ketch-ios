@@ -2,9 +2,6 @@
 //  ApiClientMock.swift
 //  KetchSDK_Tests
 //
-//  Created by Anton Lyfar on 12.10.2022.
-//  Copyright © 2022 CocoaPods. All rights reserved.
-//
 
 import Foundation
 import Combine

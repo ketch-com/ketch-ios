@@ -2,8 +2,6 @@
 //  RadioButtonsGroup.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 08.12.2022.
-//
 
 import SwiftUI
 

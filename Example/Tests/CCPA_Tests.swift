@@ -2,9 +2,6 @@
 //  CCPA_Tests.swift
 //  KetchSDK_Tests
 //
-//  Created by Anton Lyfar on 25.10.2022.
-//  Copyright © 2022 CocoaPods. All rights reserved.
-//
 
 import XCTest
 @testable import KetchSDK

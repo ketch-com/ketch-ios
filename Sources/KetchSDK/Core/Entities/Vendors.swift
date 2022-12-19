@@ -2,8 +2,6 @@
 //  Vendors.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 24.10.2022.
-//
 
 import Foundation
 

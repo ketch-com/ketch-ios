@@ -2,8 +2,6 @@
 //  PublisherSegmentEncoder.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 03.11.2022.
-//
 
 import Foundation
 

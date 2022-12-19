@@ -2,8 +2,6 @@
 //  KeyboardResponder.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 09.12.2022.
-//
 
 import SwiftUI
 

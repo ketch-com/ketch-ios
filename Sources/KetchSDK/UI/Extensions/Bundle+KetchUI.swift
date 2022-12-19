@@ -2,8 +2,6 @@
 //  Bundle+KetchUI.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 13.12.2022.
-//
 
 import Foundation
 

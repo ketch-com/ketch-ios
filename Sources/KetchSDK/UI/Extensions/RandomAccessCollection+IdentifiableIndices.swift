@@ -2,8 +2,6 @@
 //  RandomAccessCollection+IdentifiableIndices.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 29.11.2022.
-//
 
 import SwiftUI
 

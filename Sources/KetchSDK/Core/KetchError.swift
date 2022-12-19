@@ -2,8 +2,6 @@
 //  KetchError.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 17.10.2022.
-//
 
 import Foundation
 

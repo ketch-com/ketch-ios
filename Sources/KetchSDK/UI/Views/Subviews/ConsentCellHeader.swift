@@ -2,8 +2,6 @@
 //  ConsentCellHeader.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 30.11.2022.
-//
 
 import SwiftUI
 

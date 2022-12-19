@@ -2,8 +2,6 @@
 //  Props.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 06.12.2022.
-//
 
 import SwiftUI
 

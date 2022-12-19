@@ -2,8 +2,6 @@
 //  KetchUI.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 08.11.2022.
-//
 
 import SwiftUI
 import Combine

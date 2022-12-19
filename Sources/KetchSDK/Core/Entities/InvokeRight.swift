@@ -2,8 +2,6 @@
 //  InvokeRight.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 12.10.2022.
-//
 
 import Foundation
 

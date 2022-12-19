@@ -2,8 +2,6 @@
 //  Ketch.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 01.11.2022.
-//
 
 import Combine
 import Foundation

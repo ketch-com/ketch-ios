@@ -2,8 +2,6 @@
 //  ApiService.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 07.10.2022.
-//
 
 import Foundation
 import Combine

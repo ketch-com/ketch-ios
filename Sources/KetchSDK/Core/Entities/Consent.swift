@@ -2,8 +2,6 @@
 //  Consent.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 11.10.2022.
-//
 
 import Foundation
 

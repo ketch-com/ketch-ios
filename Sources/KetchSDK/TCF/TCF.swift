@@ -2,8 +2,6 @@
 //  TCF.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 25.10.2022.
-//
 
 import Foundation
 

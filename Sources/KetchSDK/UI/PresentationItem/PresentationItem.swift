@@ -2,8 +2,6 @@
 //  PresentationItem.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 10.11.2022.
-//
 
 import SwiftUI
 

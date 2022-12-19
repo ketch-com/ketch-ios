@@ -2,8 +2,6 @@
 //  DataRightsView+Entry.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 11.12.2022.
-//
 
 import Foundation
 

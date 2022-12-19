@@ -2,8 +2,6 @@
 //  CategoryCell.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 01.12.2022.
-//
 
 import SwiftUI
 

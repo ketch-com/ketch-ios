@@ -2,8 +2,6 @@
 //  String+Validation.swift
 //  KetchSDK
 //
-//  Created by Anton Lyfar on 10.12.2022.
-//
 
 import Foundation
 

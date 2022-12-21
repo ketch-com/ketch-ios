@@ -6,6 +6,7 @@
 import SwiftUI
 
 extension KetchUI.PresentationItem {
+    /// View instance factory for presentation generation according ItemType
     @ViewBuilder
     public var content: some View {
         switch itemType {
@@ -16,6 +17,7 @@ extension KetchUI.PresentationItem {
         }
     }
 
+    // MARK: - UI views configuration according type and config models
     private func banner(item: ItemType.BannerItem) -> some View {
         let theme = Props.Banner.Theme(with: config.theme)
 
@@ -154,7 +156,7 @@ extension KetchUI.PresentationItem {
             .asResponsiveSheet(style: .screenCover)
     }
 
-    // MARK: - Actions processing -
+    // MARK: - Views Actions handling
     private func handleAction(
         for item: ItemType.BannerItem
     ) -> ((BannerView.Action) -> KetchUI.PresentationItem?) {
@@ -240,6 +242,7 @@ extension KetchUI.PresentationItem {
         case privacyPolicy
         case termsOfService
 
+        // Platform defined constants for transition type
         init(rawValue: URL) {
             switch rawValue.absoluteString {
             case "triggerModal": self = .triggerModal

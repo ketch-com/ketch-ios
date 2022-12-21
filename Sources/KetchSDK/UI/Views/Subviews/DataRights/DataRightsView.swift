@@ -213,38 +213,3 @@ struct DataRightsView: View {
         }
     }
 }
-
-struct DataRightsView_Previews: PreviewProvider {
-    typealias ViewProps = Props.DataRightsView
-
-    static var previews: some View {
-        DataRightsView(
-            props: ViewProps(
-                bodyTitle: "Choose how we use your data",
-                bodyDescription:
-                """
-                We collect and use data--including, where applicable,
-                your personal data--for the purposes listed below.
-                Please indicate whether or not that's ok with you by
-                toggling the switches below.
-                """,
-                theme: ViewProps.Theme(
-                    bodyBackgroundColor: .white,
-                    contentColor: .black,
-                    linkColor: .blue,
-                    borderRadius: 5,
-                    firstButtonBackgroundColor: .blue,
-                    firstButtonBorderColor: .blue,
-                    firstButtonTextColor: .white,
-                    secondButtonBackgroundColor: .white,
-                    secondButtonBorderColor: .blue,
-                    secondButtonTextColor: .blue
-                ),
-                rights: [
-                    .init(code: "f", name: "First", description: "First"),
-                    .init(code: "s", name: "Second", description: "First")
-                ]
-            )
-        ) { _ in }
-    }
-}

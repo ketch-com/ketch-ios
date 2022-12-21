@@ -6,6 +6,7 @@
 import Foundation
 import Combine
 
+/// Request processor for available platform API
 class KetchApiRequest {
     typealias KetchError = KetchSDK.KetchError
     typealias Configuration = KetchSDK.Configuration

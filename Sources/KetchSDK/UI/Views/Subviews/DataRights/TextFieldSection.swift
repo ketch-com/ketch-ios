@@ -49,25 +49,3 @@ struct TextFieldSection: View {
         }
     }
 }
-
-struct TextFieldSection_Preview: PreviewProvider {    
-    static var previews: some View {
-        Test_TextFieldSection()
-            .padding(24)
-    }
-
-    private struct Test_TextFieldSection: View {
-        @State var value: String = ""
-        @State var error: String? = "Required"
-
-        var body: some View {
-            TextFieldSection(
-                title: "Title",
-                hint: "Hint",
-                accentColor: .black,
-                error: $error,
-                value: $value
-            )
-        }
-    }
-}

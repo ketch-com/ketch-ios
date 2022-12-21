@@ -8,6 +8,8 @@ import Foundation
 private let TCF_TCString_Key = "IABTCF_TCString"
 private let TCF_gdprApplies_Key = "IABTCF_gdprApplies"
 
+/// Implementation TCF protocol handling as PolicyPlugin
+/// Implemented TCF String encoding V2
 public class TCF: PolicyPlugin {
     public typealias TCF_String = String
 

@@ -6,24 +6,31 @@
 import Combine
 import Foundation
 
-public class Ketch: ObservableObject {
+public final class Ketch: ObservableObject {
+    /// Identity entity consumable by Ketch
     public enum Identity {
-        case idfa(String)
+        case idfa(String) // Default identity for iOS (AdvertisementIdentifier)
+        case custom(key: String, value: String)
 
         var key: String {
             switch self {
             case .idfa: return "idfa"
+            case .custom(let key, _): return key
             }
         }
 
         var value: String {
             switch self {
             case .idfa(let id): return id
+            case .custom(_, let value): return value
             }
         }
     }
 
+    /// Configuration updates stream
     @Published public var configuration: KetchSDK.Configuration?
+
+    /// Consent updates stream
     @Published public var consent: KetchSDK.ConsentStatus?
 
     private let organizationCode: String
@@ -38,6 +45,14 @@ public class Ketch: ObservableObject {
     private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
     private var subscriptions = Set<AnyCancellable>()
 
+    /// Instantiation of Ketch class
+    /// - Parameters:
+    ///   - organizationCode: Organization defined in the platform side.
+    ///   - propertyCode: Property defined in the platform side.
+    ///   - environmentCode: Environment defined in the platform side.
+    ///   - controllerCode: Controller defined in the platform side.
+    ///   - identities: Identifiers of current instance of app. Possible types defined in the platform side. For iOS it is usually "idfa" (AdvertisementIdentifier)
+    ///   - userDefaults: UserDefaults where consent processing result will be stored by Plugins
     init(
         organizationCode: String,
         propertyCode: String,
@@ -261,16 +276,20 @@ public class Ketch: ObservableObject {
     }
 }
 
+// MARK: - Publishers with error.
 extension Ketch {
+    /// Configuration updates stream
     public var configurationPublisher: AnyPublisher<KetchSDK.Configuration?, KetchSDK.KetchError> {
         configurationSubject.eraseToAnyPublisher()
     }
 
+    /// Consent updates stream
     public var consentPublisher: AnyPublisher<KetchSDK.ConsentStatus?, KetchSDK.KetchError> {
         consentSubject.eraseToAnyPublisher()
     }
 }
 
+// MARK: - Requests helper methods with completion closures
 extension Ketch {
     public func fetchConfig(
         organization: String,
@@ -342,25 +361,36 @@ extension Ketch {
     }
 }
 
+// MARK: - Plugin features interface.
 extension Ketch {
+    /// Adding plugin for consent events handling
+    /// - Parameter plugin: Entity that can handle consent events.
     public func add(plugin: PolicyPlugin) {
         plugins.insert(plugin)
     }
 
+    /// Adding plugins for consent events handling
+    /// - Parameter plugin: Entities that can handle consent events.
     public func add(plugins: [PolicyPlugin]) {
         plugins.forEach {
             self.plugins.insert($0)
         }
     }
 
+    /// Removing plugin from Ketch handling list
+    /// - Parameter plugin: Entity which should be removed from handle consent events.
     public func remove(plugin: PolicyPlugin) {
         plugins.remove(plugin)
     }
 
+    /// Removing all applied plugins from Ketch handling list
     public func removeAllPlugins() {
         plugins = []
     }
 
+    /// Check if Plugin is currently handling events
+    /// - Parameter plugin: Plugin entity for check
+    /// - Returns: Result is Plugin is already added
     public func contains(plugin: PolicyPlugin) -> Bool {
         plugins.contains(plugin)
     }
@@ -369,6 +399,7 @@ extension Ketch {
 private let CONSENT_VERSION = "consent_version"
 private let PREFERENCE_VERSION = "preference_version"
 
+// MARK: - Internal interface for storage usage
 extension Ketch {
     func updateConsentVersion(version: Int?) {
         userDefaults.set(version, forKey: CONSENT_VERSION)

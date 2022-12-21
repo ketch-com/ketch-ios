@@ -6,6 +6,7 @@
 import SwiftUI
 
 extension KetchUI {
+    /// Essential presentation entity provided for client for presentation
     public struct PresentationItem: Identifiable {
         let itemType: ItemType
         let config: KetchSDK.Configuration
@@ -16,16 +17,17 @@ extension KetchUI {
 }
 
 extension KetchUI.PresentationItem {
+    /// Supported types of visual presentations
     enum ItemType {
         case banner(BannerItem)
         case modal(ModalItem)
         case jit(JitItem)
         case preference(PreferenceItem)
-
     }
 }
 
 extension KetchUI.PresentationItem.ItemType {
+    /// Internal implementation of Banner PresentationItem that contains possible actions handler
     struct BannerItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
         let actionHandler: (Action) -> KetchUI.PresentationItem?
@@ -38,6 +40,7 @@ extension KetchUI.PresentationItem.ItemType {
         }
     }
 
+    /// Internal implementation of Modal PresentationItem that contains possible actions handler
     struct ModalItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Modal
         let actionHandler: (Action) -> KetchUI.PresentationItem?
@@ -49,6 +52,7 @@ extension KetchUI.PresentationItem.ItemType {
         }
     }
 
+    /// Internal implementation of Just In Time PresentationItem that contains possible actions handler
     struct JitItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.JIT
         let purpose: KetchSDK.Configuration.Purpose
@@ -62,6 +66,7 @@ extension KetchUI.PresentationItem.ItemType {
         }
     }
 
+    /// Internal implementation of Preference PresentationItem that contains possible actions handler
     struct PreferenceItem {
         let config: KetchSDK.Configuration.PreferenceExperience
         let actionHandler: (Action) -> KetchUI.PresentationItem?
@@ -77,6 +82,13 @@ extension KetchUI.PresentationItem.ItemType {
 }
 
 extension KetchUI.PresentationItem {
+    /// Static builder method for generating ready PresentationItem according Banner type setup
+    /// - Parameters:
+    ///   - bannerConfig: Banner model received from platform
+    ///   - config: Config defined in consumed Ketch dependency
+    ///   - consent: Current Consent status in consumed Ketch dependency
+    ///   - actionHandler: PresentationItem actions handling for Banner
+    /// - Returns: PresentationItem ready to consume by client
     static func banner(
         bannerConfig: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
         config: KetchSDK.Configuration,
@@ -95,6 +107,13 @@ extension KetchUI.PresentationItem {
         )
     }
 
+    /// Static builder method for generating ready PresentationItem according Modal type setup
+    /// - Parameters:
+    ///   - bannerConfig: Modal model received from platform
+    ///   - config: Config defined in consumed Ketch dependency
+    ///   - consent: Current Consent status in consumed Ketch dependency
+    ///   - actionHandler: PresentationItem actions handling for Modal
+    /// - Returns: PresentationItem ready to consume by client
     static func modal(
         modalConfig: KetchSDK.Configuration.Experience.ConsentExperience.Modal,
         config: KetchSDK.Configuration,
@@ -113,6 +132,13 @@ extension KetchUI.PresentationItem {
         )
     }
 
+    /// Static builder method for generating ready PresentationItem according Preference type setup
+    /// - Parameters:
+    ///   - bannerConfig: Preference model received from platform
+    ///   - config: Config defined in consumed Ketch dependency
+    ///   - consent: Current Consent status in consumed Ketch dependency
+    ///   - actionHandler: PresentationItem actions handling for Preference
+    /// - Returns: PresentationItem ready to consume by client
     static func preference(
         preferenceConfig: KetchSDK.Configuration.PreferenceExperience,
         config: KetchSDK.Configuration,
@@ -131,6 +157,14 @@ extension KetchUI.PresentationItem {
         )
     }
 
+    /// Static builder method for generating ready PresentationItem according Just In Time type setup
+    /// - Parameters:
+    ///   - bannerConfig: Preference model received from platform
+    ///   - config: Config defined in consumed Ketch dependency
+    ///   - purpose: Purpose for which user should be asked
+    ///   - consent: Current Consent status in consumed Ketch dependency
+    ///   - actionHandler: PresentationItem actions handling for Just In Time
+    /// - Returns: PresentationItem ready to consume by client
     static func jit(
         jitConfig: KetchSDK.Configuration.Experience.ConsentExperience.JIT,
         config: KetchSDK.Configuration,

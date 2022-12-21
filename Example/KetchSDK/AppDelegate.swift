@@ -11,11 +11,6 @@ struct MyApplication: App {
   var body: some Scene {
     WindowGroup {
         ContentView()
-//        if #available(iOS 15.0, *) {
-//
-//            TestView2()
-
-//        }
     }
   }
 }

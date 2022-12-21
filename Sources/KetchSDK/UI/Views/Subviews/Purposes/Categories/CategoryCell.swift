@@ -72,19 +72,3 @@ struct CategoryCell: View {
         .padding(.horizontal, 32)
     }
 }
-
-struct CategoryCell_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            ForEach(1...3, id: \.self) { i in
-                CategoryCell(
-                    name: "\(i). User Identifiers",
-                    retentionPeriod: "180 days",
-                    externalTransfers: "None",
-                    description: "Identifiers such as name, address, unique personal identifier, email, or phone number."
-                )
-            }
-        }
-        .padding()
-    }
-}

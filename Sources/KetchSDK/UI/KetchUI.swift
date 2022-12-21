@@ -6,9 +6,17 @@
 import SwiftUI
 import Combine
 
-public class KetchUI: ObservableObject {
+/// Container for UI features
+public final class KetchUI: ObservableObject {
+    /// Stream of UI dialogs required to show
     @Published public var presentationItem: PresentationItem?
+
+    /// Configuration updates stream
+    /// Reflected from Ketch dependency
     @Published public var configuration: KetchSDK.Configuration?
+
+    /// Consent updates stream
+    /// Reflected from Ketch dependency
     @Published public var consentStatus: KetchSDK.ConsentStatus?
 
     public var showDialogsIfNeeded = false
@@ -16,6 +24,9 @@ public class KetchUI: ObservableObject {
     private var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
 
+    /// Instantiation of UI dialogs
+    /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
+    /// protocol plugins updates
     public init(ketch: Ketch) {
         self.ketch = ketch
 
@@ -38,7 +49,10 @@ public class KetchUI: ObservableObject {
             }
             .store(in: &subscriptions)
     }
+}
 
+// MARK: - Direct trigger of dialog item presentation
+extension KetchUI {
     public func showBanner() {
         presentationItem = banner()
     }
@@ -54,7 +68,10 @@ public class KetchUI: ObservableObject {
     public func showPreference() {
         presentationItem = preference()
     }
+}
 
+// MARK: - Dialog presentation item generation of each type
+extension KetchUI {
     private func banner() -> PresentationItem? {
         guard
             let configuration,
@@ -124,6 +141,10 @@ public class KetchUI: ObservableObject {
         )
     }
 
+    /// Generating child dialog according to triggered url on presentation
+    /// - Parameter url: url from Item config
+    /// - Returns: PresentationItem if action triggered internal dialog transition,
+    /// otherwise is nil (nothing to show as child)
     private func child(with url: URL) -> PresentationItem? {
         let externalUrlString: String?
         switch PresentationItem.Link(rawValue: url) {
@@ -147,7 +168,10 @@ public class KetchUI: ObservableObject {
 
         return nil
     }
+}
 
+// MARK: - action handlers for presentation item of each type
+extension KetchUI {
     private func actionHandler(_ action: PresentationItem.ItemType.BannerItem.Action) -> PresentationItem? {
         switch action {
         case .close: if shouldShowPreference { showPreference() }
@@ -247,7 +271,10 @@ public class KetchUI: ObservableObject {
 
         return nil
     }
+}
 
+// MARK: - Dialog result handling according corresponding experience config
+extension KetchUI {
     private func showConsentExperience() {
         if let defaultExperience = configuration?.experiences?.consent?.experienceDefault {
             switch defaultExperience {
@@ -295,6 +322,7 @@ public class KetchUI: ObservableObject {
     }
 }
 
+// MARK: - Consent action result handling according corresponding experience config
 extension KetchUI {
     private func acceptAll(configuration: KetchSDK.Configuration) {
         let purposes = configuration.purposes?

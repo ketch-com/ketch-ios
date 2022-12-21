@@ -6,6 +6,14 @@
 import Combine
 
 public enum KetchSDK {
+    /// Instantiation of Ketch core class
+    /// - Parameters:
+    ///   - organizationCode: Organization defined in the platform side.
+    ///   - propertyCode: Property defined in the platform side.
+    ///   - environmentCode: Environment defined in the platform side.
+    ///   - controllerCode: Controller defined in the platform side.
+    ///   - identities: Identifiers of current instance of app. Possible types defined in the platform side. For iOS it is usually "idfa" (AdvertisementIdentifier)
+    /// - Returns: Ketch instance.
     public static func create(
         organizationCode: String,
         propertyCode: String,
@@ -152,6 +160,8 @@ extension KetchSDK {
             .eraseToAnyPublisher()
     }
 
+    /// Retrieves list of consents vendors.
+    /// - Returns: Publisher of getVendors request result.
     public func getVendors() -> AnyPublisher<Vendors, KetchError> {
         KetchApiRequest()
             .getVendors()

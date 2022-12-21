@@ -5,14 +5,28 @@
 
 import Foundation
 
+/// Protocol of PolicyPlugin. Can be consumed and run by Ketch instance.
 public protocol PolicyProtocol {
+    /// Any unique protocol Id in consumed list.
     var protocolID: String { get }
+
+    /// Indicates in this protocol applies with current config.
     var isApplied: Bool { get }
 
+    // MARK: - Protocol lifecycle events
+    /// Triggers on any config change
     func configLoaded(_ configuration: KetchSDK.Configuration)
+
+    /// Triggers on any consent change
     func consentChanged(_ consentStatus: KetchSDK.ConsentStatus)
+
+    /// Indicates event when initiated experience presentation defined in config
     func willShowExperience()
+
+    /// Indicates event when stopped experience presentation defined in config
     func experienceHidden(reason: ExperienceHiddenReason)
+
+    /// Indicates event user initiated rights invocation
     func rightInvoked(
         controller: String?,
         property: String,
@@ -35,6 +49,7 @@ public enum PolicyPluginError: Error {
     case notApplicableToConfig
 }
 
+/// PolicyPlugin base class
 open class PolicyPlugin: PolicyProtocol {
     public var protocolID: String {
         fatalError("protocolID is not implemented")

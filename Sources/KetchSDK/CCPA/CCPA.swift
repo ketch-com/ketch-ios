@@ -5,13 +5,13 @@
 
 import Foundation
 
-
 private let USPrivacy_String_Key = "IABUSPrivacy_String"
 private let USPrivacy_Applied_Key = "IABUSPrivacy_Applied"
 
 private let TCF_TCString_Key = "IABTCF_TCString"
 private let TCF_gdprApplies_Key = "IABTCF_gdprApplies"
 
+/// Implementation CCPA protocol handling as PolicyPlugin
 public class CCPA: PolicyPlugin {
     public typealias CCPA_String = String
 

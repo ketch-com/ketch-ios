@@ -66,33 +66,3 @@ struct RadioButtonField<ID: Equatable>: View {
         }
     }
 }
-
-
-
-struct RadioButtonsGroup_Previews: PreviewProvider {
-    static var previews: some View {
-        Test_RadioButtonsGroup()
-    }
-
-    private struct Test_RadioButtonsGroup: View {
-        @State var selected: Right?
-
-        struct Right: Hashable, RightDescription {
-            let name: String
-            let description: String
-        }
-
-        var options = [
-            Right(name: "First", description: "FirstSubtitle"),
-            Right(name: "Second", description: "SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle SecondSubtitle"),
-            Right(name: "Third", description: "ThirdSubtitle")
-        ]
-
-        var body: some View {
-            RadioButtonsGroup(
-                options: options,
-                selected: $selected
-            )
-        }
-    }
-}

@@ -13,10 +13,8 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      # ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-      ARTIFACTORY_USERNAME: "alyfar@transcenda.com"
-      # ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      ARTIFACTORY_PASSWORD: "APB16yVc17JFdU4SR4uiZnWb3Hs"
+      ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       
     steps:
     - uses: actions/checkout@v3

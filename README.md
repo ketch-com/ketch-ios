@@ -43,8 +43,14 @@ KetchSDK
 ```
 
 
-## Requests using Combine
 
+
+
+## Direct API calls using Ketch
+
+<details>
+  <summary>Requests using Combine</summary>
+  
 The next methods send requests to the back-end
 
 ### Get Configuration
@@ -202,10 +208,12 @@ KetchSDK
     }
     .store(in: &subscriptions)
 ```
+  
+</details>
 
-
-## Requests using Result callback closures
-
+<details>
+  <summary>Requests using Result callback closures</summary>
+  
 The next methods send requests to the back-end
 
 ### Get Configuration
@@ -372,3 +380,6 @@ KetchSDK
         }
     }
 ```
+
+  
+</details>

@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
   s.version          = '0.1.2'
   s.summary          = 'Integrated solution for user data usage consents management'
   s.homepage         = 'https://ketch.com'
-  s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Anton Lyfar' => 'alyfar@transcenda.com' }
+  s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.source           = { :http => "https://ketch.jfrog.io/artifactory/ios/KetchSDK/ketchSDK.tar.gz" }
 
   s.ios.deployment_target = '14.0'

@@ -48,6 +48,21 @@ In order to use CocoaPods with Artifactory you will need to install the ['cocoap
     plugin 'cocoapods-art', :sources => [
         ios
     ]
+    
+    pod 'KetchSDK'
+    ```
+    
+    Or you can specify which modules you need.
+    SDK includes Core, CCPA, TCF and UI modules.
+    Core - Base SDK library. It includes all necessary request to work with our backend
+    CCPA and TCF - Specific protocol plugins. 
+    UI - UI Module. It includes all predefined visual dialogs.
+    
+    ```ruby
+    pod 'KetchSDK/Core'
+    pod 'KetchSDK/CCPA'
+    pod 'KetchSDK/TCF'
+    pod 'KetchSDK/UI'
     ```
 
 5. Then you can use install as usual:

@@ -1,47 +1,191 @@
-# KetchSDK
+# KetchSDK v2.0
+
 Mobile SDK for iOS
 
-Minimum iOS version supported 13.0
+Minimum iOS version supported 14.0
+
+## Prerequisites
+- Registered [Ketch organization account](https://app.ketch.com/settings/organization) 
+- Configured [application property](https://app.ketch.com/deployment/applications) record
+
 
 ## Install SDK
 
-### Cocopads
+### Cocoapods
 
-Add KetchSDK to your podfile in project and run pod install:
+KetchSTD deployed on JFrog Artifactory
+In order to use CocoaPods with Artifactory you will need to install the ['cocoapods-art'](https://github.com/jfrog/cocoapods-art) plugin.
+
+1. To install cocoapods-art run the following command:
+
+```
+gem install cocoapods-art
+```
+
+2. repo-art uses authentication as specified in your standard netrc file:
+
+```
+open ~/.netrc
+```
+
+netrc file:
+
+```
+machine ketch.jfrog.io
+login <#YOUR LOGIN#>
+password <#YOUR PASSWORD#>
+```
+
+3.To add an Artifactory Specs repo:
+
+```
+pod repo-art add ios "https://ketch.jfrog.io/artifactory/api/pods/ios"
+```
+
+4. Once the repository is added, to resolve pods from an Artifactory specs repo that you added, you must add the following to your Podfile:
+
 ```ruby
-use_frameworks!
+plugin 'cocoapods-art', :sources => [
+    ios
+]
+```
 
-target 'Your_Target' do
+5. Then you can use install as usual:
 
-  pod 'KetchSDK', :git =>'https://github.com/ketch-sdk/ketch-ios.git', :branch => 'lib'
+```
+pod install
+```
 
-end
+In case of necessity to trigger update of repository you can run:
+```
+pod repo-art update ios  
 ```
 
 
 ## Setup
 
-In order to use Ketch resources, import KetchSDK in your source file and initialize KetchSDK with shared instance:
+### Step 1. Add Info.plist privacy tracking request
+
+Define `Info.plist` string for tracking allowance request with key 
+`Privacy - Tracking Usage Description` (`NSUserTrackingUsageDescription`) 
+that describes wanted purpose, e.g. "Please indicate whether you consent to our collection and use 
+of your data in order to perform the operation(s) you’ve requested."
+
+-----------In order to use Ketch resources, import KetchSDK in your source file and initialize KetchSDK with shared instance:
+
+### Step 2. Integrate calls for presentation of preference settings view (or view controller)
+
+- Request permission for application tracking using `requestTrackingAuthorization` from `AppTrackingTransparency.ATTrackingManager`:
+
 ```swift
-import KetchSDK
+import AppTrackingTransparency
 
 ...
 
-let ketch = KetchSDK.shared
+ATTrackingManager.requestTrackingAuthorization { authorizationStatus in
+    if case .authorized = authorizationStatus {
+        ...
+    }
+}
 ```
 
-Or use methods from shared instance on demand:
+- Retrieve `advertisingIdentifier` from `AdSupport.ASIdentifierManager`:
+
 ```swift
-import KetchSDK
+import AppTrackingTransparency
+import AdSupport
+
+...
+    
+ATTrackingManager.requestTrackingAuthorization { authorizationStatus in
+    if case .authorized = authorizationStatus {
+        let advertisingId = ASIdentifierManager.shared().advertisingIdentifier
+        
+        ...
+    }
+}
+```
+
+- Create ConsentConfig by .configure(:...) method and save it for future preferencesCenter launch. To keep the activity as configurable as the Ketch Smart Tag on the HTML page, it expects an organization code and property code to be passed in to it:
+
+```swift
+import AppTrackingTransparency
+import AdSupport
 
 ...
 
-KetchSDK
-    .shared
-    .config()
-     ...
+private var config: ConsentConfig?
+
+struct ContentView: View {
+
+...
+
+var body: some View {
+    ...
+    .onAppear {
+        ATTrackingManager.requestTrackingAuthorization { authorizationStatus in
+            if case .authorized = authorizationStatus {
+                let advertisingId = ASIdentifierManager.shared().advertisingIdentifier
+                
+                self?.config = ConsentConfig.configure(
+                    orgCode: "#{your_org_code}#",
+                    propertyName: "#{your_property}#",
+                    advertisingIdentifier: advertisingId
+                )
+            }
+        }
+    }
+}
 ```
 
+- Show PreferenceCenter once you need to launch preferences setup:
+
+```swift
+...
+.sheet(item: $configItem) { configItem in
+    ConsentView(config: configItem)
+}
+```
+
+- Full integration code with config:
+
+```swift
+import AppTrackingTransparency
+import AdSupport
+
+...
+
+private var config: ConsentConfig?
+
+struct ContentView: View {
+    @State private var configItem: ConsentConfig?
+
+    var body: some View {
+        VStack {
+            Button("Show Preference Center") {
+                configItem = config
+            }
+        }
+        .onAppear {
+            ATTrackingManager.requestTrackingAuthorization { authorizationStatus in
+                if case .authorized = authorizationStatus {
+                    let advertisingId = ASIdentifierManager.shared().advertisingIdentifier
+
+                    config = ConsentConfig.configure(
+                        orgCode: "#{your_org_code}#",
+                        propertyName: "#{your_property}#",
+                        advertisingIdentifier: advertisingId
+                    )
+                }
+            }
+        }
+        .sheet(item: $configItem) { configItem in
+            ConsentView(config: configItem)
+        }
+        ...
+    }
+}
+```
 
 
 

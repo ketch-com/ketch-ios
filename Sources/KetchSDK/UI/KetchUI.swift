@@ -366,5 +366,6 @@ extension KetchUI {
         let vendors = consentStatus.vendors
 
         ketch.updateConsent(purposes: purposes, vendors: vendors)
+        ketch.updateConsentVersion(version: configuration.experiences?.consent?.version)
     }
 }

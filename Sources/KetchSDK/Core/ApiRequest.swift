@@ -18,7 +18,7 @@ struct EndPoint {
     let queryItems: [URLQueryItem]
 
     static func config(organization: String, property: String) -> EndPoint {
-        return EndPoint(
+        EndPoint(
             scheme: defaultScheme,
             host: ketchHost,
             path: [ketchApi, ketchApiVersion, "config", organization, property, "config.json"].joined(separator: "/"),
@@ -159,8 +159,9 @@ class DefaultApiClient: ApiClient {
 
     private static func urlRequest(with request: ApiRequest) -> URLRequest? {
         guard let url = request.endPoint.url else { return nil }
-        var urlRequest = URLRequest(url: url)
         
+        var urlRequest = URLRequest(url: url)
+
         urlRequest.httpBody = request.body
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.cachePolicy = .reloadIgnoringLocalCacheData

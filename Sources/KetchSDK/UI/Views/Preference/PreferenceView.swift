@@ -70,21 +70,23 @@ struct PreferenceView: View {
     var tabBar: some View {
         HStack(alignment: .top, spacing: 0) {
             ForEach(Props.Preference.Tab.allCases) { tab in
-                let isSelectedTab = selectedTab == tab
-                VStack {
-                    Text(props.tabName(with: tab))
-                        .foregroundColor(props.theme.headerTextColor)
-                        .frame(maxWidth: .infinity)
-                        .opacity(isSelectedTab ? 1 : 0.5)
-
-                    if isSelectedTab {
-                        RoundedRectangle(cornerRadius: 2)
-                            .frame(height: 4)
+                if (props.tabIsVisible(with:tab)) {
+                    let isSelectedTab = selectedTab == tab
+                    VStack {
+                        Text(props.tabName(with: tab))
                             .foregroundColor(props.theme.headerTextColor)
+                            .frame(maxWidth: .infinity)
+                            .opacity(isSelectedTab ? 1 : 0.5)
+                        
+                        if isSelectedTab {
+                            RoundedRectangle(cornerRadius: 2)
+                                .frame(height: 4)
+                                .foregroundColor(props.theme.headerTextColor)
+                        }
                     }
-                }
-                .onTapGesture {
-                    selectedTab = tab
+                    .onTapGesture {
+                        selectedTab = tab
+                    }
                 }
             }
         }
@@ -183,18 +185,20 @@ struct PreferenceView: View {
 
     @ViewBuilder
     var rights: some View {
-        DataRightsView(
-            props: .init(
-                bodyTitle: props.rights.title,
-                bodyDescription: props.rights.text,
-                theme: props.theme.dataRightsTheme,
-                rights: props.rights.rights
-            )
-        ) { action in
-            switch action {
-            case .openUrl(let url): handle(action: .openUrl(url))
-            case .close: handle(action: .close)
-            case .submit(let right, let user): handle(action: .request(right: right, user: user))
+        if let rights = props.rights {
+            DataRightsView(
+                props: .init(
+                    bodyTitle: rights.title,
+                    bodyDescription: rights.text,
+                    theme: props.theme.dataRightsTheme,
+                    rights: rights.rights
+                )
+            ) { action in
+                switch action {
+                case .openUrl(let url): handle(action: .openUrl(url))
+                case .close: handle(action: .close)
+                case .submit(let right, let user): handle(action: .request(right: right, user: user))
+                }
             }
         }
     }

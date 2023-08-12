@@ -29,7 +29,6 @@ struct BannerView: View {
                 Spacer()
                 Button(action: {
                     handle(action: .close)
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Image(systemName: "xmark")
                 }
@@ -49,14 +48,12 @@ struct BannerView: View {
             if let primaryButton = props.primaryButton {
                 CustomButton(props: primaryButton) {
                     self.handle(action: .primary)
-                    presentationMode.wrappedValue.dismiss()
                 }
             }
 
             if let secondaryButton = props.secondaryButton {
                 CustomButton(props: secondaryButton) {
                     self.handle(action: .secondary)
-                    presentationMode.wrappedValue.dismiss()
                 }
             }
             
@@ -68,12 +65,18 @@ struct BannerView: View {
         }
         .padding(24)
         .background(props.theme.backgroundColor)
-        .fullScreenCover(item: $presentationItem) { item in
+        .fullScreenCover(item: $presentationItem, onDismiss: {
+                presentationMode.wrappedValue.dismiss()
+        }) { item in
             item.content
         }
     }
 
     private func handle(action: Action) {
-        presentationItem = actionHandler(action)
+        let item = actionHandler(action)
+        if item == nil {
+            presentationMode.wrappedValue.dismiss()
+        }
+        presentationItem = item
     }
 }

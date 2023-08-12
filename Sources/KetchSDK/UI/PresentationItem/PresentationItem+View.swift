@@ -129,25 +129,29 @@ extension KetchUI.PresentationItem {
             vendorsConsent: consent.vendors,
             theme: theme.purposesListTheme
         )
-
+        
+        
         let preferenceProps = Props.Preference(
             title: item.config.title,
             overview: .init(
                 tabName: item.config.overview.tabName,
                 title: item.config.overview.bodyTitle,
-                text: item.config.overview.bodyDescription
+                text: item.config.overview.bodyDescription,
+                isVisible: item.config.overview.tabName != nil ? true : false
             ),
             consents: .init(
                 tabName: item.config.consents.tabName,
                 buttonText: item.config.consents.buttonText,
-                purposes: purposesProps
+                purposes: purposesProps,
+                isVisible: item.config.consents.tabName != nil ? true : false
             ),
             rights: .init(
-                tabName: item.config.rights.tabName,
-                title: item.config.rights.bodyTitle,
-                text: item.config.rights.bodyDescription,
-                buttonText: item.config.rights.buttonText,
-                rights: config.rights?.map(\.props) ?? []
+                tabName: item.config.rights?.tabName ?? "12k93jf",
+                title: item.config.rights?.bodyTitle,
+                text: item.config.rights?.bodyDescription,
+                buttonText: item.config.rights?.buttonText ?? "",
+                rights: config.rights?.map(\.props) ?? [],
+                isVisible: item.config.rights?.tabName != nil ? true : false
             ),
             theme: theme
         )

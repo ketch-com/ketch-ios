@@ -10,7 +10,7 @@ extension Props {
         let title: String
         let overview: OverviewTab
         let consents: ConsentsTab
-        let rights:   RightsTab
+        let rights:   RightsTab?
         let theme: Theme
 
         struct OverviewTab: Identifiable, Hashable {
@@ -19,6 +19,7 @@ extension Props {
             let tabName: String
             let title: String?
             let text: String?
+            let isVisible: Bool
         }
 
         struct ConsentsTab: Identifiable {
@@ -27,6 +28,7 @@ extension Props {
             let tabName: String
             let buttonText: String
             let purposes: PurposesList
+            let isVisible: Bool
         }
 
         struct RightsTab: Identifiable, Hashable {
@@ -37,6 +39,7 @@ extension Props {
             let text: String?
             let buttonText: String
             let rights: [DataRightsView.Right]
+            let isVisible: Bool
         }
 
         struct Right: Hashable {
@@ -80,7 +83,15 @@ extension Props {
             switch tab {
             case .overview: return overview.tabName
             case .consents: return consents.tabName
-            case .rights: return rights.tabName
+            case .rights: return rights?.tabName ?? ""
+            }
+        }
+        
+        func tabIsVisible(with tab: Tab) -> Bool {
+            switch tab {
+            case .overview: return overview.isVisible
+            case .consents: return consents.isVisible
+            case .rights: return rights?.isVisible ?? false
             }
         }
     }

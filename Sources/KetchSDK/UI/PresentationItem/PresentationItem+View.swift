@@ -146,7 +146,7 @@ extension KetchUI.PresentationItem {
                 isVisible: item.config.consents.tabName != nil ? true : false
             ),
             rights: .init(
-                tabName: item.config.rights?.tabName ?? "12k93jf",
+                tabName: item.config.rights?.tabName ?? "3",
                 title: item.config.rights?.bodyTitle,
                 text: item.config.rights?.bodyDescription,
                 buttonText: item.config.rights?.buttonText ?? "",

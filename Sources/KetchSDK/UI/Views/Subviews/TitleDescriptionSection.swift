@@ -16,9 +16,11 @@ struct TitleDescriptionSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             if let title = props.bodyTitle {
-                Text(title)
-                    .font(.system(size: props.theme.titleFontSize, weight: .bold))
-                    .foregroundColor(props.theme.contentColor)
+                if !title.isEmpty {
+                    Text(title)
+                        .font(.system(size: props.theme.titleFontSize, weight: .bold))
+                        .foregroundColor(props.theme.contentColor)
+                }
             }
 
             DescriptionMarkupText(description: props.bodyDescription) { url in
@@ -204,12 +206,21 @@ extension Props.Banner.Theme {
     }
 
     var secondaryButtonTheme: Props.Button.Theme {
-        .init(
-            borderRadius: borderRadius,
-            textColor: buttonColor,
-            borderColor: buttonColor,
-            backgroundColor: secondaryButtonColor
-        )
+        if secondaryButtonVariant == "outlined" {
+            return .init(
+                borderRadius: borderRadius,
+                textColor: secondaryButtonColor,
+                borderColor: secondaryButtonColor,
+                backgroundColor: backgroundColor
+            )
+        } else {
+            return .init(
+                borderRadius: borderRadius,
+                textColor: buttonColor,
+                borderColor: buttonColor,
+                backgroundColor: secondaryButtonColor
+            )
+        }
     }
 }
 

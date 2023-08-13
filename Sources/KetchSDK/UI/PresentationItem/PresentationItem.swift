@@ -109,7 +109,7 @@ extension KetchUI.PresentationItem {
 
     /// Static builder method for generating ready PresentationItem according Modal type setup
     /// - Parameters:
-    ///   - bannerConfig: Modal model received from platform
+    ///   - modalConfig: Modal model received from platform
     ///   - config: Config defined in consumed Ketch dependency
     ///   - consent: Current Consent status in consumed Ketch dependency
     ///   - actionHandler: PresentationItem actions handling for Modal
@@ -134,7 +134,7 @@ extension KetchUI.PresentationItem {
 
     /// Static builder method for generating ready PresentationItem according Preference type setup
     /// - Parameters:
-    ///   - bannerConfig: Preference model received from platform
+    ///   - preferenceConfig: Preference model received from platform
     ///   - config: Config defined in consumed Ketch dependency
     ///   - consent: Current Consent status in consumed Ketch dependency
     ///   - actionHandler: PresentationItem actions handling for Preference
@@ -159,7 +159,7 @@ extension KetchUI.PresentationItem {
 
     /// Static builder method for generating ready PresentationItem according Just In Time type setup
     /// - Parameters:
-    ///   - bannerConfig: Preference model received from platform
+    ///   - jitConfig: Preference model received from platform
     ///   - config: Config defined in consumed Ketch dependency
     ///   - purpose: Purpose for which user should be asked
     ///   - consent: Current Consent status in consumed Ketch dependency

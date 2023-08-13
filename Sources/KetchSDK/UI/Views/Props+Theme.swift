@@ -47,7 +47,7 @@ extension Props.Banner.Theme {
         let bannerBackgroundColor = Color(hex: theme?.bannerBackgroundColor ?? String())
         let bannerButtonColor = Color(hex: theme?.bannerButtonColor ?? String())
         let bannerSecondaryButtonColor = Color(hex: theme?.bannerSecondaryButtonColor ?? String())
-        let bannerContentColor = Color(hex: theme?.bannerContentColor ?? String())
+        let bannerContentColor = Color(hex: theme?.bannerContentColor ?? String("#000000"))
 
         self.init(
             contentColor: bannerContentColor,
@@ -55,7 +55,8 @@ extension Props.Banner.Theme {
             linkColor: bannerButtonColor,
             borderRadius: theme?.buttonBorderRadius ?? 0,
             buttonColor: bannerButtonColor,
-            secondaryButtonColor: bannerSecondaryButtonColor
+            secondaryButtonColor: bannerSecondaryButtonColor,
+            secondaryButtonVariant: theme?.bannerSecondaryButtonVariant ?? "outlined"
         )
     }
 }
@@ -63,7 +64,7 @@ extension Props.Banner.Theme {
 extension Props.Modal.Theme {
     init(with theme: KetchSDK.Configuration.Theme?) {
         let modalHeaderBackgroundColor = Color(hex: theme?.modalHeaderBackgroundColor ?? String())
-        let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? String())
+        let modalHeaderContentColor = Color(hex: theme?.modalHeaderContentColor ?? theme?.modalButtonColor ?? String("#000000"))
         let modalContentColor = Color(hex: theme?.modalContentColor ?? String())
         let switchOffColor = Color(hex: theme?.modalSwitchOffColor ?? "#7C868D")
         let switchOnColor = Color(hex: theme?.modalSwitchOnColor ?? theme?.modalContentColor ?? String())
@@ -126,13 +127,13 @@ extension Props.Jit.Theme {
 extension Props.Preference.Theme {
     init(with theme: KetchSDK.Configuration.Theme?) {
         let headerBackgroundColor = Color(hex: theme?.formHeaderBackgroundColor ?? String())
-        let headerContentColor = Color(hex: theme?.formHeaderContentColor ?? String())
+        let headerContentColor = Color(hex: theme?.formHeaderContentColor ?? String("#FFFFFF"))
 
         let contentColor = Color(hex: theme?.formContentColor ?? String())
         let bodyBackgroundColor = Color.white
 
         let switchOffColor = Color(hex: theme?.formSwitchOffColor ?? "#7C868D")
-        let switchOnColor = Color(hex: theme?.formSwitchOnColor ?? theme?.formContentColor ?? String())
+        let switchOnColor = Color(hex: theme?.formSwitchOnColor ?? theme?.formContentColor ?? String("#071A24"))
 
         let firstButtonBackgroundColor = Color(hex: theme?.formButtonColor ?? String())
         let firstButtonBorderColor = Color(hex: theme?.formButtonColor ?? String())

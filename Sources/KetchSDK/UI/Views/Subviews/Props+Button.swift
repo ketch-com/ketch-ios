@@ -19,6 +19,7 @@ extension Props {
             let textColor: Color
             let borderColor: Color
             let backgroundColor: Color
+            let buttonVariant: String = "outlined"
         }
     }
 }

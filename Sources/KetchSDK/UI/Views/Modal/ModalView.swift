@@ -16,6 +16,7 @@ struct ModalView: View {
     let actionHandler: (Action) -> KetchUI.PresentationItem?
 
     @State var presentationItem: KetchUI.PresentationItem?
+    @State var isPresented: Bool = false
     @ObservedObject private var consents = UserConsents()
 
     @Environment(\.openURL) var openURL
@@ -34,8 +35,8 @@ struct ModalView: View {
                     Text(props.title)
                         .font(.system(size: props.theme.titleFontSize, weight: .heavy))
                         .foregroundColor(props.theme.headerTextColor)
+                    Spacer()
                     if props.showCloseIcon {
-                        Spacer()
                         Button {
                             handle(action: .close)
                             presentationMode.wrappedValue.dismiss()
@@ -43,6 +44,8 @@ struct ModalView: View {
                             Image(systemName: "xmark")
                         }
                         .foregroundColor(props.theme.headerTextColor)
+                    } else {
+                        Spacer()
                     }
                 }
                 .padding(.horizontal, 18)
@@ -63,6 +66,7 @@ struct ModalView: View {
                             case .openUrl(let url): handle(action: .openUrl(url))
                             }
                         }
+                        .navigationBarHidden(true)
 
                         VStack(spacing: 24) {
                             if let saveButton = props.saveButton {

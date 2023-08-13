@@ -24,6 +24,7 @@ extension Props {
 
             let buttonColor: Color
             let secondaryButtonColor: Color
+            let secondaryButtonVariant: String
         }
     }
 }

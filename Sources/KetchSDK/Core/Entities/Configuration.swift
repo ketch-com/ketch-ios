@@ -89,18 +89,19 @@ extension KetchSDK.Configuration {
         public let buttonBorderRadius: Int?
 
         public let bannerBackgroundColor: String?
-        public let bannerContentColor: String?
+        public var bannerContentColor: String?
         public let bannerButtonColor: String?
         public let bannerSecondaryButtonColor: String?
+        public let bannerSecondaryButtonVariant: String?
         public let bannerPosition: BannerPosition?
 
         public let modalHeaderBackgroundColor: String?
         public let modalHeaderContentColor: String?
-        public let modalContentColor: String?
+        public var modalContentColor: String?
         public let modalButtonColor: String?
         public let modalPosition: ModalPosition?
-        public let modalSwitchOffColor: String?
-        public let modalSwitchOnColor: String?
+        public var modalSwitchOffColor: String?
+        public var modalSwitchOnColor: String?
 
         public let lightboxRibbonColor: String?
         public let formHeaderColor: String?
@@ -110,11 +111,11 @@ extension KetchSDK.Configuration {
         public let font: String?
 
         public let formHeaderBackgroundColor: String?
-        public let formHeaderContentColor: String?
+        public var formHeaderContentColor: String?
         public let formContentColor: String?
         public let formButtonColor: String?
-        public let formSwitchOffColor: String?
-        public let formSwitchOnColor: String?
+        public var formSwitchOffColor: String?
+        public var formSwitchOnColor: String?
 
         public enum BannerPosition: Int, Codable {
             case UNKNOWN = 0
@@ -198,7 +199,7 @@ extension KetchSDK.Configuration {
         public let code: String
         public let version: Int
         public let title: String
-        public let rights: RightsTab
+        public let rights: RightsTab?
         public let consents: ConsentsTab
         public let overview: OverviewTab
 

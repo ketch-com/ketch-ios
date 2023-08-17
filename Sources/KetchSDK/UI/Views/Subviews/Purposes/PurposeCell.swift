@@ -8,6 +8,7 @@ import SwiftUI
 struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
     var consent: Binding<Bool>
     let purpose: Props.Purpose
+    let localizedStrings: KetchSDK.LocalizedStrings
     let vendorsDestination: (() -> VendorsContent)?
     let categoriesDestination: (() -> CategoriesContent)?
 
@@ -45,13 +46,13 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                 if isExpanded {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Purpose: ")
+                        Text(localizedStrings.purpose + ": ")
                             .font(.system(size: 14, weight: .bold))
                         + Text(purpose.purposeDescription)
                             .font(.system(size: 14))
 
                         if let legalBasisDescription = purpose.legalBasisDescription {
-                            Text("Legal Basis: ")
+                            Text(localizedStrings.legalBasis + ": ")
                                 .font(.system(size: 14, weight: .bold))
                             + Text(legalBasisDescription)
                                 .font(.system(size: 14))
@@ -59,7 +60,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                         if let vendorsDestination = vendorsDestination {
                             NavigationLink(destination: vendorsDestination) {
-                                Text("Vendors")
+                                Text(localizedStrings.vendor)
                                     .font(.system(size: 14, weight: .bold))
                                 Image(systemName: "arrow.up.forward.app")
                             }
@@ -68,7 +69,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                         if let categoriesDestination = categoriesDestination {
                             NavigationLink(destination: categoriesDestination) {
-                                Text("Categories")
+                                Text(localizedStrings.dataCategories)
                                     .font(.system(size: 14, weight: .bold))
                                 Image(systemName: "arrow.up.forward.app")
                             }

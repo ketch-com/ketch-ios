@@ -11,11 +11,21 @@ struct EndPoint {
     private static let ketchHost = "global.ketchcdn.com"
     private static let ketchApi = "/web"
     private static let ketchApiVersion = "v2"
+    private static let ketchStaticHost = "cdn.ketchjs.com"
+    private static let KetchStaticApi = "/lanyard/static"
 
     let scheme: String
     let host: String
     let path: String
     let queryItems: [URLQueryItem]
+    
+    static func localizedStrings(languageCode: String) -> EndPoint {
+        EndPoint(
+            scheme: defaultScheme,
+            host: ketchStaticHost,
+            path: [KetchStaticApi, "locales", "\(languageCode).json"].joined(separator: "/"),
+            queryItems: [])
+    }
 
     static func config(organization: String, property: String) -> EndPoint {
         EndPoint(

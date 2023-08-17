@@ -17,6 +17,7 @@ extension Props {
         let moreInfoText: String?
         let moreInfoDestinationEnabled: Bool
         let theme: Theme
+        let localizedStrings: KetchSDK.LocalizedStrings
 
         struct Theme {
             let titleFontSize: CGFloat = 20

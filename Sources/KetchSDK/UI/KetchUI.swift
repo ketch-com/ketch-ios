@@ -14,6 +14,10 @@ public final class KetchUI: ObservableObject {
     /// Configuration updates stream
     /// Reflected from Ketch dependency
     @Published public var configuration: KetchSDK.Configuration?
+    
+    /// Localized Strings updates stream
+    /// Reflected from Ketch dependency
+    @Published public var localizedStrings: KetchSDK.LocalizedStrings?
 
     /// Consent updates stream
     /// Reflected from Ketch dependency
@@ -37,6 +41,12 @@ public final class KetchUI: ObservableObject {
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
+            }
+            .store(in: &subscriptions)
+        
+        ketch.$localizedStrings
+            .sink { localizedStrings in
+                self.localizedStrings = localizedStrings
             }
             .store(in: &subscriptions)
 
@@ -76,12 +86,14 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
+            let localizedStrings,
             let banner = configuration.experiences?.consent?.banner
         else { return nil }
 
         return .banner(
             bannerConfig: banner,
             config: configuration,
+            localizedStrings: localizedStrings,
             consent: consentStatus,
             actionHandler: { [weak self] action in
                 self?.actionHandler(action)
@@ -93,12 +105,14 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
+            let localizedStrings,
             let modal = configuration.experiences?.consent?.modal
         else { return nil }
 
         return .modal(
             modalConfig: modal,
             config: configuration,
+            localizedStrings: localizedStrings,
             consent: consentStatus,
             actionHandler: { [weak self] action in
                 self?.actionHandler(action)
@@ -110,12 +124,14 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
+            let localizedStrings,
             let jit = configuration.experiences?.consent?.jit
         else { return nil }
 
         return .jit(
             jitConfig: jit,
             config: configuration,
+            localizedStrings: localizedStrings,
             purpose: purpose,
             consent: consentStatus,
             actionHandler: { [weak self] action in
@@ -128,12 +144,14 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
+            let localizedStrings,
             let preference = configuration.experiences?.preference
         else { return nil }
 
         return .preference(
             preferenceConfig: preference,
             config: configuration,
+            localizedStrings: localizedStrings,
             consent: consentStatus,
             actionHandler: { [weak self] action in
                 self?.actionHandler(action, preferenceVersion: preference.version)

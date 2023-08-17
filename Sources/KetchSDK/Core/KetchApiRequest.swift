@@ -15,11 +15,23 @@ class KetchApiRequest {
     typealias ConsentUpdate = KetchSDK.ConsentUpdate
     typealias InvokeRightConfig = KetchSDK.InvokeRightConfig
     typealias Vendors = KetchSDK.Vendors
+    typealias LocalizedStrings = KetchSDK.LocalizedStrings
 
     private let apiClient: ApiClient
 
     init(apiClient: ApiClient = DefaultApiClient()) {
         self.apiClient = apiClient
+    }
+    
+    func fetchLocalizedStrings(languageCode:String = String(Locale.preferredLanguages[0].prefix(2))) -> AnyPublisher<LocalizedStrings, KetchError> {
+        apiClient.execute(
+            request: ApiRequest(
+                endPoint: .localizedStrings(languageCode: languageCode)
+            )
+        )
+        .decode(type: LocalizedStrings.self, decoder: JSONDecoder())
+        .mapError(KetchError.init)
+        .eraseToAnyPublisher()
     }
 
     func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {

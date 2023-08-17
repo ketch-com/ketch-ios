@@ -58,7 +58,7 @@ struct BannerView: View {
             }
             
             HStack {
-                LogoSection()
+                LogoSection(textContent: props.localizedStrings.poweredBy)
                     .foregroundColor(props.theme.contentColor)
                 Spacer()
             }

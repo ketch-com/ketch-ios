@@ -12,6 +12,7 @@ extension Props {
         let consents: ConsentsTab
         let rights:   RightsTab?
         let theme: Theme
+        let localizedStrings: KetchSDK.LocalizedStrings
 
         struct OverviewTab: Identifiable, Hashable {
             var id: String { tabName }

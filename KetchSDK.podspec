@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'KetchSDK'
-  s.version          = '2.0.1'
+  s.version          = '2.0.2'
   s.summary          = 'Integrated solution for user data usage consents management'
   s.homepage         = 'https://ketch.com'
   s.license          = { :type => 'Apache', :file => 'LICENSE' }

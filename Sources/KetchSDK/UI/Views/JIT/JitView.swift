@@ -117,7 +117,7 @@ struct JitView: View {
                         }
 
                         HStack {
-                            LogoSection()
+                            LogoSection(textContent: props.localizedStrings.poweredBy)
                                 .foregroundColor(props.theme.headerTextColor)
                             Spacer()
                         }

@@ -19,9 +19,9 @@ extension Props.Modal.Theme {
     var firstButtonTheme: Props.Button.Theme {
         .init(
             borderRadius: borderRadius,
-            textColor: firstButtonBackgroundColor,
+            textColor: firstButtonTextColor,
             borderColor: firstButtonBorderColor,
-            backgroundColor: firstButtonTextColor
+            backgroundColor: firstButtonBackgroundColor
         )
     }
 }

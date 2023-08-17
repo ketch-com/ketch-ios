@@ -12,6 +12,7 @@ struct PurposesView<ContentView: View>: View {
     }
 
     let props: Props.PurposesList
+    let localizedStrings: KetchSDK.LocalizedStrings
     @Binding var purposeConsents: [UserConsents.PurposeConsent]
     @Binding var vendorConsents: [UserConsents.VendorConsent]
     @ViewBuilder let content: ContentView?
@@ -39,7 +40,7 @@ struct PurposesView<ContentView: View>: View {
     private func purposesView() -> some View {
         VStack {
             HStack {
-                Text(props.consentTitle ?? "Purposes")
+                Text(props.consentTitle ?? localizedStrings.purposes)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(props.theme.contentColor)
 
@@ -48,22 +49,26 @@ struct PurposesView<ContentView: View>: View {
                 Button {
                     setAllPurposeConsents(false)
                 } label: {
-                    Text("Opt Out")
+                    //Text("Reject All")
+                    Text(localizedStrings.rejectAll)
+                        .frame(maxWidth: 105, minHeight: 28)
                         .padding(.horizontal)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.black)
-                        .frame(height: 28)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .background(Color(UIColor.systemGray6).cornerRadius(5))
 
                 Button {
                     setAllPurposeConsents(true)
                 } label: {
-                    Text("Opt In")
+                    //Text("Accept All")
+                    Text(localizedStrings.acceptAll)
+                        .frame(maxWidth: 110, minHeight: 28)
                         .padding(.horizontal)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.black)
-                        .frame(height: 28)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .background(Color(UIColor.systemGray6).cornerRadius(5))
             }
@@ -76,6 +81,7 @@ struct PurposesView<ContentView: View>: View {
                     PurposeCell(
                         consent: purposeConsent.consent,
                         purpose: purpose,
+                        localizedStrings: localizedStrings,
                         vendorsDestination: props.vendors.isEmpty ? nil : {
                             VendorsView(
                                 props: Props.VendorList(

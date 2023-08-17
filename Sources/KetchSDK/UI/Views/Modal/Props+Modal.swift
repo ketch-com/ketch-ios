@@ -12,6 +12,7 @@ extension Props {
         let purposes: PurposesList
         let saveButton: Button?
         let theme: Theme
+        let localizedStrings: KetchSDK.LocalizedStrings
 
         struct Theme {
             let titleFontSize: CGFloat = 20

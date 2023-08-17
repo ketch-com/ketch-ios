@@ -56,6 +56,7 @@ struct ModalView: View {
                     VStack {
                         PurposesView(
                             props: props.purposes,
+                            localizedStrings: props.localizedStrings,
                             purposeConsents: $consents.purposeConsents,
                             vendorConsents: $consents.vendorConsents
                         ) {
@@ -88,7 +89,7 @@ struct ModalView: View {
                             }
 
                             HStack {
-                                LogoSection()
+                                LogoSection(textContent: props.localizedStrings.poweredBy)
                                     .foregroundColor(props.theme.headerTextColor)
                                 Spacer()
                             }

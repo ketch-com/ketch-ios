@@ -35,7 +35,7 @@ struct PreferenceView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Spacer()
-                    LogoSection()
+                    LogoSection(textContent: props.localizedStrings.poweredBy)
                         .foregroundColor(props.theme.headerTextColor)
                 }
 
@@ -112,7 +112,7 @@ struct PreferenceView: View {
 
                     CustomButton(
                         props: Props.Button(
-                            text: "Exit Settings",
+                            text: props.localizedStrings.preferenceOverviewButtonText,
                             theme: props.theme.firstButtonTheme
                         )
                     ) {
@@ -137,13 +137,14 @@ struct PreferenceView: View {
         NavigationView {
             PurposesView(
                 props: props.consents.purposes,
+                localizedStrings: props.localizedStrings,
                 purposeConsents: $userConsents.purposeConsents,
                 vendorConsents: $userConsents.vendorConsents
             ) {
                 VStack(spacing: 24) {
                     CustomButton(
                         props: .init(
-                            text: "Save",
+                            text: props.consents.buttonText,
                             theme: props.theme.firstButtonTheme
                         )
                     ) {
@@ -164,7 +165,7 @@ struct PreferenceView: View {
 
                     CustomButton(
                         props: .init(
-                            text: "Cancel",
+                            text: props.localizedStrings.preferenceConsentsExitButtonText,
                             theme: props.theme.secondaryButtonTheme
                         )
                     ) {
@@ -173,6 +174,7 @@ struct PreferenceView: View {
                     }
                 }
                 .padding(24)
+                .navigationBarHidden(true)
             } actionHandler: { action in
                 switch action {
                 case .openUrl(let url): handle(action: .openUrl(url))

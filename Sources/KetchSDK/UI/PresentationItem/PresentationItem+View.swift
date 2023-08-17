@@ -40,7 +40,8 @@ extension KetchUI.PresentationItem {
             text: item.config.footerDescription,
             primaryButton: primaryButton,
             secondaryButton: secondaryButton,
-            theme: theme
+            theme: theme,
+            localizedStrings: item.localizedStrings
         )
 
         return BannerView(props: bannerProps, actionHandler: handleAction(for: item))
@@ -75,7 +76,8 @@ extension KetchUI.PresentationItem {
             showCloseIcon: item.config.showCloseIcon ?? false,
             purposes: purposesProps,
             saveButton: buttonProps,
-            theme: theme
+            theme: theme,
+            localizedStrings: item.localizedStrings
         )
 
         return ModalView(props: modalProps, actionHandler: handleAction(for: item))
@@ -109,7 +111,8 @@ extension KetchUI.PresentationItem {
             declineButtonText: item.config.declineButtonText,
             moreInfoText: item.config.moreInfoText,
             moreInfoDestinationEnabled: item.config.moreInfoDestination != nil,
-            theme: theme
+            theme: theme,
+            localizedStrings: item.localizedStrings
         )
 
         return JitView(props: jitProps, actionHandler: handleAction(for: item))
@@ -153,7 +156,8 @@ extension KetchUI.PresentationItem {
                 rights: config.rights?.map(\.props) ?? [],
                 isVisible: item.config.rights?.tabName != nil ? true : false
             ),
-            theme: theme
+            theme: theme,
+            localizedStrings: item.localizedStrings
         )
 
         return PreferenceView(props: preferenceProps, actionHandler: handleAction(for: item))

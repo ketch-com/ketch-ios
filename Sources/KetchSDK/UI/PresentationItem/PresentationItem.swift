@@ -11,6 +11,7 @@ extension KetchUI {
         let itemType: ItemType
         let config: KetchSDK.Configuration
         let consent: KetchSDK.ConsentStatus
+        let localizedStrings: KetchSDK.LocalizedStrings
 
         public var id: String { String(describing: itemType) }
     }
@@ -30,6 +31,7 @@ extension KetchUI.PresentationItem.ItemType {
     /// Internal implementation of Banner PresentationItem that contains possible actions handler
     struct BannerItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
+        let localizedStrings: KetchSDK.LocalizedStrings
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
@@ -43,6 +45,7 @@ extension KetchUI.PresentationItem.ItemType {
     /// Internal implementation of Modal PresentationItem that contains possible actions handler
     struct ModalItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Modal
+        let localizedStrings: KetchSDK.LocalizedStrings
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
@@ -55,6 +58,7 @@ extension KetchUI.PresentationItem.ItemType {
     /// Internal implementation of Just In Time PresentationItem that contains possible actions handler
     struct JitItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.JIT
+        let localizedStrings: KetchSDK.LocalizedStrings
         let purpose: KetchSDK.Configuration.Purpose
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
@@ -69,6 +73,7 @@ extension KetchUI.PresentationItem.ItemType {
     /// Internal implementation of Preference PresentationItem that contains possible actions handler
     struct PreferenceItem {
         let config: KetchSDK.Configuration.PreferenceExperience
+        let localizedStrings: KetchSDK.LocalizedStrings
         let actionHandler: (Action) -> KetchUI.PresentationItem?
 
         enum Action {
@@ -92,6 +97,7 @@ extension KetchUI.PresentationItem {
     static func banner(
         bannerConfig: KetchSDK.Configuration.Experience.ConsentExperience.Banner,
         config: KetchSDK.Configuration,
+        localizedStrings: KetchSDK.LocalizedStrings,
         consent: KetchSDK.ConsentStatus,
         actionHandler: @escaping (ItemType.BannerItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
@@ -99,11 +105,13 @@ extension KetchUI.PresentationItem {
             itemType: .banner(
                 ItemType.BannerItem(
                     config: bannerConfig,
+                    localizedStrings: localizedStrings,
                     actionHandler: actionHandler
                 )
             ),
             config: config,
-            consent: consent
+            consent: consent,
+            localizedStrings: localizedStrings
         )
     }
 
@@ -117,6 +125,7 @@ extension KetchUI.PresentationItem {
     static func modal(
         modalConfig: KetchSDK.Configuration.Experience.ConsentExperience.Modal,
         config: KetchSDK.Configuration,
+        localizedStrings: KetchSDK.LocalizedStrings,
         consent: KetchSDK.ConsentStatus,
         actionHandler: @escaping (ItemType.ModalItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
@@ -124,11 +133,13 @@ extension KetchUI.PresentationItem {
             itemType: .modal(
                 ItemType.ModalItem(
                     config: modalConfig,
+                    localizedStrings: localizedStrings,
                     actionHandler: actionHandler
                 )
             ),
             config: config,
-            consent: consent
+            consent: consent,
+            localizedStrings: localizedStrings
         )
     }
 
@@ -142,6 +153,7 @@ extension KetchUI.PresentationItem {
     static func preference(
         preferenceConfig: KetchSDK.Configuration.PreferenceExperience,
         config: KetchSDK.Configuration,
+        localizedStrings: KetchSDK.LocalizedStrings,
         consent: KetchSDK.ConsentStatus,
         actionHandler: @escaping (ItemType.PreferenceItem.Action) -> KetchUI.PresentationItem?
     ) -> Self {
@@ -149,11 +161,13 @@ extension KetchUI.PresentationItem {
             itemType: .preference(
                 ItemType.PreferenceItem(
                     config: preferenceConfig,
+                    localizedStrings: localizedStrings,
                     actionHandler: actionHandler
                 )
             ),
             config: config,
-            consent: consent
+            consent: consent,
+            localizedStrings: localizedStrings
         )
     }
 
@@ -168,6 +182,7 @@ extension KetchUI.PresentationItem {
     static func jit(
         jitConfig: KetchSDK.Configuration.Experience.ConsentExperience.JIT,
         config: KetchSDK.Configuration,
+        localizedStrings: KetchSDK.LocalizedStrings,
         purpose: KetchSDK.Configuration.Purpose,
         consent: KetchSDK.ConsentStatus,
         actionHandler: @escaping (ItemType.JitItem.Action) -> KetchUI.PresentationItem?
@@ -176,12 +191,14 @@ extension KetchUI.PresentationItem {
             itemType: .jit(
                 ItemType.JitItem(
                     config: jitConfig,
+                    localizedStrings: localizedStrings,
                     purpose: purpose,
                     actionHandler: actionHandler
                 )
             ),
             config: config,
-            consent: consent
+            consent: consent,
+            localizedStrings: localizedStrings
         )
     }
 }

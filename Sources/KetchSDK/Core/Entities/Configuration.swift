@@ -218,8 +218,8 @@ extension KetchSDK.Configuration {
             public let bodyTitle: String?
             public let bodyDescription: String?
             public let buttonText: String
-            public let hideConsentTitle: Bool
-            public let hideLegalBases: Bool
+            public let hideConsentTitle: Bool?
+            public let hideLegalBases: Bool?
         }
 
         public struct OverviewTab: Codable {

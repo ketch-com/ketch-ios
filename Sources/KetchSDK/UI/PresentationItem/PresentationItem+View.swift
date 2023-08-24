@@ -129,7 +129,7 @@ extension KetchUI.PresentationItem {
             bodyTitle: item.config.consents.bodyTitle ?? String(),
             bodyDescription: item.config.consents.bodyDescription ?? String(),
             consentTitle: hideConsentTitle ? nil : (item.localizedStrings?.purposes ?? "Purposes"),
-            hideLegalBases: item.config.consents.hideLegalBases,
+            hideLegalBases: item.config.consents.hideLegalBases ?? false,
             purposes: config.purposes,
             vendors: config.vendors,
             purposesConsent: consent.purposes,

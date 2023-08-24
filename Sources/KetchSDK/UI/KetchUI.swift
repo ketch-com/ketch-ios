@@ -289,11 +289,11 @@ extension KetchUI {
             switch defaultExperience {
             case .banner:
                 if shouldShowBanner { showBanner() }
-                else if shouldShowPreference { showPreference() }
+                //else if shouldShowPreference { showPreference() }
 
             case .modal:
                 if shouldShowModal { showModal() }
-                else if shouldShowPreference { showPreference() }
+                //else if shouldShowPreference { showPreference() }
             }
         }
     }

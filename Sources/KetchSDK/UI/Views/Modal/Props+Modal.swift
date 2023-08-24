@@ -12,7 +12,7 @@ extension Props {
         let purposes: PurposesList
         let saveButton: Button?
         let theme: Theme
-        let localizedStrings: KetchSDK.LocalizedStrings
+        let localizedStrings: KetchSDK.Configuration.Translations?
 
         struct Theme {
             let titleFontSize: CGFloat = 20
@@ -31,6 +31,9 @@ extension Props {
             let firstButtonBackgroundColor: Color
             let firstButtonBorderColor: Color
             let firstButtonTextColor: Color
+            
+            let showWatermark: Bool
+            let purposeButtonsLookIdentical: Bool
         }
     }
 }

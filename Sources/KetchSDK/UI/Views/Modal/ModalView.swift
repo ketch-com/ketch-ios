@@ -87,11 +87,12 @@ struct ModalView: View {
                                     presentationMode.wrappedValue.dismiss()
                                 }
                             }
-
-                            HStack {
-                                LogoSection(textContent: props.localizedStrings.poweredBy)
-                                    .foregroundColor(props.theme.headerTextColor)
-                                Spacer()
+                            if (props.theme.showWatermark) {
+                                HStack {
+                                    LogoSection(textContent: props.localizedStrings?.poweredBy ?? "Powered by")
+                                        .foregroundColor(props.theme.headerTextColor)
+                                    Spacer()
+                                }
                             }
                         }
                         .padding(24)

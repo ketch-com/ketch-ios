@@ -33,10 +33,12 @@ struct PreferenceView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Spacer()
-                    LogoSection(textContent: props.localizedStrings.poweredBy)
-                        .foregroundColor(props.theme.headerTextColor)
+                if (props.theme.showWatermark) {
+                    HStack {
+                        Spacer()
+                        LogoSection(textContent: props.localizedStrings?.poweredBy ?? "Powered by")
+                            .foregroundColor(props.theme.headerTextColor)
+                    }
                 }
 
                 HStack {
@@ -112,7 +114,7 @@ struct PreferenceView: View {
 
                     CustomButton(
                         props: Props.Button(
-                            text: props.localizedStrings.preferenceOverviewButtonText,
+                            text: props.localizedStrings?.preferenceOverviewButtonText ?? "Exit",
                             theme: props.theme.firstButtonTheme
                         )
                     ) {
@@ -144,8 +146,18 @@ struct PreferenceView: View {
                 VStack(spacing: 24) {
                     CustomButton(
                         props: .init(
-                            text: props.consents.buttonText,
+                            text: props.localizedStrings?.preferenceConsentsExitButtonText ?? "Exit",
                             theme: props.theme.firstButtonTheme
+                        )
+                    ) {
+
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    
+                    CustomButton(
+                        props: .init(
+                            text: props.consents.buttonText,
+                            theme: props.theme.secondaryButtonTheme
                         )
                     ) {
                         handle(
@@ -160,16 +172,6 @@ struct PreferenceView: View {
                                     .map(\.id)
                             )
                         )
-                        presentationMode.wrappedValue.dismiss()
-                    }
-
-                    CustomButton(
-                        props: .init(
-                            text: props.localizedStrings.preferenceConsentsExitButtonText,
-                            theme: props.theme.secondaryButtonTheme
-                        )
-                    ) {
-
                         presentationMode.wrappedValue.dismiss()
                     }
                 }

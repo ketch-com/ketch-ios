@@ -56,7 +56,8 @@ extension Props.Banner.Theme {
             borderRadius: theme?.buttonBorderRadius ?? 0,
             buttonColor: bannerButtonColor,
             secondaryButtonColor: bannerSecondaryButtonColor,
-            secondaryButtonVariant: theme?.bannerSecondaryButtonVariant ?? "outlined"
+            secondaryButtonVariant: theme?.bannerSecondaryButtonVariant ?? "outlined",
+            showWatermark: theme?.watermark ?? false
         )
     }
 }
@@ -84,7 +85,9 @@ extension Props.Modal.Theme {
             borderRadius: theme?.buttonBorderRadius ?? 0,
             firstButtonBackgroundColor: firstButtonBackgroundColor,
             firstButtonBorderColor: firstButtonBorderColor,
-            firstButtonTextColor: firstButtonTextColor
+            firstButtonTextColor: firstButtonTextColor,
+            showWatermark: theme?.watermark ?? false,
+            purposeButtonsLookIdentical: theme?.purposeButtonsLookIdentical ?? false
         )
     }
 }
@@ -157,7 +160,9 @@ extension Props.Preference.Theme {
             firstButtonTextColor: firstButtonTextColor,
             secondButtonBackgroundColor: secondButtonBackgroundColor,
             secondButtonBorderColor: secondButtonBorderColor,
-            secondButtonTextColor: secondButtonTextColor
+            secondButtonTextColor: secondButtonTextColor,
+            showWatermark: theme?.watermark ?? false,
+            purposeButtonsLookIdentical: theme?.purposeButtonsLookIdentical ?? false
         )
     }
 }

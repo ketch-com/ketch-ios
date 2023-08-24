@@ -12,7 +12,7 @@ extension Props {
         let consents: ConsentsTab
         let rights:   RightsTab?
         let theme: Theme
-        let localizedStrings: KetchSDK.LocalizedStrings
+        let localizedStrings: KetchSDK.Configuration.Translations?
 
         struct OverviewTab: Identifiable, Hashable {
             var id: String { tabName }
@@ -70,6 +70,9 @@ extension Props {
             let secondButtonBackgroundColor: Color
             let secondButtonBorderColor: Color
             let secondButtonTextColor: Color
+            
+            let showWatermark: Bool
+            let purposeButtonsLookIdentical: Bool
         }
 
         enum Tab: String, Identifiable, Hashable, CaseIterable {

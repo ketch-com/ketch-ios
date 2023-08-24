@@ -7,7 +7,7 @@
 
 import Foundation
 extension KetchSDK{
-    public struct LocalizedStrings: Codable {
+    public struct LocalizedStrings1: Codable {
         let poweredBy, purpose, rejectAll, acceptAll: String
         let accept, legalBasis, cookies, cookie: String
         let dataCategories, dataCategory, vendors, vendor: String

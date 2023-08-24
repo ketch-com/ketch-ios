@@ -34,7 +34,7 @@ struct BannerView: View {
                 }
                 .foregroundColor(props.theme.contentColor)
             }
-
+            
             TitleDescriptionSection(
                 props: props.titleDescriptionSectionProps
             ) { action in
@@ -43,24 +43,25 @@ struct BannerView: View {
                 }
             }
             .padding(.bottom, 12)
-
-
+            
+            
             if let primaryButton = props.primaryButton {
                 CustomButton(props: primaryButton) {
                     self.handle(action: .primary)
                 }
             }
-
+            
             if let secondaryButton = props.secondaryButton {
                 CustomButton(props: secondaryButton) {
                     self.handle(action: .secondary)
                 }
             }
-            
-            HStack {
-                LogoSection(textContent: props.localizedStrings.poweredBy)
-                    .foregroundColor(props.theme.contentColor)
-                Spacer()
+            if (props.theme.showWatermark) {
+                HStack {
+                    LogoSection(textContent: props.localizedStrings?.poweredBy ?? "Powered By")
+                        .foregroundColor(props.theme.contentColor)
+                    Spacer()
+                }
             }
         }
         .padding(24)

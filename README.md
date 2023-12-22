@@ -1,8 +1,8 @@
-# KetchSDK v2.0
+# Ketch iOS SDK v2.0
 
 Mobile SDK for iOS
 
-Minimum iOS version supported 14.0
+Minimum iOS version supported: iOS 14.0
 
 ## Prerequisites
 - Registered [Ketch organization account](https://app.ketch.com/settings/organization) 
@@ -13,7 +13,7 @@ Minimum iOS version supported 14.0
 
 ### Cocoapods
 
-KetchSTD deployed on JFrog Artifactory
+KetchSDK deployed on JFrog Artifactory
 In order to use CocoaPods with Artifactory you will need to install the ['cocoapods-art'](https://github.com/jfrog/cocoapods-art) plugin.
 
 1. To install cocoapods-art run the following command:

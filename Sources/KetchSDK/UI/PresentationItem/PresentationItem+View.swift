@@ -5,18 +5,48 @@
 
 import SwiftUI
 
+struct PreferencesWebView: UIViewRepresentable {
+    let config: ConsentConfig
+    @Environment(\.presentationMode) private var presentationMode
+
+    func makeUIView(context: Context) -> some UIView {
+        config.preferencesWebView(
+            onClose: {
+                presentationMode.wrappedValue.dismiss()
+            }
+        )
+    }
+    
+    func updateUIView(_ uiView: UIViewType, context: Context) { }
+}
+
 extension KetchUI.PresentationItem {
     /// View instance factory for presentation generation according ItemType
     @ViewBuilder
     public var content: some View {
         switch itemType {
+        case .webExp(let webExpItem):
+            webExperience(orgCode: webExpItem.orgCode, propertyName: webExpItem.propertyName, advertisingIdentifier: webExpItem.advertisingIdentifier)
         case .banner(let bannerItem): banner(item: bannerItem)
         case .modal(let modalItem): modal(item: modalItem)
         case .jit(let jitItem): jit(item: jitItem)
         case .preference(let preferenceItem): preference(item: preferenceItem)
         }
     }
-
+    
+    private func webExperience(orgCode: String,
+                               propertyName: String,
+                               advertisingIdentifier: UUID) -> some View {
+        PreferencesWebView(
+            config: .configure(
+                orgCode: orgCode,
+                propertyName: propertyName,
+                advertisingIdentifier: advertisingIdentifier
+            )
+        )
+        .asResponsiveSheet(style: .popUp)
+    }
+    
     // MARK: - UI views configuration according type and config models
     private func banner(item: ItemType.BannerItem) -> some View {
         let theme = Props.Banner.Theme(with: config.theme)

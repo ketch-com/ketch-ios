@@ -20,6 +20,7 @@ extension KetchUI {
 extension KetchUI.PresentationItem {
     /// Supported types of visual presentations
     enum ItemType {
+        case webExp(WebExperienceItem)
         case banner(BannerItem)
         case modal(ModalItem)
         case jit(JitItem)
@@ -28,6 +29,13 @@ extension KetchUI.PresentationItem {
 }
 
 extension KetchUI.PresentationItem.ItemType {
+    struct WebExperienceItem {
+        let config: KetchSDK.Configuration
+        let orgCode: String
+        let propertyName: String
+        let advertisingIdentifier: UUID
+    }
+    
     /// Internal implementation of Banner PresentationItem that contains possible actions handler
     struct BannerItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
@@ -87,6 +95,29 @@ extension KetchUI.PresentationItem.ItemType {
 }
 
 extension KetchUI.PresentationItem {
+    static func webExperience(
+        orgCode: String,
+        propertyName: String,
+        advertisingIdentifier: UUID,
+        config: KetchSDK.Configuration,
+        localizedStrings: KetchSDK.LocalizedStrings,
+        consent: KetchSDK.ConsentStatus
+    ) -> Self {
+        Self(
+            itemType: .webExp(
+                ItemType.WebExperienceItem(
+                    config: config,
+                    orgCode: orgCode,
+                    propertyName: propertyName,
+                    advertisingIdentifier: advertisingIdentifier
+                )
+            ),
+            config: config,
+            consent: consent,
+            localizedStrings: localizedStrings
+        )
+    }
+    
     /// Static builder method for generating ready PresentationItem according Banner type setup
     /// - Parameters:
     ///   - bannerConfig: Banner model received from platform

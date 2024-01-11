@@ -19,7 +19,8 @@ let package = Package(
             name: "KetchSDK",
             dependencies: [],
             resources: [
-                .copy("Assets.xcassets")
+                .copy("Assets.xcassets"),
+                .copy("index.html")
             ]
         ),
         .testTarget(

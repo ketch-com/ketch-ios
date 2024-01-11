@@ -36,11 +36,11 @@ public final class Ketch: ObservableObject {
     /// Consent updates stream
     @Published public var consent: KetchSDK.ConsentStatus?
 
-    private let organizationCode: String
-    private let propertyCode: String
+    let organizationCode: String
+    let propertyCode: String
     private let environmentCode: String
     private let controllerCode: String
-    private let identities: [Identity]
+    let identities: [Identity]
     private let userDefaults: UserDefaults
     private var plugins = Set<PolicyPlugin>()
 

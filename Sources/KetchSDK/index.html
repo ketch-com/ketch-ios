@@ -1,0 +1,26 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+            // Get query parameters
+            let params = (new URL(document.location)).searchParams;
+
+            // Get property name from query parameters
+            let propertyName = params.get("propertyName");
+            // Get organization code from query parameters
+            let orgCode = params.get("orgCode");
+            
+            var e=document.createElement("script");
+            e.type="text/javascript";
+            e.src=`https://global.ketchcdn.com/web/v2/config/${orgCode}/${propertyName}/boot.js`;
+            e.defer=e.async=!0;
+            document.getElementsByTagName("head")[0].appendChild(e);
+            window.semaphore=window.semaphore||[];
+
+            // Show the preference center experience
+            window.semaphore.push(['showPreferences'])
+        </script>
+</head>
+<body>
+</body>
+</html>

@@ -23,10 +23,13 @@ Pod::Spec.new do |s|
     tcf.source_files = 'Sources/KetchSDK/TCF/**/*.{swift}'
     tcf.dependency 'KetchSDK/Core'
   end
-
+  
   s.subspec 'UI' do |ui|
     ui.source_files = 'Sources/KetchSDK/UI/**/*.{swift}'
-    ui.resource_bundle = { 'KetchUI' => ['Sources/KetchSDK/**/*.{xcassets}'] }
+    ui.resource_bundle = { 'KetchUI' => [
+      'Sources/KetchSDK/**/*.{xcassets}',
+      'Sources/KetchSDK/**/*.{html}'
+      ] }
     ui.dependency 'KetchSDK/Core'
   end
 end

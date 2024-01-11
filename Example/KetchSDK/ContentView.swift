@@ -145,10 +145,11 @@ struct KetchUITestView: View {
     var body: some View {
         VStack(spacing: 40) {
             if let config = ketchUI.configuration, ketchUI.consentStatus != nil {
-                Button("Show Banner")     { ketchUI.showBanner() }
-                Button("Show Modal")      { ketchUI.showModal() }
-                Button("Show Preference") { ketchUI.showPreference() }
-                Button("Show JIT")        {
+                Button("Show Web Experience")   { ketchUI.showExperience() }
+                Button("Show Banner")           { ketchUI.showBanner() }
+                Button("Show Modal")            { ketchUI.showModal() }
+                Button("Show Preference")       { ketchUI.showPreference() }
+                Button("Show JIT")              {
                     if let purpose = config.purposes?.first {
                         ketchUI.showJIT(purpose: purpose)
                     }

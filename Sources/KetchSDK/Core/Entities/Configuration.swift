@@ -6,6 +6,10 @@
 import Foundation
 
 extension KetchSDK {
+    public struct WebExpConfiguration: Codable {
+        
+    }
+    
     public struct Configuration: Codable {
         public let language: String?
         public let organization: Organization?

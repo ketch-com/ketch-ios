@@ -35,18 +35,21 @@ public final class KetchUI: ObservableObject {
         self.ketch = ketch
 
         bindInput()
+        preloadWebExperience()
     }
 
     public func bindInput() {
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
+                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
         
         ketch.$localizedStrings
             .sink { localizedStrings in
                 self.localizedStrings = localizedStrings
+                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
 
@@ -56,13 +59,26 @@ public final class KetchUI: ObservableObject {
                 if self.showDialogsIfNeeded {
                     self.showConsentExperience()
                 }
+                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
+    }
+    
+    
+    private var webPresentationItem: PresentationItem?
+    
+    private func preloadWebExperience() {
+        webPresentationItem = webExperience()
+        _ = webPresentationItem?.content
     }
 }
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
+    public func showExperience() {
+        presentationItem = webPresentationItem
+    }
+    
     public func showBanner() {
         presentationItem = banner()
     }
@@ -82,6 +98,31 @@ extension KetchUI {
 
 // MARK: - Dialog presentation item generation of each type
 extension KetchUI {
+    private func webExperience() -> PresentationItem? {
+        guard
+            let configuration,
+            let consentStatus,
+            let localizedStrings,
+            let advertisingIdentifier = ketch.identities.compactMap({
+                if case .idfa(let id) = $0 {
+                    return id
+                }
+                
+                return nil
+            }).first,
+            let uuid = UUID(uuidString: advertisingIdentifier)
+        else { return nil }
+        
+        return .webExperience(
+            orgCode: ketch.organizationCode,
+            propertyName: ketch.propertyCode,
+            advertisingIdentifier: uuid,
+            config: configuration,
+            localizedStrings: localizedStrings,
+            consent: consentStatus
+        )
+    }
+    
     private func banner() -> PresentationItem? {
         guard
             let configuration,

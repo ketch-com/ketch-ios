@@ -28,6 +28,7 @@ extension KetchUI {
         case bottomSheet(backgroundColor: Color = Color(UIColor.systemBackground))
         case popUp
         case screenCover
+        case custom
     }
 }
 
@@ -67,6 +68,16 @@ fileprivate struct ResponsiveSheetWrapper: ViewModifier {
             .clearSheetSystemBackground()
 
         case .screenCover:
+            ZStack  {
+                Color(UIColor.systemBackground.withAlphaComponent(0.01))
+                    .onTapGesture { presentationMode.wrappedValue.dismiss() }
+                content
+                    .asResponsiveSheetContent(style: style)
+            }
+            .clearSheetSystemBackground()
+            .edgesIgnoringSafeArea(.all)
+            
+        case .custom:
             ZStack  {
                 Color(UIColor.systemBackground.withAlphaComponent(0.01))
                     .onTapGesture { presentationMode.wrappedValue.dismiss() }
@@ -119,6 +130,9 @@ fileprivate struct ResponsiveSheetContent: ViewModifier {
                         .cornerRadius(8, corners: [.allCorners])
                         .shadow(color: .black.opacity(0.35), radius: 20)
                 )
+            
+        case .custom:
+            content
 
         case .screenCover:
             content

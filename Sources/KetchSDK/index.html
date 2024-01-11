@@ -1,0 +1,90 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // Simulating events similar to ones coming from lanyard.js
+        // TODO: remove this once JS SDK covers all required events
+        function emitEvent(event, args) {
+            if (window.androidListener || (window.webkit && window.webkit.messageHandlers)) {
+                const filteredArgs = []
+                for (const arg of args) {
+                    if (arg !== this) {
+                        filteredArgs.push(arg)
+                    }
+                }
+                let argument
+                if (filteredArgs.length === 1 && typeof filteredArgs[0] === 'string') {
+                    argument = filteredArgs[0]
+                } else if (filteredArgs.length === 1) {
+                    argument = JSON.stringify(filteredArgs[0])
+                } else if (filteredArgs.length > 1) {
+                    argument = JSON.stringify(filteredArgs)
+                }
+                if (window.androidListener && event in window.androidListener) {
+                    if (filteredArgs.length === 0) {
+                        window.androidListener[event]()
+                    } else {
+                        window.androidListener[event](argument)
+                    }
+                } else if ((window.webkit && window.webkit.messageHandlers) && event in window.webkit.messageHandlers) {
+                    window.webkit.messageHandlers[event].postMessage(argument)
+                } else {
+                    console.warn(`Can't pass message to native code because '${event}' handler is not registered`)
+                }
+            }
+        }
+
+        // Simulating "error" event
+        // Capturing all the unhandled crashes of Ketch Tag
+        window.addEventListener("error", (event) => {
+            const errorMessage = `${event.message}`;
+            emitEvent("error", [errorMessage]);
+        });
+        // Capturing all the unhandled rejections of Ketch Tag
+        window.addEventListener('unhandledrejection', (event) => {
+            const errorMessage = `${event.reason.message}`;
+            emitEvent("error", [errorMessage]);
+        });
+        // Capturing all the internal loggin for errors handled by Ketch Tag
+        // TODO: Remove this once lanyard.js will emit error events
+        ((logger) => {
+            var oldLog = logger.log;
+            var oldWarn = logger.warn;
+            var oldErr = logger.error;
+            logger.log = (...args) => {
+                emitEvent("error", [args.join(' ')]);
+                oldLog(...args);
+            };
+            logger.warn = (...args) => {
+                emitEvent("error", [args.join(' ')]);
+                oldWarn(...args);
+            };
+            logger.error = (...args) => {
+                emitEvent("error", [args.join(' ')]);
+                oldErr(...args);
+            };
+        })(window.console);
+
+        // Get query parameters
+        let params = (new URL(document.location)).searchParams;
+
+        // Get property name from query parameters
+        let propertyName = params.get("propertyName");
+        // Get organization code from query parameters
+        let orgCode = params.get("orgCode");
+
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        // TODO: make this configurable via SDK parameters
+        e.src = `https://dev.ketchcdn.com/web/v2/config/${orgCode}/${propertyName}/boot.js`;
+        e.defer = e.async = !0;
+        document.getElementsByTagName("head")[0].appendChild(e);
+        window.semaphore = window.semaphore || [];
+        window.ketch = function () {
+            window.semaphore.push(arguments)
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

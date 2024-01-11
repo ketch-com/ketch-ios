@@ -5,156 +5,188 @@
 
 import SwiftUI
 import KetchSDK
-import AdSupport
-import AppTrackingTransparency
-
-class ContentViewModel: ObservableObject {
-    @Published var ketch: Ketch?
-    @Published var ketchUI: KetchUI?
-    @Published var authorizationDenied = false
-
-    init() { }
-
-    func requestTrackingAuthorization() {
-        ATTrackingManager.requestTrackingAuthorization { authorizationStatus in
-            if case .authorized = authorizationStatus {
-                let advertisingId = ASIdentifierManager.shared().advertisingIdentifier
-
-                DispatchQueue.main.async {
-                    self.setupKetch(advertisingIdentifier: advertisingId)
-                }
-            } else if case .denied = authorizationStatus {
-                self.authorizationDenied = true
-            }
-        }
-    }
-
-    private func setupKetch(advertisingIdentifier: UUID) {
-        let ketch = KetchSDK.create(
-            organizationCode: "transcenda",
-            propertyCode: "website_smart_tag",
-            environmentCode: "production",
-            controllerCode: "my_controller",
-            identities: [.idfa(advertisingIdentifier.uuidString)]
-        )
-
-        ketch.add(plugins: [TCF(), CCPA()])
-
-        self.ketch = ketch
-        ketchUI = KetchUI(ketch: ketch)
-    }
-}
 
 struct ContentView: View {
-    @StateObject private var viewModel = ContentViewModel()
-    @State var showDialogsAutomatically = false
-
-    var body: some View {
-        VStack(spacing: 40) {
-            HStack {
-                Text("Show Dialogs Automatically")
-                Toggle("", isOn: $showDialogsAutomatically)
-                    .labelsHidden()
-            }
-
-            if let ketch = viewModel.ketch {
-                KetchTestView(ketch: ketch)
-            }
-
-            if let ketchUI = viewModel.ketchUI {
-                KetchUITestView(ketchUI: ketchUI)
-            }
-        }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                //  Delay after SwiftUI view appearing is required for alert presenting, otherwise it will not be shown
-                viewModel.requestTrackingAuthorization()
-            }
-        }
-        .onChange(of: showDialogsAutomatically) { value in
-            viewModel.ketchUI?.showDialogsIfNeeded = value
-        }
-        .alert(isPresented: $viewModel.authorizationDenied) {
-            Alert(
-                title: Text("Tracking Authorization Denied by app settings"),
-                message: Text("Please allow tracking in Settings -> Privacy -> Tracking"),
-                primaryButton: .cancel(Text("Cancel")),
-                secondaryButton: .default(
-                    Text("Edit preferences"),
-                    action: {
-                        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(settingsURL)
-                        }
-                    }
-                )
-            )
-        }
-    }
-}
-
-struct KetchTestView: View {
-    enum Jurisdiction {
-        static let GDPR = "gdpr"
-        static let CCPA = "ccpa"
-    }
-
-    @StateObject var ketch: Ketch
-
-    var body: some View {
-        VStack(spacing: 40) {
-            Button("Configuration")      { ketch.loadConfiguration() }
-            Button("Configuration GDPR") { ketch.loadConfiguration(jurisdiction: Jurisdiction.GDPR) }
-            Button("Configuration CCPA") { ketch.loadConfiguration(jurisdiction: Jurisdiction.CCPA) }
-
-            if let config = ketch.configuration {
-                Button("Invoke Rights")  { ketch.invokeRights(right: config.rights?.first, user: user) }
-                Button("Get Consent")    { ketch.loadConsent() }
-                Button("Update Consent") {
-                    let purposes = config.purposes?
-                        .reduce(into: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]()) { result, purpose in
-                            result[purpose.code] = .init(allowed: true, legalBasisCode: purpose.legalBasisCode)
-                        }
-
-                    let vendors = config.vendors?.map(\.id)
-
-                    ketch.updateConsent(purposes: purposes, vendors: vendors)
-                }
-            }
-        }
-    }
-
-    private var user: KetchSDK.InvokeRightConfig.User {
-        .init(
-            email: "user@email.com",
-            first: "FirstName",
-            last: "LastName",
-            country: nil,
-            stateRegion: nil,
-            description: nil,
-            phone: nil,
-            postalCode: nil,
-            addressLine1: nil,
-            addressLine2: nil
+    @ObservedObject var ketchUI: KetchUI
+    
+    init() {
+        let ketch = KetchSDK.create(
+            organizationCode: "bluebird",
+            propertyCode: "mobile",
+            environmentCode: "production",
+            controllerCode: "my_controller",
+            identities: [.idfa("00000000-0000-0000-0000-000000000000")] // or advertisingIdentifier.uuidString
+        )
+        
+        ketchUI = KetchUI(
+            ketch: ketch,
+            experienceOptions: [
+                .forceExperience(.cd)
+            ]
         )
     }
-}
-
-struct KetchUITestView: View {
-    @StateObject var ketchUI: KetchUI
-
+    
+    @State var selectedExperienceToShow: KetchUI.ExperienceOption.ExperienceToShow = .cd
+    @State var selectedTab: KetchUI.ExperienceOption.PreferencesTab?
+    @State var lang = "EN"
+    @State var jurisdiction = "france"
+    @State var region = "FR"
+    
+    @ViewBuilder
+    private func checkbox(_ value: Binding<Bool>) -> some View {
+        Button {
+            value.wrappedValue.toggle()
+        } label: {
+            Image(systemName: value.wrappedValue ? "circle.fill" : "circle")
+        }
+    }
+    
     var body: some View {
-        VStack(spacing: 40) {
-            if let config = ketchUI.configuration, ketchUI.consentStatus != nil {
-                Button("Show Banner")     { ketchUI.showBanner() }
-                Button("Show Modal")      { ketchUI.showModal() }
-                Button("Show Preference") { ketchUI.showPreference() }
-                Button("Show JIT")        {
-                    if let purpose = config.purposes?.first {
-                        ketchUI.showJIT(purpose: purpose)
+        VStack(alignment: .leading) {
+            Text("Experience:")
+            Picker("Experience", selection: $selectedExperienceToShow) {
+                ForEach([KetchUI.ExperienceOption.ExperienceToShow.cd, .preferences], id: \.self) {
+                    Text($0.name)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            if selectedExperienceToShow == .preferences {
+                VStack(alignment: .leading) {
+                    Text("Preferences tab:")
+                    HStack {
+                        Text("none")
+                        checkbox(.init(get: { selectedTab == nil }, set: { _ in selectedTab = nil }))
+                        Spacer()
+                        Text("overview")
+                        checkbox(.init(get: { selectedTab == .overviewTab }, set: { $0 ? (selectedTab = .overviewTab) : (selectedTab = nil) }))
+                        Spacer()
+                        Text("rights")
+                        checkbox(.init(get: { selectedTab == .rightsTab }, set: { $0 ? (selectedTab = .rightsTab) : (selectedTab = nil) }))
+                        Spacer()
+                        Text("consents")
+                        checkbox(.init(get: { selectedTab == .consentsTab }, set: { $0 ? (selectedTab = .consentsTab) : (selectedTab = nil) }))
                     }
                 }
             }
+            
+            Text("Language:")
+            Picker("Language", selection: $lang) {
+                ForEach(["EN", "FR"], id: \.self) {
+                    Text($0)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            Text("Jurisdiction:")
+            Picker("Jurisdiction", selection: $jurisdiction) {
+                ForEach(["france", "england___banner_momile_testing"], id: \.self) {
+                    Text($0)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            
+            Text("Region:")
+            Picker("Region", selection: $region) {
+                ForEach(["US", "FR", "GB"], id: \.self) {
+                    Text($0)
+                }
+            }
+            .pickerStyle(.segmented)
+            
+            Spacer()
+            
+            HStack {
+                Spacer()
+                
+                Button("Show") {
+                    let params: [KetchUI.ExperienceOption?] = [
+                        { if let selectedTab                                { return .preferencesTab(selectedTab) }                 else { return nil } }(),
+                        .region(region),
+                        .language(langId: lang),
+                        .forceExperience(selectedExperienceToShow)
+                        , .jurisdiction(code: jurisdiction)
+                    ]
+                    
+                    ketchUI.overridePresentationConfig = nil
+                    ketchUI.reload(with: params.compactMap{$0})
+                }
+                .font(.system(.title))
+                
+                Spacer()
+            }
+            
+            Spacer()
+            
+            HStack {
+                Spacer()
+                
+                Text("Animate Consent")
+                VStack(spacing: 40) {
+                    
+                    HStack {
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .top, hpos: .center, style: .banner)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.down.square") }
+                    }
+                    
+                    HStack {
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .center, hpos: .left, style: .modal)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.right.square") }
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .center, hpos: .center, style: .modal)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "square.on.square") }
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .center, hpos: .center, style: .banner)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "square") }
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .center, hpos: .right, style: .modal)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.left.square") }
+                    }
+                    
+                    HStack(spacing: 10) {
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .bottom, hpos: .left, style: .banner)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.up.right.square") }
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .bottom, hpos: .center, style: .banner)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.up.square") }
+                        Button {
+                            ketchUI.overridePresentationConfig = KetchUI.PresentationConfig(vpos: .bottom, hpos: .right, style: .banner)
+                            ketchUI.showConsent()
+                        } label: { Image(systemName: "arrow.up.left.square") }
+                    }
+                }
+                .padding()
+                .border(.black)
+            }
         }
-        .fullScreenCover(item: $ketchUI.presentationItem, content: \.content)
+        .padding()
+        .background(.white)
+        .ketchView(model: $ketchUI.webPresentationItem)
     }
+}
+
+extension KetchUI.ExperienceOption.ExperienceToShow {
+    var name: String {
+        switch self {
+        case .cd:
+            return "Consent"
+        case .preferences:
+            return "Preferences"
+        }
+    }
+}
+
+#Preview {
+    ContentView()
 }

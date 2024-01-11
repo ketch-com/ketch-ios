@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "KetchSDK",
     platforms: [
-        .iOS(.v14)
+        .iOS(.v15)
     ],
     products: [
         .library(
@@ -19,7 +19,8 @@ let package = Package(
             name: "KetchSDK",
             dependencies: [],
             resources: [
-                .copy("Assets.xcassets")
+                .copy("Assets.xcassets"),
+                .copy("index.html")
             ]
         ),
         .testTarget(

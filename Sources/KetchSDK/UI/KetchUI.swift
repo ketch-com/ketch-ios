@@ -9,6 +9,9 @@ import Combine
 /// Container for UI features
 public final class KetchUI: ObservableObject {
     /// Stream of UI dialogs required to show
+    @Published public var webPresentationItem: WebPresentationItem?
+    
+    /// Stream of UI dialogs required to show
     @Published public var presentationItem: PresentationItem?
 
     /// Configuration updates stream
@@ -35,7 +38,6 @@ public final class KetchUI: ObservableObject {
         self.ketch = ketch
 
         bindInput()
-        preloadWebExperience()
     }
 
     public func bindInput() {
@@ -49,7 +51,6 @@ public final class KetchUI: ObservableObject {
         ketch.$localizedStrings
             .sink { localizedStrings in
                 self.localizedStrings = localizedStrings
-                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
 
@@ -59,24 +60,21 @@ public final class KetchUI: ObservableObject {
                 if self.showDialogsIfNeeded {
                     self.showConsentExperience()
                 }
-                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
     }
     
-    
-    private var webPresentationItem: PresentationItem?
-    
+    private var preloadedPresentationItem: WebPresentationItem?
+
     private func preloadWebExperience() {
-        webPresentationItem = webExperience()
-        _ = webPresentationItem?.content
+        preloadedPresentationItem = webExperience()
     }
 }
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func showExperience() {
-        presentationItem = webPresentationItem
+        webPresentationItem = preloadedPresentationItem
     }
     
     public func showBanner() {
@@ -98,11 +96,9 @@ extension KetchUI {
 
 // MARK: - Dialog presentation item generation of each type
 extension KetchUI {
-    private func webExperience() -> PresentationItem? {
+    private func webExperience() -> WebPresentationItem? {
         guard
             let configuration,
-            let consentStatus,
-            let localizedStrings,
             let advertisingIdentifier = ketch.identities.compactMap({
                 if case .idfa(let id) = $0 {
                     return id
@@ -113,13 +109,13 @@ extension KetchUI {
             let uuid = UUID(uuidString: advertisingIdentifier)
         else { return nil }
         
-        return .webExperience(
-            orgCode: ketch.organizationCode,
-            propertyName: ketch.propertyCode,
-            advertisingIdentifier: uuid,
-            config: configuration,
-            localizedStrings: localizedStrings,
-            consent: consentStatus
+        return .init(
+            item: WebPresentationItem.WebExperienceItem(
+                config: configuration,
+                orgCode: ketch.organizationCode,
+                propertyName: ketch.propertyCode,
+                advertisingIdentifier: uuid
+            )
         )
     }
     

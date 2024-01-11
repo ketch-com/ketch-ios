@@ -157,5 +157,6 @@ struct KetchUITestView: View {
             }
         }
         .fullScreenCover(item: $ketchUI.presentationItem, content: \.content)
+        .fullScreenCover(item: $ketchUI.webPresentationItem, content: \.content)
     }
 }

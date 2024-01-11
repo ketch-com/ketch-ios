@@ -4,6 +4,49 @@
 //
 
 import SwiftUI
+import WebKit
+
+extension KetchUI {
+    public struct WebPresentationItem: Identifiable {
+        let item: WebExperienceItem
+        var preloaded: WKWebView?
+        private let config: ConsentConfig
+        
+        init(item: WebExperienceItem) {
+            self.item = item
+            config = ConsentConfig.configure(
+                orgCode: item.orgCode,
+                propertyName: item.propertyName,
+                advertisingIdentifier: item.advertisingIdentifier
+            )
+        }
+
+        public var id: String { String(describing: item) }
+        
+        struct WebExperienceItem {
+            let config: KetchSDK.Configuration
+            let orgCode: String
+            let propertyName: String
+            let advertisingIdentifier: UUID
+        }
+        
+        @ViewBuilder
+        public var content: some View {
+            webExperience(
+                orgCode: item.orgCode,
+                propertyName: item.propertyName,
+                advertisingIdentifier: item.advertisingIdentifier
+            )
+        }
+        
+        private func webExperience(orgCode: String,
+                                   propertyName: String,
+                                   advertisingIdentifier: UUID) -> some View {
+            PreferencesWebView(config: config)
+                .asResponsiveSheet(style: .popUp)
+        }
+    }
+}
 
 extension KetchUI {
     /// Essential presentation entity provided for client for presentation
@@ -20,7 +63,6 @@ extension KetchUI {
 extension KetchUI.PresentationItem {
     /// Supported types of visual presentations
     enum ItemType {
-        case webExp(WebExperienceItem)
         case banner(BannerItem)
         case modal(ModalItem)
         case jit(JitItem)
@@ -29,13 +71,6 @@ extension KetchUI.PresentationItem {
 }
 
 extension KetchUI.PresentationItem.ItemType {
-    struct WebExperienceItem {
-        let config: KetchSDK.Configuration
-        let orgCode: String
-        let propertyName: String
-        let advertisingIdentifier: UUID
-    }
-    
     /// Internal implementation of Banner PresentationItem that contains possible actions handler
     struct BannerItem {
         let config: KetchSDK.Configuration.Experience.ConsentExperience.Banner
@@ -94,30 +129,7 @@ extension KetchUI.PresentationItem.ItemType {
     }
 }
 
-extension KetchUI.PresentationItem {
-    static func webExperience(
-        orgCode: String,
-        propertyName: String,
-        advertisingIdentifier: UUID,
-        config: KetchSDK.Configuration,
-        localizedStrings: KetchSDK.LocalizedStrings,
-        consent: KetchSDK.ConsentStatus
-    ) -> Self {
-        Self(
-            itemType: .webExp(
-                ItemType.WebExperienceItem(
-                    config: config,
-                    orgCode: orgCode,
-                    propertyName: propertyName,
-                    advertisingIdentifier: advertisingIdentifier
-                )
-            ),
-            config: config,
-            consent: consent,
-            localizedStrings: localizedStrings
-        )
-    }
-    
+extension KetchUI.PresentationItem {    
     /// Static builder method for generating ready PresentationItem according Banner type setup
     /// - Parameters:
     ///   - bannerConfig: Banner model received from platform

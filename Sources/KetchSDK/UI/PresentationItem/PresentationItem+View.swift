@@ -10,6 +10,7 @@ struct PreferencesWebView: UIViewRepresentable {
     @Environment(\.presentationMode) private var presentationMode
 
     func makeUIView(context: Context) -> some UIView {
+        config.configWebApp ??
         config.preferencesWebView(
             onClose: {
                 presentationMode.wrappedValue.dismiss()
@@ -25,26 +26,11 @@ extension KetchUI.PresentationItem {
     @ViewBuilder
     public var content: some View {
         switch itemType {
-        case .webExp(let webExpItem):
-            webExperience(orgCode: webExpItem.orgCode, propertyName: webExpItem.propertyName, advertisingIdentifier: webExpItem.advertisingIdentifier)
         case .banner(let bannerItem): banner(item: bannerItem)
         case .modal(let modalItem): modal(item: modalItem)
         case .jit(let jitItem): jit(item: jitItem)
         case .preference(let preferenceItem): preference(item: preferenceItem)
         }
-    }
-    
-    private func webExperience(orgCode: String,
-                               propertyName: String,
-                               advertisingIdentifier: UUID) -> some View {
-        PreferencesWebView(
-            config: .configure(
-                orgCode: orgCode,
-                propertyName: propertyName,
-                advertisingIdentifier: advertisingIdentifier
-            )
-        )
-        .asResponsiveSheet(style: .popUp)
     }
     
     // MARK: - UI views configuration according type and config models

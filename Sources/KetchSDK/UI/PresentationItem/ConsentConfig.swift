@@ -12,7 +12,7 @@ struct ConsentConfig {
     let advertisingIdentifier: UUID
     let htmlFileName: String
     let userDefaults: UserDefaults
-    private var configWebApp: WKWebView?
+    var configWebApp: WKWebView?
 
     private init(
         orgCode: String,

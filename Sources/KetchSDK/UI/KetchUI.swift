@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Combine
+import WebKit
 
 /// Container for UI features
 public final class KetchUI: ObservableObject {
@@ -65,15 +66,18 @@ public final class KetchUI: ObservableObject {
     }
     
     private var preloadedPresentationItem: WebPresentationItem?
+    private var preloaded: WKWebView?
 
     private func preloadWebExperience() {
         preloadedPresentationItem = webExperience()
+        preloaded = preloadedPresentationItem?.config.preferencesWebView(onClose: { self.webPresentationItem = nil })
     }
 }
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func showExperience() {
+        preloadedPresentationItem?.preloaded = preloaded
         webPresentationItem = preloadedPresentationItem
     }
     

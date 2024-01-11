@@ -14,7 +14,7 @@ struct ConsentConfig {
     let userDefaults: UserDefaults
     var configWebApp: WKWebView?
 
-    private init(
+    init(
         orgCode: String,
         propertyName: String,
         advertisingIdentifier: UUID,

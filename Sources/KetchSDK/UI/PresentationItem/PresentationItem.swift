@@ -10,11 +10,11 @@ extension KetchUI {
     public struct WebPresentationItem: Identifiable {
         let item: WebExperienceItem
         var preloaded: WKWebView?
-        private let config: ConsentConfig
+        let config: ConsentConfig
         
         init(item: WebExperienceItem) {
             self.item = item
-            config = ConsentConfig.configure(
+            config = ConsentConfig(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
                 advertisingIdentifier: item.advertisingIdentifier
@@ -42,7 +42,10 @@ extension KetchUI {
         private func webExperience(orgCode: String,
                                    propertyName: String,
                                    advertisingIdentifier: UUID) -> some View {
-            PreferencesWebView(config: config)
+            var config = config
+            config.configWebApp = preloaded
+            
+            return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .popUp)
         }
     }

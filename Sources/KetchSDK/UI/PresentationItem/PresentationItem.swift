@@ -7,10 +7,26 @@ import SwiftUI
 import WebKit
 
 extension KetchUI {
-    public struct WebPresentationItem: Identifiable {
+    public struct WebPresentationItem: Identifiable, Equatable {
+        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
+        
+        public struct BannerConfig {
+            public enum VPosition { case top, center, bottom }
+            public enum HPosition { case left, center, right }
+            
+            public let vpos: VPosition
+            public let hpos: HPosition
+            
+            public init(vpos: VPosition, hpos: HPosition) {
+                self.vpos = vpos
+                self.hpos = hpos
+            }
+        }
+        
         let item: WebExperienceItem
         var preloaded: WKWebView?
         let config: ConsentConfig
+        public var bannerConfig: BannerConfig?
         
         init(item: WebExperienceItem) {
             self.item = item
@@ -46,7 +62,7 @@ extension KetchUI {
             config.configWebApp = preloaded
             
             return PreferencesWebView(config: config)
-                .asResponsiveSheet(style: .popUp)
+                .asResponsiveSheet(style: .custom)
         }
     }
 }

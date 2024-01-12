@@ -76,8 +76,9 @@ public final class KetchUI: ObservableObject {
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
-    public func showExperience() {
+    public func showExperience(bannerConfig: WebPresentationItem.BannerConfig? = nil) {
         preloadedPresentationItem?.preloaded = preloaded
+        preloadedPresentationItem?.bannerConfig = bannerConfig
         webPresentationItem = preloadedPresentationItem
     }
     

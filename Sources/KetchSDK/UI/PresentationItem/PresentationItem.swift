@@ -24,17 +24,20 @@ extension KetchUI {
         }
         
         let item: WebExperienceItem
-        var preloaded: WKWebView?
+        let onClose: (() -> Void)?
+        var preloaded: WKWebView
         let config: ConsentConfig
         public var presentationConfig: PresentationConfig?
         
-        init(item: WebExperienceItem) {
+        init(item: WebExperienceItem, onClose: (() -> Void)?) {
             self.item = item
             config = ConsentConfig(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
                 advertisingIdentifier: item.advertisingIdentifier
             )
+            self.onClose = onClose
+            preloaded = config.preferencesWebView(onClose: onClose)
         }
 
         public var id: String { String(describing: item) }
@@ -54,6 +57,10 @@ extension KetchUI {
             )
         }
         
+        public mutating func reload() {
+            preloaded = config.preferencesWebView(onClose: onClose)
+        }
+        
         private func webExperience(orgCode: String,
                                    propertyName: String,
                                    advertisingIdentifier: UUID) -> some View {
@@ -63,5 +70,19 @@ extension KetchUI {
             return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .custom)
         }
+    }
+}
+
+extension KetchUI.WebPresentationItem {
+    public func showPreferences() {
+        preloaded.evaluateJavaScript("ketch('showPreferences')")
+    }
+    
+    public func showConsent() {
+        preloaded.evaluateJavaScript("ketch('showConsent')")
+    }
+        
+    public func getFullConfig() {
+        preloaded.evaluateJavaScript("ketch('getFullConfig')") { val, err in }
     }
 }

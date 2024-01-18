@@ -26,7 +26,7 @@ public final class KetchUI: ObservableObject {
 
     public var showDialogsIfNeeded = false
 
-    private var ketch: Ketch
+    private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
 
     /// Instantiation of UI dialogs
@@ -65,68 +65,41 @@ public final class KetchUI: ObservableObject {
     }
     
     private var preloadedPresentationItem: WebPresentationItem?
-    private var preloaded: WKWebView?
 
     private func preloadWebExperience() {
-        preloadedPresentationItem = webExperience()
-        preloaded = preloadedPresentationItem?.config.preferencesWebView(onClose: { self.webPresentationItem = nil })
+        preloadedPresentationItem = webExperience { self.webPresentationItem = nil }
+        reload()
     }
 }
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload() {
-        preloaded = preloadedPresentationItem?.config.preferencesWebView(onClose: { self.webPresentationItem = nil })
+        preloadedPresentationItem?.reload()
     }
     
     public func showExperience(presentationConfig: WebPresentationItem.PresentationConfig? = nil) {
-        webPresentationItem = nil
-        preloadedPresentationItem?.preloaded = preloaded
         preloadedPresentationItem?.presentationConfig = presentationConfig
         webPresentationItem = preloadedPresentationItem
     }
-    
-    public func showBanner() {
-
-    }
-
-    public func showModal() {
-
-    }
 
     public func showPreferences() {
-        preloaded?.evaluateJavaScript("ketch('showPreferences')")
+        preloadedPresentationItem?.showPreferences()
     }
     
     public func showConsent() {
-        preloaded?.evaluateJavaScript("ketch('showConsent')")
+        preloadedPresentationItem?.showConsent()
     }
         
     public func getFullConfig() {
-        preloaded?.evaluateJavaScript("ketch('getFullConfig')") { val, err in
-            print(val, err)
-        }
+        preloadedPresentationItem?.getFullConfig()
     }
-    
-    public func getFullConfig2() {
-        preloaded?.evaluateJavaScript("getFullConfig") { val, err in
-            print(val, err)
-        }
-    }
-    
-//    public func removeCookies() {
-//        let cookieJar = HTTPCookieStorage.shared
-//
-//        for cookie in cookieJar.cookies! {
-//            cookieJar.deleteCookie(cookie)
-//        }
-//    }
 }
 
 
 // MARK: - Dialog presentation item generation of each type
 extension KetchUI {
-    private func webExperience() -> WebPresentationItem? {
+    private func webExperience(onClose: (() -> Void)?) -> WebPresentationItem? {
         guard
             let advertisingIdentifier = ketch.identities.compactMap({
                 if case .idfa(let id) = $0 {
@@ -143,7 +116,8 @@ extension KetchUI {
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid
-            )
+            ),
+            onClose: onClose
         )
     }
 }

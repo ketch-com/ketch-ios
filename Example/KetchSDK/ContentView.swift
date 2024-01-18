@@ -30,7 +30,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Button("showConsent") { ketchUI.showConsent() }
                     Button("showPreferences") { ketchUI.showPreferences() }
-                    Button("getFullConfig") { ketchUI.getFullConfig2() }
+                    Button("getFullConfig") { ketchUI.getFullConfig() }
                 }
                 .padding()
                 .border(.black)

@@ -10,7 +10,7 @@ extension KetchUI {
     public struct WebPresentationItem: Identifiable, Equatable {
         public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
         
-        public struct BannerConfig {
+        public struct PresentationConfig {
             public enum VPosition { case top, center, bottom }
             public enum HPosition { case left, center, right }
             
@@ -26,7 +26,7 @@ extension KetchUI {
         let item: WebExperienceItem
         var preloaded: WKWebView?
         let config: ConsentConfig
-        public var bannerConfig: BannerConfig?
+        public var presentationConfig: PresentationConfig?
         
         init(item: WebExperienceItem) {
             self.item = item
@@ -40,7 +40,6 @@ extension KetchUI {
         public var id: String { String(describing: item) }
         
         struct WebExperienceItem {
-            let config: KetchSDK.Configuration
             let orgCode: String
             let propertyName: String
             let advertisingIdentifier: UUID
@@ -63,6 +62,28 @@ extension KetchUI {
             
             return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .custom)
+        }
+    }
+}
+
+extension KetchUI.WebPresentationItem {
+    public func showPreferences() {
+        preloaded?.evaluateJavaScript("ketch('showPreferences')")
+    }
+    
+    public func showConsent() {
+        preloaded?.evaluateJavaScript("ketch('showConsent')")
+    }
+        
+    public func getFullConfig() {
+        preloaded?.evaluateJavaScript("ketch('getFullConfig')") { val, err in
+            print(val, err)
+        }
+    }
+    
+    public func getFullConfig2() {
+        preloaded?.evaluateJavaScript("getFullConfig") { val, err in
+            print(val, err)
         }
     }
 }

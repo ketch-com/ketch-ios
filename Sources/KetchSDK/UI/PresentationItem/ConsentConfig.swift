@@ -61,7 +61,8 @@ struct ConsentConfig {
         [
             URLQueryItem(name: "propertyName", value: propertyName),
             URLQueryItem(name: "orgCode", value: orgCode),
-            URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString)
+            URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
+            URLQueryItem(name: "ketch_lang", value: "en")
         ]
     }
 
@@ -110,7 +111,7 @@ class ConsentHandler: NSObject, WKScriptMessageHandler {
             return
         }
 
-        print(message.name, message.body)
+//        print(message.name, message.body)
 
         switch event {
         case .hideExperience:
@@ -139,7 +140,14 @@ class ConsentHandler: NSObject, WKScriptMessageHandler {
         case .consent:
             let consentStatus: ConsentStatus? = payload(with: message.body)
             print(message.name, consentStatus ?? "ConsentStatus decoding failed")
-
+            
+        case .onConfigLoaded:
+            let config: KetchSDK.Configuration2? = payload(with: message.body)
+            
+        case .onFullConfigLoaded:
+            let config: KetchSDK.Configuration2? = payload(with: message.body)
+            print("onFullConfigLoaded")
+            
         default: break
         }
     }
@@ -182,6 +190,8 @@ extension ConsentHandler {
         case identities
         case consent
         case willShowExperience
+        case onConfigLoaded
+        case onFullConfigLoaded
 
         enum Message: String, Codable {
             case willNotShow
@@ -200,6 +210,32 @@ private struct ConsentModel: Codable {
         case valueUSPrivacy = "IABUSPrivacy_String"
         case valueTC = "IABTCF_TCString"
         case valueGDPRApplies = "IABTCF_gdprApplies"
+    }
+}
+
+extension KetchSDK {
+    public struct Configuration2: Codable {
+        public let language: String?
+        public let organization: Configuration.Organization?
+        public let property: Configuration.Property?
+        public let environments: [Configuration.Environment]?
+        public let jurisdiction: Configuration.Jurisdiction?
+        public let identities: [String: Configuration.Identity]?
+        public let scripts: [String]?
+        public let environment: Configuration.Environment?
+        public let deployment: Configuration.Deployment?
+        public let privacyPolicy: Configuration.Policy?
+        public let termsOfService: Configuration.Policy?
+        public let rights: [Configuration.Right]?
+        public let regulations: [String]?
+        public let theme: Configuration.Theme?
+//        public let experiences: Configuration.Experience?
+        public let purposes: [Configuration.Purpose]?
+        public let canonicalPurposes: [String: Configuration.CanonicalPurpose]?
+        public let services: [String: String]?
+        public let options: [String: String]?
+        public let legalBases: [Configuration.LegalBase]?
+        public let vendors: [Configuration.Vendor]?
     }
 }
 

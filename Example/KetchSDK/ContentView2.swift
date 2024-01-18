@@ -31,8 +31,8 @@ class Content2ViewModel: ObservableObject {
 
     private func setupKetch(advertisingIdentifier: UUID) {
         let ketch = KetchSDK.create(
-            organizationCode: "transcenda",
-            propertyCode: "website_smart_tag",
+            organizationCode: "bluebird",
+            propertyCode: "mobile",
             environmentCode: "production",
             controllerCode: "my_controller",
             identities: [.idfa(advertisingIdentifier.uuidString)]
@@ -55,38 +55,49 @@ struct ContentView2: View {
             Button("Configuration") { viewModel.ketch?.loadConfiguration() }
             
             if let ketchUI = viewModel.ketchUI {
-                Button("Top Left")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .top, hpos: .left))
+                HStack {                    
+                    Button("reload Page") { ketchUI.reload() }
+                }
+                
+                HStack {
+                    Text("send js: ")
+                    Button("showConsent") { ketchUI.webPresentationItem?.showConsent() }
+                    Button("showPreferences") { ketchUI.webPresentationItem?.showPreferences() }
+                    Button("getFullConfig") { ketchUI.webPresentationItem?.getFullConfig2() }
+                }
+                
+                Button("Top Left") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .left))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Top Center")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .top, hpos: .center))
+                Button("Top Center") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .center))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Top Right")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .top, hpos: .right))
+                Button("Top Right") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .right))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Bottom Left")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .bottom, hpos: .left))
+                Button("Bottom Left") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .left))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Bottom Center")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .bottom, hpos: .center))
+                Button("Bottom Center") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .center))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Bottom Right")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .bottom, hpos: .right))
+                Button("Bottom Right") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .right))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
                 
-                Button("Center")   {
-                    ketchUI.showExperience(bannerConfig: .init(vpos: .center, hpos: .center))
+                Button("Center") {
+                    ketchUI.showExperience(presentationConfig: .init(vpos: .center, hpos: .center))
                     webPresentationItem = ketchUI.webPresentationItem
                 }
             }
@@ -246,9 +257,9 @@ struct BannerModifier: ViewModifier {
     }
     
     private var transitionEdge: Edge {
-        guard let bannerConfig = model?.bannerConfig else { return .bottom }
+        guard let presentationConfig = model?.presentationConfig else { return .bottom }
         
-        switch (bannerConfig.hpos, bannerConfig.vpos) {
+        switch (presentationConfig.hpos, presentationConfig.vpos) {
         case (.center, .top): return .top
         case (.center, .bottom): return .bottom
         case (.left, _): return .leading
@@ -258,9 +269,9 @@ struct BannerModifier: ViewModifier {
     }
     
     private var paddingEdge: Edge.Set {
-        guard let bannerConfig = model?.bannerConfig else { return .bottom }
+        guard let presentationConfig = model?.presentationConfig else { return .bottom }
         
-        switch bannerConfig.vpos {
+        switch presentationConfig.vpos {
         case .top: return .bottom
         case .bottom: return .top
         case .center: return [.top, .bottom]
@@ -268,7 +279,7 @@ struct BannerModifier: ViewModifier {
     }
     
     private var paddingValue: CGFloat? {
-        guard let bannerConfig = model?.bannerConfig else { return nil }
+        guard let bannerConfig = model?.presentationConfig else { return nil }
         
         switch bannerConfig.vpos {
         case .center: return 100
@@ -277,7 +288,7 @@ struct BannerModifier: ViewModifier {
     }
     
     private var transition: AnyTransition {
-        let isCenterAnimation = model?.bannerConfig?.hpos == .center && model?.bannerConfig?.vpos == .center
+        let isCenterAnimation = model?.presentationConfig?.hpos == .center && model?.presentationConfig?.vpos == .center
         
         return isCenterAnimation
         ? AnyTransition.scale(scale: 1).combined(with: .opacity)

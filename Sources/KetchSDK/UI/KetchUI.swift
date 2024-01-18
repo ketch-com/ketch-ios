@@ -42,10 +42,11 @@ public final class KetchUI: ObservableObject {
     }
 
     public func bindInput() {
+        preloadWebExperience()
+        
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
-                self.preloadWebExperience()
             }
             .store(in: &subscriptions)
         
@@ -76,9 +77,13 @@ public final class KetchUI: ObservableObject {
 
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
-    public func showExperience(bannerConfig: WebPresentationItem.BannerConfig? = nil) {
+    public func reload() {
+        preloaded = preloadedPresentationItem?.config.preferencesWebView(onClose: { self.webPresentationItem = nil })
+    }
+    
+    public func showExperience(presentationConfig: WebPresentationItem.PresentationConfig? = nil) {
         preloadedPresentationItem?.preloaded = preloaded
-        preloadedPresentationItem?.bannerConfig = bannerConfig
+        preloadedPresentationItem?.presentationConfig = presentationConfig
         webPresentationItem = preloadedPresentationItem
     }
     
@@ -103,7 +108,6 @@ extension KetchUI {
 extension KetchUI {
     private func webExperience() -> WebPresentationItem? {
         guard
-            let configuration,
             let advertisingIdentifier = ketch.identities.compactMap({
                 if case .idfa(let id) = $0 {
                     return id
@@ -116,7 +120,6 @@ extension KetchUI {
         
         return .init(
             item: WebPresentationItem.WebExperienceItem(
-                config: configuration,
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid

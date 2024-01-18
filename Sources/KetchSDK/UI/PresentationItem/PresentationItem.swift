@@ -10,6 +10,12 @@ extension KetchUI {
     public struct WebPresentationItem: Identifiable, Equatable {
         public enum Event {
             case onClose
+            case show(Content)
+            case configurationLoaded(KetchSDK.Configuration)
+            
+            public enum Content {
+                case consent, preference
+            }
         }
         
         public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
@@ -32,6 +38,7 @@ extension KetchUI {
         let onEvent: ((Event) -> Void)?
         private let userDefaults: UserDefaults = .standard
         private var consent: [String: Any]?
+        private var configuration: KetchSDK.Configuration?
         
         var preloaded: WKWebView
         public var presentationConfig: PresentationConfig?
@@ -69,6 +76,9 @@ extension KetchUI {
         
         public mutating func reload() {
             let webHandler = WebHandler(onEvent: handle)
+            var config = config
+            config.params = ["ketch_show": "preferences"]
+
             preloaded = config.preferencesWebView(with: webHandler)
         }
         
@@ -77,19 +87,26 @@ extension KetchUI {
                                    advertisingIdentifier: UUID) -> some View {
             var config = config
             config.configWebApp = preloaded
-            
+
             return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .custom)
         }
         
         private func handle(event: WebHandler.Event, body: Any) {
             switch event {
+            case .willShowExperience:
+                switch body as? String {
+                case "experiences.consent": onEvent?(.show(.consent))
+                case "experiences.preference": onEvent?(.show(.preference))
+                default: break
+                }
+
             case .hideExperience:
                 guard
                     let status = body as? String,
                     WebHandler.Event.Message(rawValue: status) == .willNotShow
                 else {
-    //                onClose?()
+                    onEvent?(.onClose)
                     return
                 }
                 
@@ -112,11 +129,12 @@ extension KetchUI {
                 print(event.rawValue, consentStatus ?? "ConsentStatus decoding failed")
                 
             case .onConfigLoaded:
-                let config: KetchSDK.Configuration? = payload(with: body)
+                guard let configuration: KetchSDK.Configuration = payload(with: body) else {
+                    print("Unable to parse Config")
+                    return
+                }
                 
-            case .onFullConfigLoaded:
-                let config: KetchSDK.Configuration? = payload(with: body)
-                print("onFullConfigLoaded")
+                onEvent?(.configurationLoaded(configuration))
                 
             default: break
             }
@@ -164,8 +182,9 @@ extension KetchUI.WebPresentationItem {
         preloaded.evaluateJavaScript("ketch('showConsent')")
     }
     
-    public func getFullConfig() {
-        preloaded.evaluateJavaScript("ketch('getFullConfig')") { val, err in }
+    public func getConfig() {
+//        preloaded.evaluateJavaScript("ketch('getFullConfig')") { val, err in }
+        preloaded.evaluateJavaScript("ketch('getConfig')")
     }
 }
 

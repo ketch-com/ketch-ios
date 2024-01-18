@@ -11,6 +11,7 @@ struct WebConfig {
     let propertyName: String
     let advertisingIdentifier: UUID
     let htmlFileName: String
+    var params = [String: String]()
     var configWebApp: WKWebView?
 
     init(
@@ -37,7 +38,7 @@ struct WebConfig {
             advertisingIdentifier: advertisingIdentifier,
             htmlFileName: htmlFileName
         )
-        
+
         DispatchQueue.main.async {
             config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
         }
@@ -54,12 +55,18 @@ struct WebConfig {
     }
 
     private var queryItems: [URLQueryItem] {
-        [
+        var defaultQuery = [
             URLQueryItem(name: "propertyName", value: propertyName),
             URLQueryItem(name: "orgCode", value: orgCode),
             URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
             URLQueryItem(name: "ketch_lang", value: "en")
         ]
+        
+        params.forEach {
+            defaultQuery.append(URLQueryItem(name: $0, value: $1))
+        }
+        
+        return defaultQuery
     }
 
     func preferencesWebView(with webHandler: WebHandler) -> WKWebView {

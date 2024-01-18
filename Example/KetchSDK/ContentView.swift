@@ -11,8 +11,8 @@ struct ContentView: View {
     
     init() {
         let ketch = KetchSDK.create(
-            organizationCode: "transcenda",
-            propertyCode: "website_smart_tag",
+            organizationCode: "bluebird",
+            propertyCode: "mobile",
             environmentCode: "production",
             controllerCode: "my_controller",
             identities: [.idfa("00000000-0000-0000-0000-000000000000")] // or advertisingIdentifier.uuidString
@@ -30,7 +30,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Button("showConsent") { ketchUI.showConsent() }
                     Button("showPreferences") { ketchUI.showPreferences() }
-                    Button("getFullConfig") { ketchUI.getFullConfig() }
+                    Button("getConfig") { ketchUI.getConfig() }
                 }
                 .padding()
                 .border(.black)

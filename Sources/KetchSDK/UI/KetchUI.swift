@@ -70,6 +70,13 @@ public final class KetchUI: ObservableObject {
         preloadedPresentationItem = webExperience { event in
             switch event {
             case .onClose: self.webPresentationItem = nil
+            case .show(let content):
+                switch content {
+                case.consent: self.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .center))
+                case .preference: self.showExperience(presentationConfig: .init(vpos: .center, hpos: .center))
+                }
+            case .configurationLoaded(let configuration):
+                self.ketch.configuration = configuration
             }
         }
         preloadedPresentationItem?.reload()
@@ -95,8 +102,8 @@ extension KetchUI {
         preloadedPresentationItem?.showConsent()
     }
         
-    public func getFullConfig() {
-        preloadedPresentationItem?.getFullConfig()
+    public func getConfig() {
+        preloadedPresentationItem?.getConfig()
     }
 }
 
@@ -121,7 +128,7 @@ extension KetchUI {
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid
             ),
-            onEvent: { _ in }
+            onEvent: onEvent
         )
     }
 }

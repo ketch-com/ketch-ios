@@ -121,7 +121,7 @@ extension KetchUI {
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid
             ),
-            onClose: {}
+            onEvent: { _ in }
         )
     }
 }

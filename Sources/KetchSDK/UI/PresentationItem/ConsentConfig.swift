@@ -6,44 +6,40 @@
 import Foundation
 import WebKit
 
-struct ConsentConfig {
+struct WebConfig {
     let orgCode: String
     let propertyName: String
     let advertisingIdentifier: UUID
     let htmlFileName: String
-    let userDefaults: UserDefaults
     var configWebApp: WKWebView?
 
     init(
         orgCode: String,
         propertyName: String,
         advertisingIdentifier: UUID,
-        htmlFileName: String = "index",
-        userDefaults: UserDefaults = .standard
+        htmlFileName: String = "index"
     ) {
         self.propertyName = propertyName
         self.orgCode = orgCode
         self.advertisingIdentifier = advertisingIdentifier
         self.htmlFileName = htmlFileName
-        self.userDefaults = userDefaults
     }
 
     static func configure(
         orgCode: String,
         propertyName: String,
         advertisingIdentifier: UUID,
-        htmlFileName: String = "index",
-        userDefaults: UserDefaults = .standard
+        htmlFileName: String = "index"
     ) -> Self {
-        var config = ConsentConfig(
+        var config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
             advertisingIdentifier: advertisingIdentifier,
-            htmlFileName: htmlFileName,
-            userDefaults: userDefaults)
-
+            htmlFileName: htmlFileName
+        )
+        
         DispatchQueue.main.async {
-            config.configWebApp = config.preferencesWebView(onClose: nil)
+            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
         }
 
         return config
@@ -66,17 +62,15 @@ struct ConsentConfig {
         ]
     }
 
-    func preferencesWebView(onClose: (() -> Void)?) -> WKWebView {
+    func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
 
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
 
-        let consentHandler = ConsentHandler(userDefaults: userDefaults, onClose: onClose)
-
-        ConsentHandler.Event.allCases.forEach { event in
-            configuration.userContentController.add(consentHandler, name: event.rawValue)
+        WebHandler.Event.allCases.forEach { event in
+            configuration.userContentController.add(webHandler, name: event.rawValue)
         }
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
@@ -89,133 +83,189 @@ struct ConsentConfig {
     }
 }
 
-extension ConsentConfig: Identifiable {
+extension WebConfig: Identifiable {
     var id: String {
         orgCode + propertyName + advertisingIdentifier.uuidString
     }
 }
 
-class ConsentHandler: NSObject, WKScriptMessageHandler {
-    var onClose: (() -> Void)?
-    private let userDefaults: UserDefaults
-    private var consent: [String: Any]?
+//    “language”:“en”,
+//    “organization”:{
+//       “code”:“bluebird”
+//    },
+//    “environments”:[
+//       {
+//          “code”:“production”,
+//          “pattern”:“Lio=“,
+//          “hash”:“10818724372400718716"
+//       }
+//    ],
+//    “identities”:{
+//       “aaid”:{
+//          “type”:“queryString”,
+//          “variable”:“aaid”,
+//          “format”:“string”,
+//          “priority”:2
+//       },
+//       “idfa”:{
+//          “type”:“queryString”,
+//          “variable”:“idfa”,
+//          “format”:“string”,
+//          “priority”:2
+//       },
+//       “swb_mobile”:{
+//          “type”:“managedCookie”,
+//          “variable”:“_swb”
+//       }
+//    },
+//    “environment”:{
+//       “code”:“production”,
+//       “pattern”:“Lio=“,
+//       “hash”:“10818724372400718716"
+//    },
+//    “deployment”:{
+//       “code”:“bluebird”,
+//       “version”:1705496895
+//    },
+//    “privacyPolicy”:{
+//       “code”:“df468006-5063-4249-b07f-aa23d3cd6f2b”,
+//       “version”:1704819714,
+//       “url”:“https://ketch.com”
+//    },
+//    “termsOfService”:{
+//       “code”:“0f696f06-f1d1-4932-960e-81f4663aa908”,
+//       “version”:1705477775
+//    },
+//    “regulations”:[
+//       “default”
+//    ],
+//    “experiences”:{
+//       “consent”:{
+//          “experienceDefault”:1
+//       },
+//       “preference”:{
+//          “code”:“preference”
+//       }
+//    },
+//    “purposes”:[
+//       {
+//          “code”:“analytics”,
+//          “name”:“Analytics”,
+//          “description”:“Collection and analysis of personal data to further our business goals; for example, analysis of behavior of website visitors, creation of target lists for marketing and sales, and measurement of advertising performance.“,
+//          “legalBasisCode”:“disclosure”,
+//          “requiresPrivacyPolicy”:true,
+//          “requiresDisplay”:true,
+//          “canonicalPurposeCode”:“analytics”,
+//          “legalBasisName”:“Disclosure”,
+//          “legalBasisDescription”:“Data subject has been provided with adequate disclosure regarding the processing”,
+//          “dataSubjectTypeCodes”:[
+//             “customer”
+//          ],
+//          “canonicalPurposeCodes”:[
+//             “analytics”
+//          ]
+//       },
+//       {
+//          “code”:“behavioral_advertising”,
+//          “name”:“Behavioral Advertising”,
+//          “description”:“Creation and activation of advertisements based on a profile informed by the collection and analysis of behavioral and personal characteristics; we may set cookies or other trackers for this purpose.“,
+//          “legalBasisCode”:“disclosure”,
+//          “requiresPrivacyPolicy”:true,
+//          “requiresDisplay”:true,
+//          “canonicalPurposeCode”:“behavioral_advertising”,
+//          “legalBasisName”:“Disclosure”,
+//          “legalBasisDescription”:“Data subject has been provided with adequate disclosure regarding the processing”,
+//          “dataSubjectTypeCodes”:[
+//             “customer”
+//          ],
+//          “canonicalPurposeCodes”:[
+//             “behavioral_advertising”
+//          ]
+//       },
+//       {
+//          “code”:“essential_services”,
+//          “name”:“Essential Services”,
+//          “description”:“Collection and processing of personal data to enable functionality that is essential to providing our services, including security activities, debugging, authentication, and fraud prevention, as well as contacting you with information related to products/services you have used or purchased; we may set essential cookies or other trackers for these purposes.“,
+//          “legalBasisCode”:“disclosure”,
+//          “requiresPrivacyPolicy”:true,
+//          “requiresDisplay”:true,
+//          “canonicalPurposeCode”:“essential_services”,
+//          “legalBasisName”:“Disclosure”,
+//          “legalBasisDescription”:“Data subject has been provided with adequate disclosure regarding the processing”,
+//          “dataSubjectTypeCodes”:[
+//             “customer”
+//          ],
+//          “canonicalPurposeCodes”:[
+//             “essential_services”
+//          ]
+//       }
+//    ],
+//    “services”:{
+//       “lanyard”:“https://cdn.uat.ketchjs.com/lanyard/v2/lanyard.js”,
+//       “scriptHost”:“https://cdn.uat.ketchjs.com”,
+//       “shoreline”:“https://dev.ketchcdn.com/web/v3”,
+//       “telemetry”:“https://dev.ketchcdn.com/web/v2/log”
+//    },
+//    “options”:{
+//       “appDivs”:“hubspot-messages-iframe-container”,
+//       “beaconPercentage”:“1"
+//    },
+//    “property”:{
+//       “code”:“mobile”,
+//       “name”:“mobile”,
+//       “platform”:“IOS”
+//    },
+//    “jurisdiction”:{
+//       “code”:“default”,
+//       “defaultScopeCode”:“default”,
+//       “defaultJurisdictionCode”:“default”
+//    },
+//    “canonicalPurposes”:{
+//       “analytics”:{
+//          “code”:“analytics”,
+//          “name”:“Analytics”,
+//          “purposeCodes”:[
+//             “analytics”
+//          ]
+//       },
+//       “behavioral_advertising”:{
+//          “code”:“behavioral_advertising”,
+//          “name”:“Behavioral Advertising”,
+//          “purposeCodes”:[
+//             “behavioral_advertising”
+//          ]
+//       },
+//       “essential_services”:{
+//          “code”:“essential_services”,
+//          “name”:“Essential Services”,
+//          “purposeCodes”:[
+//             “essential_services”
+//          ]
+//       }
+//    },
+//    “dataSubjectTypes”:[
+//       {
+//          “code”:“customer”,
+//          “name”:“Customer”
+//       }
+//    ],
+//    “plugins”:{
+//       “lanyard”:{
+//       },
+//       “tcf”:{
+//          “jurisdictions”:[
+//             “gdpr”,
+//             “colopa”
+//          ],
+//          “purposeMappings”:[
+//             {
+//                “pluginPurposeID”:“purpose_1",
+//                “purposes”:[
+//                   “analytics”
+//                ]
+//             }
+//          ]
+//       }
+//    }
 
-    init(userDefaults: UserDefaults, onClose: (() -> Void)?) {
-        self.onClose = onClose
-        self.userDefaults = userDefaults
-    }
 
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let event = Event(rawValue: message.name) else {
-            print("Ketch Preference Center: Unable to handle unknown event \"\(message.name)\"")
-            return
-        }
-
-//        print(message.name, message.body)
-
-        switch event {
-        case .hideExperience:
-            guard
-                let status = message.body as? String,
-                Event.Message(rawValue: status) == .willNotShow
-            else {
-                onClose?()
-                return
-            }
-
-        case .updateCCPA:
-            print("CCPA Updated")
-            let value = message.body as? String
-
-            save(value: value, for: .valueUSPrivacy)
-            save(value: 0, for: .valueGDPRApplies)
-
-        case .updateTCF:
-            print("TCF Updated")
-            let value = message.body as? String
-
-            save(value: value, for: .valueTC)
-            save(value: value != nil ? 1 : 0, for: .valueGDPRApplies)
-
-        case .consent:
-            let consentStatus: ConsentStatus? = payload(with: message.body)
-            print(message.name, consentStatus ?? "ConsentStatus decoding failed")
-            
-        case .onConfigLoaded:
-            let config: KetchSDK.Configuration? = payload(with: message.body)
-            
-        case .onFullConfigLoaded:
-            let config: KetchSDK.Configuration? = payload(with: message.body)
-            print("onFullConfigLoaded")
-            
-        default: break
-        }
-    }
-
-    private func payload<T: Decodable>(with payload: Any) -> T? {
-        guard let payload = payload as? String,
-              let payloadData = payload.data(using: .utf8)
-        else { return nil }
-
-        return try? JSONDecoder().decode(T.self, from: payloadData)
-    }
-
-    private func save(value: String?, for key: ConsentModel.CodingKeys) {
-        let keyValue = key.rawValue
-        if value?.isEmpty == false {
-            userDefaults.set(value, forKey: keyValue)
-        } else {
-            userDefaults.removeObject(forKey: keyValue)
-        }
-    }
-
-    private func save(value: Int?, for key: ConsentModel.CodingKeys) {
-        let keyValue = key.rawValue
-        if let value = value {
-            userDefaults.set(value, forKey: keyValue)
-        } else {
-            userDefaults.removeObject(forKey: keyValue)
-        }
-    }
-}
-
-extension ConsentHandler {
-    enum Event: String, CaseIterable {
-        case updateCCPA = "usprivacy_updated"
-        case updateTCF = "tcf_updated"
-        case hideExperience
-        case environment
-        case regionInfo
-        case jurisdiction
-        case identities
-        case consent
-        case willShowExperience
-        case onConfigLoaded
-        case onFullConfigLoaded
-
-        enum Message: String, Codable {
-            case willNotShow
-            case setConsent
-            case close
-        }
-    }
-}
-
-private struct ConsentModel: Codable {
-    let valueUSPrivacy: String?
-    let valueTC: String?
-    let valueGDPRApplies: Int?
-
-    enum CodingKeys: String, CodingKey {
-        case valueUSPrivacy = "IABUSPrivacy_String"
-        case valueTC = "IABTCF_TCString"
-        case valueGDPRApplies = "IABTCF_gdprApplies"
-    }
-}
-
-extension ConsentHandler {
-    struct ConsentStatus: Codable {
-        let purposes: [String: Bool]
-        let vendors: [String]?
-    }
-}

@@ -2,6 +2,68 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
+            function emitEvent(event, args) {
+
+                if (window.androidListener || (window.webkit && window.webkit.messageHandlers)) {
+
+                    const filteredArgs = []
+                    for (const arg of args) {
+                      if (arg !== this) {
+                        filteredArgs.push(arg)
+                      }
+                    }
+
+                    let argument
+                    if (filteredArgs.length === 1 && typeof filteredArgs[0] === 'string') {
+                        argument = filteredArgs[0]
+                      } else if (filteredArgs.length === 1) {
+                        argument = JSON.stringify(filteredArgs[0])
+                      } else if (filteredArgs.length > 1) {
+                        argument = JSON.stringify(filteredArgs)
+                      }
+
+                    // document.write('iOS events:', event);
+                    // document.write('argument:', argument);
+
+                    if (window.androidListener && event in window.androidListener) {
+                        if (filteredArgs.length === 0) {
+                            window.androidListener[event]()
+                        } else {
+                            window.androidListener[event](argument)
+                        }
+                    } else if ((window.webkit && window.webkit.messageHandlers) && event in window.webkit.messageHandlers) {
+                        window.webkit.messageHandlers[event].postMessage(argument)
+                    } else {
+                        console.warn("Can't pass message to native code because '${event}' handler is not registered")
+                    }
+                }
+
+            }
+
+            // A temporrary workaround while "onConfigLoaded" event is not available
+            // TODO: remove this call once onConfigLoaded is available
+            setTimeout(function() {
+                ketch('getConfig', function(config) {
+                   emitEvent("onConfigLoaded", [config])
+                })
+            }, 2000);
+        
+        <!--
+        setTimeout(function() {
+            ketch('getFullConfig', function(config) {
+                emitEvent("onFullConfigLoaded", [config])
+            })
+        }, 2000);
+        -->
+        
+        <!--
+        function getFullConfig() {
+            ketch('getFullConfig', function(config) {
+                emitEvent("onFullConfigLoaded", [config])
+            })
+        }
+        -->
+        
             // Get query parameters
             let params = (new URL(document.location)).searchParams;
 
@@ -9,16 +71,22 @@
             let propertyName = params.get("propertyName");
             // Get organization code from query parameters
             let orgCode = params.get("orgCode");
-            
+
             var e=document.createElement("script");
             e.type="text/javascript";
+            <!--
+            e.src=`https://dev.ketchcdn.com/web/v2/config/${orgCode}/${propertyName}/boot.js`;
+            -->
             e.src=`https://global.ketchcdn.com/web/v2/config/${orgCode}/${propertyName}/boot.js`;
             e.defer=e.async=!0;
             document.getElementsByTagName("head")[0].appendChild(e);
             window.semaphore=window.semaphore||[];
-
+            window.ketch = function() {
+                window.semaphore.push(arguments)
+            }
+        
             // Show the preference center experience
-            window.semaphore.push(['showPreferences'])
+<!--            window.semaphore.push(['showPreferences'])-->
         </script>
 </head>
 <body>

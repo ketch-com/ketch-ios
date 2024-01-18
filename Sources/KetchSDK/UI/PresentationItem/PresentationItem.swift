@@ -8,6 +8,10 @@ import WebKit
 
 extension KetchUI {
     public struct WebPresentationItem: Identifiable, Equatable {
+        public enum Event {
+            case onClose
+        }
+        
         public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
         
         public struct PresentationConfig {

@@ -67,8 +67,12 @@ public final class KetchUI: ObservableObject {
     private var preloadedPresentationItem: WebPresentationItem?
 
     private func preloadWebExperience() {
-        preloadedPresentationItem = webExperience { self.webPresentationItem = nil }
-        reload()
+        preloadedPresentationItem = webExperience { event in
+            switch event {
+            case .onClose: self.webPresentationItem = nil
+            }
+        }
+        preloadedPresentationItem?.reload()
     }
 }
 
@@ -99,25 +103,25 @@ extension KetchUI {
 
 // MARK: - Dialog presentation item generation of each type
 extension KetchUI {
-    private func webExperience(onClose: (() -> Void)?) -> WebPresentationItem? {
+    private func webExperience(onEvent: ((WebPresentationItem.Event) -> Void)?) -> WebPresentationItem? {
         guard
-            let advertisingIdentifier = ketch.identities.compactMap({
-                if case .idfa(let id) = $0 {
-                    return id
-                }
-                
-                return nil
-            }).first,
+            let advertisingIdentifier = ketch.identities
+//                .compactMap({
+//                    if case .idfa(let id) = $0 { return id }
+//                    return nil
+//                })
+                .first?
+                .value,
             let uuid = UUID(uuidString: advertisingIdentifier)
         else { return nil }
         
         return .init(
-            item: WebPresentationItem.WebExperienceItem(
+            item: .init(
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid
             ),
-            onClose: onClose
+            onClose: {}
         )
     }
 }

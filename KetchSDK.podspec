@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.author           = { 'Ketch' => 'info@ketch.com' }
   s.source           = { :http => "https://ketch.jfrog.io/artifactory/ios/KetchSDK/ketchSDK.tar.gz" }
 
-  s.ios.deployment_target = '14.0'
+  s.ios.deployment_target = '15.0'
   s.swift_version = '5.0'
 
   s.subspec 'Core' do |core|

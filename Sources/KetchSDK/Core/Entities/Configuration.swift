@@ -6,10 +6,6 @@
 import Foundation
 
 extension KetchSDK {
-    public struct WebExpConfiguration: Codable {
-        
-    }
-    
     public struct Configuration: Codable {
         public let language: String?
         public let organization: Organization?
@@ -142,12 +138,12 @@ extension KetchSDK.Configuration {
         public let preference: PreferenceExperience?
 
         public struct ConsentExperience: Codable {
-            public let code: String
-            public let version: Int
-            public let banner: Banner
-            public let modal: Modal
+            public let code: String?
+            public let version: Int?
+            public let banner: Banner?
+            public let modal: Modal?
             public let jit: JIT?
-            public let experienceDefault: ExperienceDefault
+            public let experienceDefault: ExperienceDefault?
 
             public struct Banner: Codable {
                 public let title: String?
@@ -200,12 +196,12 @@ extension KetchSDK.Configuration {
     }
 
     public struct PreferenceExperience: Codable {
-        public let code: String
-        public let version: Int
-        public let title: String
+        public let code: String?
+        public let version: Int?
+        public let title: String?
         public let rights: RightsTab?
-        public let consents: ConsentsTab
-        public let overview: OverviewTab
+        public let consents: ConsentsTab?
+        public let overview: OverviewTab?
 
         public struct RightsTab: Codable {
             public let tabName: String

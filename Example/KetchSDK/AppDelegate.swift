@@ -10,7 +10,7 @@ import KetchSDK
 struct MyApplication: App {
   var body: some Scene {
     WindowGroup {
-        ContentView2()
+        ContentView()
     }
   }
 }

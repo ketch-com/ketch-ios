@@ -13,16 +13,6 @@ Pod::Spec.new do |s|
   s.subspec 'Core' do |core|
     core.source_files = 'Sources/KetchSDK/Core/**/*.{swift}'
   end
-
-  s.subspec 'CCPA' do |ccpa|
-    ccpa.source_files = 'Sources/KetchSDK/CCPA/**/*.{swift}'
-    ccpa.dependency 'KetchSDK/Core'
-  end
-
-  s.subspec 'TCF' do |tcf|
-    tcf.source_files = 'Sources/KetchSDK/TCF/**/*.{swift}'
-    tcf.dependency 'KetchSDK/Core'
-  end
   
   s.subspec 'UI' do |ui|
     ui.source_files = 'Sources/KetchSDK/UI/**/*.{swift}'

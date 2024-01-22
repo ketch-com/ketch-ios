@@ -232,6 +232,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case willShowExperience
         case onConfigLoaded
         case onFullConfigLoaded
+        case error
         
         enum Message: String, Codable {
             case willNotShow

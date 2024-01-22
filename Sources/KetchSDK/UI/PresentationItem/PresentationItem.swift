@@ -12,7 +12,10 @@ extension KetchUI {
             case onClose
             case show(Content)
             case configurationLoaded(KetchSDK.Configuration)
-            
+            case onCCPAUpdated(String?)
+            case onTCFUpdated(String?)
+            case onConsentUpdated(consent: KetchSDK.ConsentStatus)
+
             public enum Content {
                 case consent, preference
             }
@@ -74,10 +77,10 @@ extension KetchUI {
             )
         }
         
-        public mutating func reload() {
+        public mutating func reload(options: [ExperienceOption] = []) {
             let webHandler = WebHandler(onEvent: handle)
             var config = config
-            config.params = ["ketch_show": "preferences"]
+            config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
 
             preloaded = config.preferencesWebView(with: webHandler)
         }
@@ -113,20 +116,25 @@ extension KetchUI {
             case .updateCCPA:
                 print("CCPA Updated")
                 let value = body as? String
-                
+                onEvent?(.onCCPAUpdated(value))
+
                 save(value: value, for: .valueUSPrivacy)
                 save(value: 0, for: .valueGDPRApplies)
                 
             case .updateTCF:
                 print("TCF Updated")
                 let value = body as? String
-                
+                onEvent?(.onTCFUpdated(value))
+
                 save(value: value, for: .valueTC)
                 save(value: value != nil ? 1 : 0, for: .valueGDPRApplies)
                 
             case .consent:
-                let consentStatus: ConsentStatus? = payload(with: body)
-                print(event.rawValue, consentStatus ?? "ConsentStatus decoding failed")
+                if let consentStatus: KetchSDK.ConsentStatus = payload(with: body) {
+                    onEvent?(.onConsentUpdated(consent: consentStatus))
+                } else {
+                    print(event.rawValue, "ConsentStatus decoding failed")
+                }
                 
             case .onConfigLoaded:
                 guard let configuration: KetchSDK.Configuration = payload(with: body) else {
@@ -165,11 +173,6 @@ extension KetchUI {
                 userDefaults.removeObject(forKey: keyValue)
             }
         }
-        
-        struct ConsentStatus: Codable {
-            let purposes: [String: Bool]
-            let vendors: [String]?
-        }
     }
 }
 
@@ -183,8 +186,36 @@ extension KetchUI.WebPresentationItem {
     }
     
     public func getConfig() {
-//        preloaded.evaluateJavaScript("ketch('getFullConfig')") { val, err in }
-        preloaded.evaluateJavaScript("ketch('getConfig')")
+        preloaded.evaluateJavaScript("ketch('getFullConfig')")
+    }
+    
+    public func getConsent() {
+        preloaded.evaluateJavaScript("ketch('getConsent')")
+    }
+}
+
+extension KetchUI.ExperienceOption {
+    var queryParameter: (key: String, value: String) {
+        switch self {
+        case .forceExperience(let exp):
+            return (key: "ketch_show", value: exp.rawValue)
+            
+        case .environement(let value):
+            return (key: "ketch_env", value: value.rawValue)
+            
+        case .region(let value):
+            return (key: "ketch_region", value: value)
+
+        case .jurisdiction(let code):
+            return (key: "ketch_jurisdiction", value: code)
+
+        case .language(let langId):
+            return (key: "ketch_lang", value: langId)
+
+        case .preferencesTab(let tab):
+            return (key: "ketch_preferences_tab", tab.rawValue)
+
+        }
     }
 }
 

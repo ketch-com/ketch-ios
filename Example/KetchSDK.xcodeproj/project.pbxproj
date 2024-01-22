@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		0AEB17C29B26F8F516F70EFF /* Pods_KetchSDK_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEAA5A79766122CB0484671F /* Pods_KetchSDK_Example.framework */; };
 		20DFDA302B514C9C00FB233A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DFDA2F2B514C9C00FB233A /* ContentView.swift */; };
-		3A3C32A02911014500E65788 /* TCF_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3C329F2911014500E65788 /* TCF_Tests.swift */; };
-		3A63EA5B29080301004B1421 /* CCPA_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A63EA5A29080301004B1421 /* CCPA_Tests.swift */; };
 		3A89296A28F7139700C5EC6C /* ApiClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A89296928F7139700C5EC6C /* ApiClientMock.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
@@ -35,8 +33,6 @@
 		20DFDA2F2B514C9C00FB233A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = KetchSDK.podspec; path = ../KetchSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		3A1C7C2C2921BAE400621B25 /* ContentView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView_.swift; sourceTree = "<group>"; };
-		3A3C329F2911014500E65788 /* TCF_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCF_Tests.swift; sourceTree = "<group>"; };
-		3A63EA5A29080301004B1421 /* CCPA_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCPA_Tests.swift; sourceTree = "<group>"; };
 		3A89296928F7139700C5EC6C /* ApiClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientMock.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* KetchSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KetchSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -121,8 +117,6 @@
 			isa = PBXGroup;
 			children = (
 				607FACEB1AFB9204008FA782 /* KetchTests.swift */,
-				3A63EA5A29080301004B1421 /* CCPA_Tests.swift */,
-				3A3C329F2911014500E65788 /* TCF_Tests.swift */,
 				3A89296928F7139700C5EC6C /* ApiClientMock.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -349,8 +343,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A63EA5B29080301004B1421 /* CCPA_Tests.swift in Sources */,
-				3A3C32A02911014500E65788 /* TCF_Tests.swift in Sources */,
 				607FACEC1AFB9204008FA782 /* KetchTests.swift in Sources */,
 				3A89296A28F7139700C5EC6C /* ApiClientMock.swift in Sources */,
 			);

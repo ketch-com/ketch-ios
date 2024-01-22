@@ -43,7 +43,7 @@
             // A temporrary workaround while "onConfigLoaded" event is not available
             // TODO: remove this call once onConfigLoaded is available
             setTimeout(function() {
-                ketch('getConfig', function(config) {
+                ketch('getFullConfig', function(config) {
                    emitEvent("onConfigLoaded", [config])
                 })
             }, 2000);

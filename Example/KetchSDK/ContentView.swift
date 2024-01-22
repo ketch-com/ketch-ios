@@ -18,7 +18,12 @@ struct ContentView: View {
             identities: [.idfa("00000000-0000-0000-0000-000000000000")] // or advertisingIdentifier.uuidString
         )
         
-        ketchUI = KetchUI(ketch: ketch)
+        ketchUI = KetchUI(
+            ketch: ketch,
+            experienceOptions: [
+                .forceExperience(.cd)
+            ]
+        )
     }
     
     var body: some View {

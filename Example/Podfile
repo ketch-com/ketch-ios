@@ -7,7 +7,11 @@ platform :ios, '15.0'
 #]
 
 target 'KetchSDK_Example' do
-  pod 'KetchSDK/UI', :path => '../'
+#  pod 'KetchSDK/UI', :path => '../'
+
+  pod 'KetchSDK/UI',
+  :git => 'https://github.com/ketch-com/ketch-ios.git',
+  :branch => 'version_3'
 
   target 'KetchSDK_Tests' do
     inherit! :search_paths

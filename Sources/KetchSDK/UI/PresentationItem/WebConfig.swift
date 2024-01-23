@@ -47,7 +47,7 @@ struct WebConfig {
     }
 
     private var fileUrl: URL? {
-        let url = Bundle.ketchUIfiles!.url(forResource: htmlFileName, withExtension: "html")!
+        let url = Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")!
         var urlComponents = URLComponents(string: url.absoluteString)
         urlComponents?.queryItems = queryItems
 

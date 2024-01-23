@@ -1,15 +1,9 @@
 PODS:
-  - KetchSDK/CCPA (2.0.2):
-    - KetchSDK/Core
-  - KetchSDK/Core (2.0.2)
-  - KetchSDK/TCF (2.0.2):
-    - KetchSDK/Core
-  - KetchSDK/UI (2.0.2):
+  - KetchSDK/Core (3.0.0)
+  - KetchSDK/UI (3.0.0):
     - KetchSDK/Core
 
 DEPENDENCIES:
-  - KetchSDK/CCPA (from `../`)
-  - KetchSDK/TCF (from `../`)
   - KetchSDK/UI (from `../`)
 
 EXTERNAL SOURCES:
@@ -17,8 +11,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  KetchSDK: 7edbe797e92306d3a714c315d8f4bd378d22fb77
+  KetchSDK: 11144044ae0e293cb848298a6dbad65b7cfe02f3
 
-PODFILE CHECKSUM: ef22dabd79d6bc2ba31a0740524f2ad886e99c3b
+PODFILE CHECKSUM: be1ced2c19d48831c574eb73d33b2690af8ea055
 
 COCOAPODS: 1.14.2

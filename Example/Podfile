@@ -1,14 +1,12 @@
 use_frameworks!
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 
 #plugin 'cocoapods-art', :sources => [
 #'ios'
 #]
 
 target 'KetchSDK_Example' do
-  pod 'KetchSDK/CCPA', :path => '../'
-  pod 'KetchSDK/TCF', :path => '../'
   pod 'KetchSDK/UI', :path => '../'
 
   target 'KetchSDK_Tests' do

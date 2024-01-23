@@ -10,7 +10,7 @@ target 'KetchSDK_Example' do
 #  pod 'KetchSDK/UI', :path => '../'
 
   pod 'KetchSDK/UI',
-  :git => 'git://github.com/ketch-com/ketch-ios.git',
+  :git => 'git@github.com:ketch-com/ketch-ios.git',
   :branch => 'version_3'
 
   target 'KetchSDK_Tests' do

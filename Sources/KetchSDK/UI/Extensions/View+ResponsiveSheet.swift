@@ -133,12 +133,6 @@ fileprivate struct ResponsiveSheetContent: ViewModifier {
             
         case .custom:
             content
-//                .clipShape(RoundedRectangle(cornerRadius: 8))
-//                .background(
-//                    Color(UIColor.systemBackground)
-//                        .cornerRadius(8, corners: [.allCorners])
-//                        .shadow(color: .black.opacity(0.35), radius: 20)
-//                )
 
         case .screenCover:
             content

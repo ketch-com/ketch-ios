@@ -98,6 +98,10 @@ public final class KetchUI: ObservableObject {
             
         case .onConsentUpdated(let consent):
             eventListener?.onConsentUpdated(consent: consent)
+            
+        case .error(let description):
+            eventListener?.onError(description: description)
+
         }
     }
     
@@ -235,4 +239,5 @@ public protocol KetchEventListener: AnyObject {
     func onIdentitiesUpdated(identities: String?)
     func onConsentUpdated(consent: KetchSDK.ConsentStatus)
     func onClose()
+    func onError(description: String)
 }

@@ -15,6 +15,7 @@ extension KetchUI {
             case onCCPAUpdated(String?)
             case onTCFUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
+            case error(description: String)
 
             public enum Content {
                 case consent, preference
@@ -130,11 +131,13 @@ extension KetchUI {
                 save(value: value != nil ? 1 : 0, for: .valueGDPRApplies)
                 
             case .consent:
-                if let consentStatus: KetchSDK.ConsentStatus = payload(with: body) {
-                    onEvent?(.onConsentUpdated(consent: consentStatus))
-                } else {
+                guard let consentStatus: KetchSDK.ConsentStatus = payload(with: body) else {
                     print(event.rawValue, "ConsentStatus decoding failed")
+                    return
                 }
+                
+                onEvent?(.onConsentUpdated(consent: consentStatus))
+                
                 
             case .onConfigLoaded:
                 guard let configuration: KetchSDK.Configuration = payload(with: body) else {
@@ -143,6 +146,13 @@ extension KetchUI {
                 }
                 
                 onEvent?(.configurationLoaded(configuration))
+                
+            case .error:
+                guard let description = body as? String else {
+                    print("Unable to parse Error")
+                    return
+                }
+                onEvent?(.error(description: description))
                 
             default: break
             }

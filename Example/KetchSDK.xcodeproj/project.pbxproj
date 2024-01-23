@@ -32,7 +32,6 @@
 		202904CFF8E24AFBFC8ED74C /* Pods-KetchSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KetchSDK_Example.release.xcconfig"; path = "Target Support Files/Pods-KetchSDK_Example/Pods-KetchSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 		20DFDA2F2B514C9C00FB233A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		21A115507C42411D1B4BCFE8 /* KetchSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = KetchSDK.podspec; path = ../KetchSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		3A1C7C2C2921BAE400621B25 /* ContentView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView_.swift; sourceTree = "<group>"; };
 		3A89296928F7139700C5EC6C /* ApiClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientMock.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* KetchSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KetchSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -98,7 +97,6 @@
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
-				3A1C7C2C2921BAE400621B25 /* ContentView_.swift */,
 				20DFDA2F2B514C9C00FB233A /* ContentView.swift */,
 			);
 			name = "Example for KetchSDK";

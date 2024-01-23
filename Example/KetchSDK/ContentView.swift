@@ -26,9 +26,30 @@ struct ContentView: View {
         )
     }
     
+    @State var lang = String()
+    @State var jurisdiction = String()
+    @State var region = String()
+    
     var body: some View {
         VStack(alignment: .trailing, spacing: 40) {
-            Button("reload Page") { ketchUI.reload() }
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Force language:")
+                forceQueryTestView(title: "ketch_lang", value: $lang) {
+                    ketchUI.reload(with: [.language(langId: lang.lowercased())])
+                }
+                Divider()
+                Text("Force jurisdiction:")
+                forceQueryTestView(title: "ketch_jurisdiction", value: $jurisdiction) {
+                    ketchUI.reload(with: [.jurisdiction(code: jurisdiction.lowercased())])
+                }
+                Divider()
+                Text("Force region:")
+                forceQueryTestView(title: "ketch_region", value: $region) {
+                    ketchUI.reload(with: [.region(region.lowercased())])
+                }
+            }
+            
+            Button("reload default Page") { ketchUI.reload() }
             
             HStack {
                 Text("send js")
@@ -81,9 +102,28 @@ struct ContentView: View {
                 .border(.black)
             }
         }
+        .padding()
         .onAppear {
             
         }
         .ketchView(model: $ketchUI.webPresentationItem)
     }
+    
+    @ViewBuilder func forceQueryTestView(
+        title: String, value: Binding<String>, action: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: 5) {
+            Text(title + "=")
+            TextField("Value", text: value).frame(maxWidth: 50)
+            Button("Reload", action: action)
+                .opacity(value.wrappedValue.isEmpty ? 0 : 1)
+                .frame(width: 50)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+#Preview {
+    ContentView()
 }

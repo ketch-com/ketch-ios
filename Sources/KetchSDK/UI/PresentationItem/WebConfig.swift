@@ -56,17 +56,17 @@ struct WebConfig {
 
     private var queryItems: [URLQueryItem] {
         var defaultQuery = [
-            URLQueryItem(name: "propertyName", value: propertyName),
-            URLQueryItem(name: "orgCode", value: orgCode),
-            URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
-            URLQueryItem(name: "ketch_lang", value: "en")
+            "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
+            "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
+            "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
+            "ketch_lang":   URLQueryItem(name: "ketch_lang", value: "en")
         ]
         
         params.forEach {
-            defaultQuery.append(URLQueryItem(name: $0, value: $1))
+            defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
         }
         
-        return defaultQuery
+        return Array(defaultQuery.values)
     }
 
     func preferencesWebView(with webHandler: WebHandler) -> WKWebView {

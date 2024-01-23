@@ -224,7 +224,6 @@ extension KetchUI.ExperienceOption {
 
         case .preferencesTab(let tab):
             return (key: "ketch_preferences_tab", tab.rawValue)
-
         }
     }
 }

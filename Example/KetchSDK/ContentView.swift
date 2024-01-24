@@ -48,14 +48,12 @@ struct ContentView: View {
                     ketchUI.reload(with: [.region(region.lowercased())])
                 }
             }
-            
-            Button("reload default Page") { ketchUI.reload() }
-            
+                        
             HStack {
                 Text("send js")
                 VStack(alignment: .leading, spacing: 20) {
-                    Button("showConsent") { ketchUI.showConsent() }
-                    Button("showPreferences") { ketchUI.showPreferences() }
+                    Button("showConsent") { ketchUI.reload(with: [.forceExperience(.cd)]) }
+                    Button("showPreferences") { ketchUI.reload(with: [.forceExperience(.preferences)]) }
                     Button("getConfig") { ketchUI.getConfig() }
                 }
                 .padding()

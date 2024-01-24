@@ -84,9 +84,12 @@ extension KetchUI {
         }
         
         private func handle(event: WebHandler.Event, body: Any) {
+            print("webView onEvent: ", event.rawValue)
+            
             switch event {
             case .showConsentExperience:
                 onEvent?(.show(.consent))
+                
             case .showPreferenceExperience:
                 onEvent?(.show(.preference))
 
@@ -95,12 +98,13 @@ extension KetchUI {
                     let status = body as? String,
                     WebHandler.Event.Message(rawValue: status) == .willNotShow
                 else {
+                    print("onClose")
                     onEvent?(.onClose)
                     return
                 }
                 
             case .updateCCPA:
-                print("CCPA Updated")
+                print("CCPA Updated: ", (body as? String) ?? "")
                 let value = body as? String
                 onEvent?(.onCCPAUpdated(value))
 
@@ -108,7 +112,7 @@ extension KetchUI {
                 save(value: 0, for: .valueGDPRApplies)
                 
             case .updateTCF:
-                print("TCF Updated")
+                print("TCF Updated: ", (body as? String) ?? "")
                 let value = body as? String
                 onEvent?(.onTCFUpdated(value))
 
@@ -121,6 +125,7 @@ extension KetchUI {
                     return
                 }
                 
+                print("consentStatus: ", (body as? String) ?? "")
                 onEvent?(.onConsentUpdated(consent: consentStatus))
                 
                 
@@ -133,6 +138,8 @@ extension KetchUI {
                 onEvent?(.configurationLoaded(configuration))
                 
             case .error:
+                print("error: ", (body as? String) ?? "")
+
                 guard let description = body as? String else {
                     print("Unable to parse Error")
                     return

@@ -7,6 +7,8 @@ Minimum iOS version supported: iOS 15.0
 ## Prerequisites
 - Registered [Ketch organization account](https://app.ketch.com/settings/organization) 
 - Configured [application property](https://app.ketch.com/deployment/applications) record
+- latest [XCode](https://developer.apple.com/xcode/) 
+- [CocoaPods](https://formulae.brew.sh/formula/cocoapods) installed
 
 ## Running the Sample app
 

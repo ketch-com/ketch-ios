@@ -98,12 +98,10 @@ extension KetchUI {
         
         private func handle(event: WebHandler.Event, body: Any) {
             switch event {
-            case .willShowExperience:
-                switch body as? String {
-                case "experiences.consent": onEvent?(.show(.consent))
-                case "experiences.preference": onEvent?(.show(.preference))
-                default: break
-                }
+            case .showConsentExperience:
+                onEvent?(.show(.consent))
+            case .showPreferenceExperience:
+                onEvent?(.show(.preference))
 
             case .hideExperience:
                 guard
@@ -238,7 +236,8 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case jurisdiction
         case identities
         case consent
-        case willShowExperience
+        case showConsentExperience
+        case showPreferenceExperience
         case onConfigLoaded
         case onFullConfigLoaded
         case error

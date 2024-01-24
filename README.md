@@ -15,6 +15,7 @@ Minimum iOS version supported: iOS 15.0
 ```
 git clone git@github.com:ketch-com/ketch-ios.git
 cd ketch-ios/Example
+git checkout version_3
 pod install
 ```
 

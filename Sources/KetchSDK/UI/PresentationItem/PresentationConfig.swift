@@ -33,9 +33,11 @@ extension KetchUI {
         public func padding(screenSize: CGSize) -> EdgeInsets {
             switch style {
             case .modal:
-                return calculateModalEdgeInsets(screenSize: screenSize)
+                let modalSize = calculateModalSize(screenSize: screenSize)
+                return calculateModalEdgeInsets(screenSize: screenSize, modalSize: modalSize)
             case .banner:
-                return calculateBannerEdgeInsets(screenSize: screenSize)
+                let bannerSize = calculateBannerSize(screenSize: screenSize)
+                return calculateBannerEdgeInsets(screenSize: screenSize, bannerSize: bannerSize)
             case .fullScreen:
                 return EdgeInsets()
             }
@@ -91,9 +93,8 @@ extension KetchUI {
         }
         
         // TODO: remove top/bottom default paddings is save area insets bigger than 0
-        private func calculateModalEdgeInsets(screenSize: CGSize) -> EdgeInsets {
+        private func calculateModalEdgeInsets(screenSize: CGSize, modalSize: CGSize) -> EdgeInsets {
             let isPhone = UIDevice.current.userInterfaceIdiom == .phone
-            let bannerSize = calculateModalSize(screenSize: screenSize)
             let topPadding: CGFloat
             let bottomPadding: CGFloat
             let leadingPadding: CGFloat
@@ -102,29 +103,29 @@ extension KetchUI {
             switch (hpos, vpos) {
             case (.left, .center):
                 if isPhone {
-                    topPadding = screenSize.height - bannerSize.height - defaultPadding
+                    topPadding = screenSize.height - modalSize.height - defaultPadding
                     bottomPadding = defaultPadding
                 } else {
-                    let verticalPadding = (screenSize.height - bannerSize.height) / 2
+                    let verticalPadding = (screenSize.height - modalSize.height) / 2
                     topPadding = verticalPadding
                     bottomPadding = verticalPadding
                 }
                 leadingPadding = defaultPadding
-                trailingPadding = screenSize.width - bannerSize.width + defaultPadding
+                trailingPadding = screenSize.width - modalSize.width + defaultPadding
             case (.right, .center):
                 if isPhone {
-                    topPadding = screenSize.height - bannerSize.height + defaultPadding
+                    topPadding = screenSize.height - modalSize.height + defaultPadding
                     bottomPadding = defaultPadding
                 } else {
-                    let verticalPadding = (screenSize.height - bannerSize.height) / 2
+                    let verticalPadding = (screenSize.height - modalSize.height) / 2
                     topPadding = verticalPadding
                     bottomPadding = verticalPadding
                 }
-                leadingPadding = screenSize.width - bannerSize.width + defaultPadding
+                leadingPadding = screenSize.width - modalSize.width + defaultPadding
                 trailingPadding = defaultPadding
             default: // center
-                let verticalPadding = ((screenSize.height - bannerSize.height) / 2)
-                let horizontalPadding = ((screenSize.width - bannerSize.width) / 2)
+                let verticalPadding = ((screenSize.height - modalSize.height) / 2)
+                let horizontalPadding = ((screenSize.width - modalSize.width) / 2)
                 
                 topPadding = verticalPadding
                 bottomPadding = verticalPadding
@@ -141,8 +142,7 @@ extension KetchUI {
         }
         
         // TODO: remove top/bottom default paddings is save area insets bigger than 0
-        private func calculateBannerEdgeInsets(screenSize: CGSize) -> EdgeInsets {
-            let bannerSize = calculateBannerSize(screenSize: screenSize)
+        private func calculateBannerEdgeInsets(screenSize: CGSize, bannerSize: CGSize) -> EdgeInsets {
             let topPadding: CGFloat
             let bottomPadding: CGFloat
             let leadingPadding: CGFloat

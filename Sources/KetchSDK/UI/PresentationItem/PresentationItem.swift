@@ -24,19 +24,6 @@ extension KetchUI {
         
         public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
         
-        public struct PresentationConfig {
-            public enum VPosition { case top, center, bottom }
-            public enum HPosition { case left, center, right }
-            
-            public let vpos: VPosition
-            public let hpos: HPosition
-            
-            public init(vpos: VPosition, hpos: HPosition) {
-                self.vpos = vpos
-                self.hpos = hpos
-            }
-        }
-        
         let item: WebExperienceItem
         let config: WebConfig
         let onEvent: ((Event) -> Void)?

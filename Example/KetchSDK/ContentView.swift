@@ -65,36 +65,39 @@ struct ContentView: View {
             HStack {
                 Text("Test presentation")
                 VStack(spacing: 40) {
-                    HStack(spacing: 10) {
+                    
                         Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .left))
-                        } label: { Image(systemName: "arrow.down.right.square") }
-                        
-                        Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .center))
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .top, hpos: .center, style: .banner))
                         } label: { Image(systemName: "arrow.down.square") }
+                    
+                    HStack {
                         
                         Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .top, hpos: .right))
-                        } label: { Image(systemName: "arrow.down.left.square") }
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .center, hpos: .left, style: .modal))
+                        } label: { Image(systemName: "arrow.right.square") }
+                        
+                        Button {
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .center, hpos: .center, style: .modal))
+                        } label: { Image(systemName: "square.on.square") }
+                        
+                        
+                        Button {
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .center, hpos: .right, style: .modal))
+                        } label: { Image(systemName: "arrow.left.square") }
                     }
                     
-                    Button {
-                        ketchUI.showExperience(presentationConfig: .init(vpos: .center, hpos: .center))
-                    } label: { Image(systemName: "square.on.square") }
-                    
                     HStack(spacing: 10) {
                         Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .left))
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .bottom, hpos: .left, style: .banner))
                         } label: { Image(systemName: "arrow.up.right.square") }
                         
                         Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .center))
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .bottom, hpos: .center, style: .banner))
                         } label: { Image(systemName: "arrow.up.square") }
                         
                         
                         Button {
-                            ketchUI.showExperience(presentationConfig: .init(vpos: .bottom, hpos: .right))
+                            ketchUI.showExperience(presentationConfig: KetchUI.PresentationConfig(vpos: .bottom, hpos: .right, style: .banner))
                         } label: { Image(systemName: "arrow.up.left.square") }
                     }
                 }

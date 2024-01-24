@@ -9,72 +9,54 @@ extension View {
 struct KetchViewModifier: ViewModifier {
     @Binding var model: KetchUI.WebPresentationItem?
     
-    private var transitionEdge: Edge {
-        guard let presentationConfig = model?.presentationConfig else { return .bottom }
-        
-        switch (presentationConfig.hpos, presentationConfig.vpos) {
-        case (.center, .top): return .top
-        case (.center, .bottom): return .bottom
-        case (.left, _): return .leading
-        case (.right, _): return .trailing
-        case (.center, .center): return .bottom
-        }
-    }
-    
-    private var paddingEdge: Edge.Set {
-        guard let presentationConfig = model?.presentationConfig else { return .bottom }
-        
-        switch presentationConfig.vpos {
-        case .top: return .bottom
-        case .bottom: return .top
-        case .center: return [.top, .bottom]
-        }
-    }
-    
-    private var paddingValue: CGFloat? {
-        guard let bannerConfig = model?.presentationConfig else { return nil }
-        
-        switch bannerConfig.vpos {
-        case .center: return 100
-        default: return 200
-        }
-    }
+    @State private var screenSize = CGSize.zero
     
     private var transition: AnyTransition {
-        let isCenterAnimation = model?.presentationConfig?.hpos == .center && model?.presentationConfig?.vpos == .center
+        let isCenterAnimation = model?.presentationConfig?.isCenterPresentation ?? false
         
         return isCenterAnimation
         ? AnyTransition.scale(scale: 1).combined(with: .opacity)
-        : AnyTransition.move(edge: transitionEdge).combined(with: .opacity)
+        : AnyTransition.move(edge: model?.presentationConfig?.transitionEdge ?? .bottom).combined(with: .opacity)
     }
     
     @ViewBuilder
     var bannerView: some View {
-        if let presentationItem = model {
-            presentationItem.content
-                .cornerRadius(10)
-                .shadow(radius: 10)
-                .padding()
-                .padding(paddingEdge, paddingValue)
-                .transition(transition)
-                .animation(.easeInOut)
+        if let presentationItem = model,
+           let config = model?.presentationConfig {
+            if config.style == .fullScreen {
+                presentationItem.content
+            } else {
+                presentationItem.content
+                    .cornerRadius(10)
+                    .shadow(radius: 10)
+                    .padding(config.padding(screenSize: screenSize))
+                    .transition(transition)
+                    .animation(.easeInOut)
+            }
         }
-        
     }
     
     func body(content: Content) -> some View {
         ZStack {
             content
-            GeometryReader { _ in }
-                .overlay {
-                    if model != nil {
-                        Color.white.opacity(0.001)
-                            .onTapGesture {
-                                withAnimation { model = nil }
-                            }
-                        bannerView
+            GeometryReader { geometry in
+                ZStack {}
+                    .onAppear {
+                        screenSize = geometry.size
                     }
+                    .onChange(of: geometry.size) { screenSize in
+                        self.screenSize = screenSize
+                    }
+            }
+            .overlay {
+                if model != nil {
+                    Color.white.opacity(0.001)
+                        .onTapGesture {
+                            withAnimation { model = nil }
+                        }
+                    bannerView
                 }
+            }
         }
     }
 }

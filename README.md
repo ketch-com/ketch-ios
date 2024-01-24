@@ -1,4 +1,4 @@
-# Ketch iOS SDK v2.0
+# Ketch iOS SDK v3.0
 
 Mobile SDK for iOS
 
@@ -7,6 +7,30 @@ Minimum iOS version supported: iOS 14.0
 ## Prerequisites
 - Registered [Ketch organization account](https://app.ketch.com/settings/organization) 
 - Configured [application property](https://app.ketch.com/deployment/applications) record
+
+## Running the Sample app
+
+### Step 1. Clone the repository and install dependencies
+
+```
+git clone git@github.com:ketch-com/ketch-ios.git
+cd ketch-ios/Example
+pod install
+```
+
+### Step 2. Run the app in XCode
+
+Open the project workspace `Example/KetchSDK.xcworkspace` in the XCode.
+
+Add your organization code, property code to
+`ketch-ios/Example/KetchSDK/ContentView.swift`:
+
+```swift
+organizationCode: "???????????????????",
+propertyCode: "???????????????????",
+```
+
+Click Run to build and run the app on the simulator or a device.
 
 
 ## Install SDK

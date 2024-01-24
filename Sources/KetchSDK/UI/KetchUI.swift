@@ -25,7 +25,7 @@ public final class KetchUI: ObservableObject {
     @Published public var consentStatus: KetchSDK.ConsentStatus?
 
     public weak var eventListener: KetchEventListener?
-    public var overridePresentationConfig: WebPresentationItem.PresentationConfig?
+    public var overridePresentationConfig: PresentationConfig?
 
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
@@ -82,9 +82,7 @@ public final class KetchUI: ObservableObject {
             case .preference: eventListener?.showPreferences()
             }
             
-            self.showExperience(
-                presentationConfig: overridePresentationConfig ?? presentationConfig
-            )
+            self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
@@ -105,23 +103,28 @@ public final class KetchUI: ObservableObject {
         }
     }
     
-    private var presentationConfig: WebPresentationItem.PresentationConfig {
-        switch display {
-        case .banner:
-            switch bannerPosition {
-            case .bottom:       return .init(vpos: .bottom, hpos: .center)
-            case .top:          return .init(vpos: .top,    hpos: .center)
-            case .leftCorner:   return .init(vpos: .bottom, hpos: .left)
-            case .rightCorner:  return .init(vpos: .bottom, hpos: .right)
-            case .bottomMiddle: return .init(vpos: .bottom, hpos: .center)
-            case .center:       return .init(vpos: .center, hpos: .center)
+    private func presentationConfig(experience: KetchUI.WebPresentationItem.Event.Content) -> PresentationConfig {
+        switch experience {
+        case .consent:
+            switch display {
+            case .banner:
+                switch bannerPosition {
+                case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner)
+                case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner)
+                case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner)
+                case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner)
+                case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner)
+                case .center:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner)
+                }
+            case .modal:
+                switch modalPosition {
+                case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal)
+                case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal)
+                case .center:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal)
+                }
             }
-        case .modal:
-            switch modalPosition {
-            case .left:     return .init(vpos: .center, hpos: .left)
-            case .right:    return .init(vpos: .center, hpos: .right)
-            case .center:   return .init(vpos: .center, hpos: .center)
-            }
+        case .preference:
+            return PresentationConfig(vpos: .top, hpos: .left, style: .fullScreen)
         }
     }
     
@@ -148,7 +151,7 @@ extension KetchUI {
         preloadedPresentationItem?.reload(options: options)
     }
     
-    public func showExperience(presentationConfig: WebPresentationItem.PresentationConfig? = nil) {
+    public func showExperience(presentationConfig: PresentationConfig? = nil) {
         preloadedPresentationItem?.presentationConfig = presentationConfig
         webPresentationItem = preloadedPresentationItem
     }

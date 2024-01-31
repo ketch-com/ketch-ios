@@ -86,7 +86,7 @@ extension KetchUI {
         }
         
         private func handle(event: WebHandler.Event, body: Any) {
-            print("webView onEvent: ", event.rawValue)
+            KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
             
             switch event {
             case .showConsentExperience:
@@ -100,7 +100,7 @@ extension KetchUI {
                     let status = body as? String,
                     WebHandler.Event.Message(rawValue: status) == .willNotShow
                 else {
-                    print("onClose")
+                    KetchLogger.log.debug("onClose")
                     onEvent?(.onClose)
                     return
                 }
@@ -113,52 +113,65 @@ extension KetchUI {
                 onEvent?(.hasChangedExperience(transition))
                 
             case .updateCCPA:
-                print("CCPA Updated: ", (body as? String) ?? "")
-                let value = body as? String
-                onEvent?(.onCCPAUpdated(value))
-
-                save(value: value, for: .valueUSPrivacy)
-                save(value: 0, for: .valueGDPRApplies)
-                
-            case .updateTCF:
-                print("TCF Updated: ", (body as? String) ?? "")
-                let value = body as? String
-                onEvent?(.onTCFUpdated(value))
-
-                save(value: value, for: .valueTC)
-                save(value: value != nil ? 1 : 0, for: .valueGDPRApplies)
-                
-            case .updateGPP:
-                print("GPP Updated: ", (body as? String) ?? "")
-                let value = body as? String
-                onEvent?(.onGPPUpdated(value))
-
-                save(value: value, for: .valueGPP)
-                save(value: 0, for: .valueGDPRApplies)
-                
-            case .consent:
-                guard let consentStatus: KetchSDK.ConsentStatus = payload(with: body) else {
-                    print(event.rawValue, "ConsentStatus decoding failed")
+                guard let stringBody = body as? String else {
+                    #warning("TODO: log")
+                    KetchLogger.log.error("Failed to retrieve CCPA string")
                     return
                 }
                 
-                print("consentStatus: ", (body as? String) ?? "")
+                KetchLogger.log.debug("CCPA Updated: \(stringBody)")
+                
+                onEvent?(.onCCPAUpdated(stringBody))
+                
+                savePrivacyString(stringBody)
+                
+            case .updateTCF:
+                guard let stringBody = body as? String else {
+                    KetchLogger.log.error("Failed to retrieve TCF string")
+                    return
+                }
+                
+                KetchLogger.log.debug("TCF Updated: \(stringBody)")
+                
+                onEvent?(.onTCFUpdated(stringBody))
+                
+                savePrivacyString(stringBody)
+                
+            case .updateGPP:
+                guard let stringBody = body as? String else {
+                    KetchLogger.log.error("Failed to retrieve CPP string")
+                    return
+                }
+                
+                KetchLogger.log.debug("GPP Updated: \(stringBody)")
+                
+                onEvent?(.onGPPUpdated(stringBody))
+                
+                savePrivacyString(stringBody)
+                
+            case .consent:
+                guard let consentStatus: KetchSDK.ConsentStatus = payload(with: body) else {
+                    KetchLogger.log.error("\(event.rawValue): ConsentStatus decoding failed")
+                    return
+                }
+                
+                KetchLogger.log.debug("consentStatus: \((body as? String) ?? "")")
                 onEvent?(.onConsentUpdated(consent: consentStatus))
                 
                 
             case .onConfigLoaded:
                 guard let configuration: KetchSDK.Configuration = payload(with: body) else {
-                    print("Unable to parse Config")
+                    KetchLogger.log.error("Unable to parse Config")
                     return
                 }
                 
                 onEvent?(.configurationLoaded(configuration))
                 
             case .error:
-                print("error: ", (body as? String) ?? "")
+                KetchLogger.log.error("error: \((body as? String) ?? "")")
 
                 guard let description = body as? String else {
-                    print("Unable to parse Error")
+                    KetchLogger.log.error("Unable to parse Error")
                     return
                 }
                 onEvent?(.error(description: description))
@@ -175,21 +188,17 @@ extension KetchUI {
             return try? JSONDecoder().decode(T.self, from: payloadData)
         }
         
-        private func save(value: String?, for key: ConsentModel.CodingKeys) {
-            let keyValue = key.rawValue
-            if value?.isEmpty == false {
-                userDefaults.set(value, forKey: keyValue)
-            } else {
-                userDefaults.removeObject(forKey: keyValue)
+        private func savePrivacyString(_ string: String) {
+            guard let data = string.data(using: .utf8),
+                  let privacyObject = try? JSONSerialization.jsonObject(with: data) as? [Any],
+                  let pricacyStrings = privacyObject.last as? [String: Any?] else {
+                
+                return
             }
-        }
-        
-        private func save(value: Int?, for key: ConsentModel.CodingKeys) {
-            let keyValue = key.rawValue
-            if let value = value {
-                userDefaults.set(value, forKey: keyValue)
-            } else {
-                userDefaults.removeObject(forKey: keyValue)
+            
+            // in current implementation we have a single key with object where all other pairs are lieve
+            pricacyStrings.forEach { pair in
+                userDefaults.set(pair.value, forKey: pair.key)
             }
         }
     }
@@ -270,7 +279,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let event = Event(rawValue: message.name) else {
-            print("Ketch Preference Center: Unable to handle unknown event \"\(message.name)\"")
+            KetchLogger.log.error("Ketch Preference Center: Unable to handle unknown event \"\(message.name)\"")
             return
         }
         

@@ -169,10 +169,40 @@ struct ContentView: View {
                 .padding()
                 .border(.black)
             }
+            
+            Button("Preview privacy strings") {
+                showPrivacyStrings()
+            }
         }
         .padding()
         .background(.white)
         .ketchView(model: $ketchUI.webPresentationItem)
+    }
+    
+    private func showPrivacyStrings() {
+        let keys = ["IABTCF_CmpSdkID",
+                    "IABTCF_CmpSdkVersion",
+                    "IABTCF_PolicyVersion",
+                    "IABTCF_gdprApplies",
+                    "IABTCF_PublisherCC",
+                    "IABTCF_PurposeOneTreatment",
+                    "IABTCF_UseNonStandardTexts",
+                    "IABTCF_TCString",
+                    "IABTCF_VendorConsents",
+                    "IABTCF_VendorLegitimateInterests",
+                    "IABTCF_PurposeConsents",
+                    "IABTCF_PurposeLegitimateInterests",
+                    "IABTCF_SpecialFeaturesOptIns",
+                    "IABTCF_PublisherConsent",
+                    "IABTCF_PublisherLegitimateInterests",
+                    "IABTCF_PublisherCustomPurposesConsents",
+                    "IABTCF_PublisherCustomPurposesLegitimateInterests"]
+        
+        print("\n* ----- Begin privacy strings ---- *")
+        keys.forEach {
+            print("\($0): \(UserDefaults.standard.value(forKey: $0) ?? "")")
+        }
+        print("* ----- End privacy strings ---- *\n")
     }
 }
 

@@ -1,41 +1,17 @@
-# Ketch iOS SDK v3.0
+# Ketch Mobile SDK for iOS
 
-Mobile SDK for iOS
+The Ketch Mobile SDK allows to manage and collect a visitor's consent preferences for an organization on the mobile platforms.
 
-Minimum iOS version supported: iOS 15.0
+## Requirements
 
-## Prerequisites
+SDK supports iOS version 15.0 and above.
+The minimum required version of Xcode is 15.0. 
+The minimum required version of Swift is 5.5.
 
-- Install and run [XCode](https://apps.apple.com/us/app/xcode/id497799835?mt=12) from the IOS App Store
-  - When running for the first time, make sure to check the box for "iOS Simulator" so that you also get a mobile emulator to test on.
-- Registered [Ketch organization account](https://app.ketch.com/settings/organization)
-- Configured [application property](https://app.ketch.com/deployment/applications) record
+The use of the Mobile SDK requires an [Ketch organization account](https://app.ketch.com/settings/organization) 
+with the [application property](https://app.ketch.com/deployment/applications)  configured.
 
-## Running the Sample app
-
-### Step 1. Clone the repository and install dependencies
-
-```
-git clone git@github.com:ketch-com/ketch-ios.git
-cd ketch-ios/Example
-pod install
-```
-
-### Step 2. Run the app in XCode
-
-Open the project workspace `Example/KetchSDK.xcworkspace` in the XCode.
-
-Add your organization code, property code to
-`ketch-ios/Example/KetchSDK/ContentView.swift`:
-
-```swift
-organizationCode: "???????????????????",
-propertyCode: "???????????????????",
-```
-
-Click Run to build and run the app on the simulator or a device.
-
-## Install SDK
+## Quick Start
 
 ### Swift Package Manager
 
@@ -179,3 +155,36 @@ Set your presentation subclass to the KetchUI instance:
 `ketchUI.sizeFactory = ExampleSizeFactory()`
   
 </details>
+
+
+## Running the Sample app
+
+### Prerequisites
+
+- Install and run [XCode](https://apps.apple.com/us/app/xcode/id497799835?mt=12) from the IOS App Store
+    - When running for the first time, make sure to check the box for "iOS Simulator" so that you also get a mobile emulator to test on.
+
+### Running the Sample app
+
+#### Step 1. Clone the repository and install dependencies
+
+```
+git clone git@github.com:ketch-com/ketch-ios.git
+cd ketch-ios/Example
+pod install
+```
+
+#### Step 2. Run the app in XCode
+
+Open the project workspace `Example/KetchSDK.xcworkspace` in the XCode.
+
+Add your organization code, property code to
+`ketch-ios/Example/KetchSDK/ContentView.swift`:
+
+```swift
+organizationCode: "???????????????????",
+propertyCode: "???????????????????",
+```
+
+Click Run to build and run the app on the simulator or a device.
+

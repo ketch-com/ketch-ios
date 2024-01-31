@@ -8,7 +8,7 @@ import Foundation
 extension Bundle {
     static var ketchUI: Bundle? {
         #if SWIFT_PACKAGE
-            return .module
+            .module
         #else
             guard let bundleURL = Bundle(for: KetchUI.self)
                 .resourceURL?

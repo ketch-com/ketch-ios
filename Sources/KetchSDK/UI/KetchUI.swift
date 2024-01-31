@@ -226,8 +226,8 @@ extension KetchUI {
             case staging, production
         }
         
-        public enum PreferencesTab: String {
-            case overviewTab, rightsTab, consentsTab
+        public enum PreferencesTab: String, CaseIterable {
+            case overviewTab, rightsTab, consentsTab, subscriptionsTab
         }
     }
 }

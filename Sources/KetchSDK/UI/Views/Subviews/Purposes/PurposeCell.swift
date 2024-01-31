@@ -8,7 +8,7 @@ import SwiftUI
 struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
     var consent: Binding<Bool>
     let purpose: Props.Purpose
-    let localizedStrings: KetchSDK.LocalizedStrings
+    let localizedStrings: KetchSDK.Configuration.Translations?
     let vendorsDestination: (() -> VendorsContent)?
     let categoriesDestination: (() -> CategoriesContent)?
 
@@ -46,13 +46,13 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                 if isExpanded {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text(localizedStrings.purpose + ": ")
+                        Text((localizedStrings?.purpose ?? "Purpose") + ": ")
                             .font(.system(size: 14, weight: .bold))
                         + Text(purpose.purposeDescription)
                             .font(.system(size: 14))
 
                         if let legalBasisDescription = purpose.legalBasisDescription {
-                            Text(localizedStrings.legalBasis + ": ")
+                            Text((localizedStrings?.legalBasis ?? "Legal Basis") + ": ")
                                 .font(.system(size: 14, weight: .bold))
                             + Text(legalBasisDescription)
                                 .font(.system(size: 14))
@@ -60,7 +60,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                         if let vendorsDestination = vendorsDestination {
                             NavigationLink(destination: vendorsDestination) {
-                                Text(localizedStrings.vendor)
+                                Text(localizedStrings?.vendor ?? "Vendor")
                                     .font(.system(size: 14, weight: .bold))
                                 Image(systemName: "arrow.up.forward.app")
                             }
@@ -69,7 +69,7 @@ struct PurposeCell<VendorsContent: View, CategoriesContent: View>: View {
 
                         if let categoriesDestination = categoriesDestination {
                             NavigationLink(destination: categoriesDestination) {
-                                Text(localizedStrings.dataCategories)
+                                Text(localizedStrings?.dataCategories ?? "Data Categories")
                                     .font(.system(size: 14, weight: .bold))
                                 Image(systemName: "arrow.up.forward.app")
                             }

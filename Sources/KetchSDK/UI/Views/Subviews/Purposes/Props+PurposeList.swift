@@ -13,6 +13,7 @@ extension Props {
         let purposes: [Purpose]
         let vendors: [Vendor]
         let theme: Theme
+        let purposeButtonsLookIdentical: Bool
 
         struct Theme {
             let textFontSize: CGFloat = 14
@@ -119,7 +120,8 @@ extension Props.PurposesList {
         vendors: [KetchSDK.Configuration.Vendor]?,
         purposesConsent: [String: Bool],
         vendorsConsent: [String]?,
-        theme: Theme
+        theme: Theme,
+        purposeButtonsLookIdentical: Bool
     ) {
         let purposes: [Props.Purpose]? = purposes?.map { purpose in
             Props.Purpose(
@@ -140,10 +142,11 @@ extension Props.PurposesList {
         self.init(
             bodyTitle: bodyTitle,
             bodyDescription: bodyDescription,
-            consentTitle: consentTitle,
+            consentTitle: hideConsentTitle ? "" : consentTitle,
             purposes: purposes ?? [],
             vendors: vendors ?? [],
-            theme: theme
+            theme: theme,
+            purposeButtonsLookIdentical: purposeButtonsLookIdentical
         )
     }
 }

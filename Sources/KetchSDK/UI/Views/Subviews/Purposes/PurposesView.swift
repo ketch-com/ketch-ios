@@ -12,7 +12,7 @@ struct PurposesView<ContentView: View>: View {
     }
 
     let props: Props.PurposesList
-    let localizedStrings: KetchSDK.LocalizedStrings
+    let localizedStrings: KetchSDK.Configuration.Translations?
     @Binding var purposeConsents: [UserConsents.PurposeConsent]
     @Binding var vendorConsents: [UserConsents.VendorConsent]
     @ViewBuilder let content: ContentView?
@@ -40,17 +40,19 @@ struct PurposesView<ContentView: View>: View {
     private func purposesView() -> some View {
         VStack {
             HStack {
-                Text(props.consentTitle ?? localizedStrings.purposes)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(props.theme.contentColor)
-
-                Spacer()
+                if (props.consentTitle != nil && props.consentTitle != "") {
+                    Text(props.consentTitle ?? (localizedStrings?.purposes ?? "Purposes"))
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(props.theme.contentColor)
+                    
+                    Spacer()
+                }
 
                 Button {
                     setAllPurposeConsents(false)
                 } label: {
                     //Text("Reject All")
-                    Text(localizedStrings.rejectAll)
+                    Text(localizedStrings?.rejectAll ?? "Reject All")
                         .frame(maxWidth: 105, minHeight: 28)
                         .padding(.horizontal)
                         .font(.system(size: 14, weight: .semibold))
@@ -58,19 +60,37 @@ struct PurposesView<ContentView: View>: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .background(Color(UIColor.systemGray6).cornerRadius(5))
-
-                Button {
-                    setAllPurposeConsents(true)
-                } label: {
-                    //Text("Accept All")
-                    Text(localizedStrings.acceptAll)
-                        .frame(maxWidth: 110, minHeight: 28)
-                        .padding(.horizontal)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.black)
-                        .fixedSize(horizontal: false, vertical: true)
+                
+                if (props.purposeButtonsLookIdentical) {
+                    Button {
+                        setAllPurposeConsents(true)
+                    } label: {
+                        //Text("Accept All")
+                        Text(localizedStrings?.acceptAll ?? "Accept All")
+                            .frame(maxWidth: 110, minHeight: 28)
+                            .padding(.horizontal)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .background(Color(UIColor.systemGray6).cornerRadius(5))
+                } else {
+                    Button {
+                        setAllPurposeConsents(true)
+                    } label: {
+                        //Text("Accept All")
+                        Text(localizedStrings?.acceptAll ?? "Accept All")
+                            .frame(maxWidth: 110, minHeight: 28)
+                            .padding(.horizontal)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .stroke(Color.black, lineWidth: 1)
+                    )
                 }
-                .background(Color(UIColor.systemGray6).cornerRadius(5))
             }
             .padding(.horizontal)
 

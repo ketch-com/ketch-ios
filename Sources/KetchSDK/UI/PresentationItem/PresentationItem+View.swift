@@ -63,7 +63,8 @@ extension KetchUI.PresentationItem {
             vendors: config.vendors,
             purposesConsent: consent.purposes,
             vendorsConsent: consent.vendors,
-            theme: theme.purposesListTheme
+            theme: theme.purposesListTheme,
+            purposeButtonsLookIdentical: theme.purposeButtonsLookIdentical ?? false
         )
 
         let buttonProps = Props.Button(
@@ -121,16 +122,20 @@ extension KetchUI.PresentationItem {
 
     private func preference(item: ItemType.PreferenceItem) -> some View {
         let theme = Props.Preference.Theme(with: config.theme)
+        
+        let hideConsentTitle = item.config.consents.hideConsentTitle ?? false
 
         let purposesProps = Props.PurposesList(
             bodyTitle: item.config.consents.bodyTitle ?? String(),
             bodyDescription: item.config.consents.bodyDescription ?? String(),
-            consentTitle: "Purposes",
+            consentTitle: hideConsentTitle ? nil : (item.localizedStrings?.purposes ?? "Purposes"),
+            hideLegalBases: item.config.consents.hideLegalBases ?? false,
             purposes: config.purposes,
             vendors: config.vendors,
             purposesConsent: consent.purposes,
             vendorsConsent: consent.vendors,
-            theme: theme.purposesListTheme
+            theme: theme.purposesListTheme,
+            purposeButtonsLookIdentical: theme.purposeButtonsLookIdentical ?? false
         )
         
         

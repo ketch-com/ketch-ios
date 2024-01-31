@@ -12,7 +12,7 @@ extension Props {
         let primaryButton: Button?
         let secondaryButton: Button?
         let theme: Theme
-        let localizedStrings: KetchSDK.LocalizedStrings
+        let localizedStrings: KetchSDK.Configuration.Translations?
 
         struct Theme {
             let titleFontSize: CGFloat = 20
@@ -26,6 +26,8 @@ extension Props {
             let buttonColor: Color
             let secondaryButtonColor: Color
             let secondaryButtonVariant: String
+            
+            let showWatermark: Bool
         }
     }
 }

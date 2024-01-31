@@ -29,9 +29,6 @@ public final class Ketch: ObservableObject {
 
     /// Configuration updates stream
     @Published public var configuration: KetchSDK.Configuration?
-    
-    /// Localize Strings updates stream
-    @Published public var localizedStrings: KetchSDK.LocalizedStrings?
 
     /// Consent updates stream
     @Published public var consent: KetchSDK.ConsentStatus?
@@ -45,7 +42,6 @@ public final class Ketch: ObservableObject {
     private var plugins = Set<PolicyPlugin>()
 
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
-    private var localizedStringsSubject = CurrentValueSubject<KetchSDK.LocalizedStrings?, KetchSDK.KetchError>(nil)
     private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
     private var subscriptions = Set<AnyCancellable>()
 
@@ -85,16 +81,6 @@ public final class Ketch: ObservableObject {
                 }
             }
             .store(in: &subscriptions)
-        
-        localizedStringsSubject
-            .replaceError(with: nil)
-            .compactMap { $0 }
-            .sink { localizedStrings in
-                DispatchQueue.main.async {
-                    self.localizedStrings = localizedStrings
-                }
-            }
-            .store(in: &subscriptions)
 
         consentSubject
             .replaceError(with: nil)
@@ -122,16 +108,16 @@ public final class Ketch: ObservableObject {
                 self.configurationSubject.send(configuration)
             }
             .store(in: &subscriptions)
-        KetchApiRequest()
-            .fetchLocalizedStrings()
-            .sink { result in
-                if case .failure(let error) = result {
-                    self.localizedStringsSubject.send(completion: .failure(error))
-                }
-            } receiveValue: { localizedStrings in
-                self.localizedStringsSubject.send(localizedStrings)
-            }
-            .store(in: &subscriptions)
+        //KetchApiRequest()
+        //    .fetchLocalizedStrings()
+        //    .sink { result in
+        //        if case .failure(let error) = result {
+        //            self.localizedStringsSubject.send(completion: .failure(error))
+        //        }
+        //    } receiveValue: { localizedStrings in
+        //        self.localizedStringsSubject.send(localizedStrings)
+        //    }
+        //    .store(in: &subscriptions)
     }
 
     public func loadConfiguration(
@@ -152,16 +138,6 @@ public final class Ketch: ObservableObject {
                 }
             } receiveValue: { configuration in
                 self.configurationSubject.send(configuration)
-            }
-            .store(in: &subscriptions)
-        KetchApiRequest()
-            .fetchLocalizedStrings(languageCode:String(Locale.preferredLanguages[0].prefix(2)))
-            .sink { result in
-                if case .failure(let error) = result {
-                    self.localizedStringsSubject.send(completion: .failure(error))
-                }
-            } receiveValue: { localizedStrings in
-                self.localizedStringsSubject.send(localizedStrings)
             }
             .store(in: &subscriptions)
     }

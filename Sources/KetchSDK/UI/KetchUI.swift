@@ -17,7 +17,7 @@ public final class KetchUI: ObservableObject {
     
     /// Localized Strings updates stream
     /// Reflected from Ketch dependency
-    @Published public var localizedStrings: KetchSDK.LocalizedStrings?
+    @Published public var localizedStrings: KetchSDK.Configuration.Translations?
 
     /// Consent updates stream
     /// Reflected from Ketch dependency
@@ -41,12 +41,7 @@ public final class KetchUI: ObservableObject {
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
-            }
-            .store(in: &subscriptions)
-        
-        ketch.$localizedStrings
-            .sink { localizedStrings in
-                self.localizedStrings = localizedStrings
+                self.localizedStrings = configuration?.translations
             }
             .store(in: &subscriptions)
 
@@ -86,7 +81,6 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
-            let localizedStrings,
             let banner = configuration.experiences?.consent?.banner
         else { return nil }
 
@@ -105,7 +99,6 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
-            let localizedStrings,
             let modal = configuration.experiences?.consent?.modal
         else { return nil }
 
@@ -124,7 +117,6 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
-            let localizedStrings,
             let jit = configuration.experiences?.consent?.jit
         else { return nil }
 
@@ -144,7 +136,6 @@ extension KetchUI {
         guard
             let configuration,
             let consentStatus,
-            let localizedStrings,
             let preference = configuration.experiences?.preference
         else { return nil }
 
@@ -298,11 +289,11 @@ extension KetchUI {
             switch defaultExperience {
             case .banner:
                 if shouldShowBanner { showBanner() }
-                else if shouldShowPreference { showPreference() }
+                //else if shouldShowPreference { showPreference() }
 
             case .modal:
                 if shouldShowModal { showModal() }
-                else if shouldShowPreference { showPreference() }
+                //else if shouldShowPreference { showPreference() }
             }
         }
     }

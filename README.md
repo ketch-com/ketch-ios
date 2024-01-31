@@ -101,3 +101,7 @@ Set your presentation subclass to the KetchUI instance:
 `ketchUI.sizeFactory = ExampleSizeFactory()`
   
 </details>
+
+### Sample app
+
+You can find a sample app [here](https://github.com/ketch-sdk/ketch-samples/tree/main/ketch-ios/iOS%20Ketch%20SDK%20SwiftUI)

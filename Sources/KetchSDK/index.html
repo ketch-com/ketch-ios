@@ -2,6 +2,16 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
+        window.semaphore = window.semaphore || [];
+        window.ketch = function () {
+            window.semaphore.push(arguments)
+        }
+
+        // Triggering the full config to load on startup
+        ketch('getFullConfig', function(config) {
+            emitEvent("onConfigLoaded", [config])
+        });
+
         // Simulating events similar to ones coming from lanyard.js
         // TODO: remove this once JS SDK covers all required events
         function emitEvent(event, args) {
@@ -65,14 +75,6 @@
             };
         })(window.console);
 
-        // A temporary workaround while "onConfigLoaded" event is not available
-        // TODO: remove this call with timeout once onConfigLoaded event is fined automatically
-        setTimeout(function() {
-            ketch('getFullConfig', function(config) {
-               emitEvent("onConfigLoaded", [config])
-            })
-        }, 1000);
-
         // A temporary workaround to get banner/modal dimensions on tablets
         // TODO: remove this once there will be a way to get dialogs position from JS SDK
         function getDialogSize() {
@@ -87,13 +89,13 @@
                 return dialogDimensions;
             }
         }
-        
+
         // Get query parameters
         let params = (new URL(document.location)).searchParams;
-        
+
         // Get url override from query parameters
         let url = params.get("ketch_mobilesdk_url") || 'https://global.ketchcdn.com/web/v3';
-        
+
         // Get property name from query parameters
         let propertyName = params.get("propertyName");
 
@@ -102,14 +104,9 @@
 
         var e = document.createElement("script");
         e.type = "text/javascript";
-        // TODO: make this configurable via SDK parameters
         e.src = `${url}/config/${orgCode}/${propertyName}/boot.js`;
         e.defer = e.async = !0;
         document.getElementsByTagName("head")[0].appendChild(e);
-        window.semaphore = window.semaphore || [];
-        window.ketch = function () {
-            window.semaphore.push(arguments)
-        }
     </script>
 </head>
 <body>

@@ -41,7 +41,6 @@ Once you have your Swift package set up, adding Ketch iOS SDK as a dependency is
             organizationCode: "#{your_org_code}#",
             propertyCode: "#{your_property}#",
             environmentCode: "#{your_environment}#",
-            controllerCode: "#{your_controller}#",
             identities: [.custom("#{your_id}#")]
         )
 

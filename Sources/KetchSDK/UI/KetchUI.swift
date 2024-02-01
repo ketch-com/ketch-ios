@@ -215,8 +215,10 @@ extension KetchUI {
         case jurisdiction(code: String)
         //ketch_lang (lang, swb_l)    ISO 639-1 language code, with optional regional extension    overrides language detection and uses a specific language
         case language(langId: String)
-        //ketch_preferences_tab (swb_preferences_tab)
+        /// ketch_preferences_tab (swb_preferences_tab)
         case preferencesTab(PreferencesTab)
+        /// URL string for SDK, including `https://`
+        case sdkEnvironment(String)
         
         public enum ExperienceToShow: String {
             case cd, preferences

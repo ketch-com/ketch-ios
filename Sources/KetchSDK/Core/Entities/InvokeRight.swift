@@ -7,7 +7,6 @@ import Foundation
 
 extension KetchSDK {
     public struct InvokeRightConfig: Codable {
-        public let controllerCode: String?
         public let propertyCode: String
         public let environmentCode: String
         public let jurisdictionCode: String
@@ -17,7 +16,6 @@ extension KetchSDK {
         public let user: User
 
         public init(
-            controllerCode: String?,
             propertyCode: String,
             environmentCode: String,
             jurisdictionCode: String,
@@ -26,7 +24,6 @@ extension KetchSDK {
             rightCode: String?,
             user: User
         ) {
-            self.controllerCode = controllerCode
             self.propertyCode = propertyCode
             self.environmentCode = environmentCode
             self.jurisdictionCode = jurisdictionCode

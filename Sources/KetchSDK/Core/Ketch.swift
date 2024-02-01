@@ -39,7 +39,6 @@ public final class Ketch: ObservableObject {
     let organizationCode: String
     let propertyCode: String
     private let environmentCode: String
-    private let controllerCode: String
     let identities: [Identity]
     private let userDefaults: UserDefaults
     private var plugins = Set<PolicyPlugin>()
@@ -54,21 +53,18 @@ public final class Ketch: ObservableObject {
     ///   - organizationCode: Organization defined in the platform side.
     ///   - propertyCode: Property defined in the platform side.
     ///   - environmentCode: Environment defined in the platform side.
-    ///   - controllerCode: Controller defined in the platform side.
     ///   - identities: Identifiers of current instance of app. Possible types defined in the platform side. For iOS it is usually "idfa" (AdvertisementIdentifier)
     ///   - userDefaults: UserDefaults where consent processing result will be stored by Plugins
     init(
         organizationCode: String,
         propertyCode: String,
         environmentCode: String,
-        controllerCode: String,
         identities: [Identity],
         userDefaults: UserDefaults = .standard
     ) {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
-        self.controllerCode = controllerCode
         self.identities = identities
         self.userDefaults = userDefaults
 
@@ -181,7 +177,6 @@ public final class Ketch: ObservableObject {
             .invokeRights(
                 organization: organizationCode,
                 config: .init(
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     jurisdictionCode: jurisdictionCode,
@@ -197,7 +192,6 @@ public final class Ketch: ObservableObject {
                 }
             } receiveValue: {
                 self.rightInvoked(
-                    controller: self.controllerCode,
                     property: self.propertyCode,
                     environment: self.environmentCode,
                     invokedAt: invokedAt,
@@ -210,7 +204,6 @@ public final class Ketch: ObservableObject {
     }
 
     private func rightInvoked(
-        controller: String?,
         property: String,
         environment: String,
         invokedAt: Int?,
@@ -220,7 +213,6 @@ public final class Ketch: ObservableObject {
     ) {
         plugins.forEach { plugin in
             plugin.rightInvoked(
-                controller: controller,
                 property: property,
                 environment: environment,
                 invokedAt: invokedAt,
@@ -249,7 +241,6 @@ public final class Ketch: ObservableObject {
             .getConsent(
                 config: .init(
                     organizationCode: organizationCode,
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     jurisdictionCode: jurisdictionCode,
@@ -281,7 +272,6 @@ public final class Ketch: ObservableObject {
             .updateConsent(
                 update: .init(
                     organizationCode: organizationCode,
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     identities: identities,

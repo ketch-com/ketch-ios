@@ -28,7 +28,6 @@ public protocol PolicyProtocol {
 
     /// Indicates event user initiated rights invocation
     func rightInvoked(
-        controller: String?,
         property: String,
         environment: String,
         invokedAt: Int?,
@@ -87,7 +86,6 @@ open class PolicyPlugin: PolicyProtocol {
     public func experienceHidden(reason: ExperienceHiddenReason) { }
 
     public func rightInvoked(
-        controller: String?,
         property: String,
         environment: String,
         invokedAt: Int?,

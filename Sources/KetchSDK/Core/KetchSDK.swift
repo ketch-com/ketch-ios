@@ -11,21 +11,18 @@ public enum KetchSDK {
     ///   - organizationCode: Organization defined in the platform side.
     ///   - propertyCode: Property defined in the platform side.
     ///   - environmentCode: Environment defined in the platform side.
-    ///   - controllerCode: Controller defined in the platform side.
     ///   - identities: Identifiers of current instance of app. Possible types defined in the platform side. For iOS it is usually "idfa" (AdvertisementIdentifier)
     /// - Returns: Ketch instance.
     public static func create(
         organizationCode: String,
         propertyCode: String,
         environmentCode: String,
-        controllerCode: String,
         identities: [Ketch.Identity]
     ) -> Ketch {
         Ketch(
             organizationCode: organizationCode,
             propertyCode: propertyCode,
             environmentCode: environmentCode,
-            controllerCode: controllerCode,
             identities: identities
         )
     }
@@ -49,7 +46,6 @@ extension KetchSDK {
     /// Retrieves currently set consent status.
     /// - Parameters:
     ///   - organizationCode: organization code
-    ///   - controllerCode: controller code
     ///   - propertyCode: property code
     ///   - environmentCode: environment code
     ///   - jurisdictionCode: jurisdiction code
@@ -58,7 +54,6 @@ extension KetchSDK {
     /// - Returns: Publisher of set consent request result.
     public func getConsent(
         organizationCode: String,
-        controllerCode: String,
         propertyCode: String,
         environmentCode: String,
         jurisdictionCode: String,
@@ -69,7 +64,6 @@ extension KetchSDK {
             .getConsent(
                 config: ConsentConfig(
                     organizationCode: organizationCode,
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     jurisdictionCode: jurisdictionCode,
@@ -83,7 +77,6 @@ extension KetchSDK {
     /// Sends a request for updating consent status
     /// - Parameters:
     ///   - organizationCode: organization code
-    ///   - controllerCode: controller code
     ///   - propertyCode: property code
     ///   - environmentCode: environment code
     ///   - identities: map of identity code and value
@@ -94,7 +87,6 @@ extension KetchSDK {
     /// - Returns: Publisher of get consent request result.
     public func setConsent(
         organizationCode: String,
-        controllerCode: String,
         propertyCode: String,
         environmentCode: String,
         identities: [String : String],
@@ -107,7 +99,6 @@ extension KetchSDK {
             .updateConsent(
                 update: ConsentUpdate(
                     organizationCode: organizationCode,
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     identities: identities,
@@ -123,7 +114,6 @@ extension KetchSDK {
     /// Invokes the specified rights.
     /// - Parameters:
     ///   - organizationCode: organization code
-    ///   - controllerCode: controller code
     ///   - propertyCode: property code
     ///   - environmentCode: environment code
     ///   - identities: jurisdiction code
@@ -134,7 +124,6 @@ extension KetchSDK {
     /// - Returns: Publisher of invoke rights request result.
     public func invokeRights(
         organizationCode: String,
-        controllerCode: String,
         propertyCode: String,
         environmentCode: String,
         identities: [String : String],
@@ -147,7 +136,6 @@ extension KetchSDK {
             .invokeRights(
                 organization: organizationCode,
                 config: InvokeRightConfig(
-                    controllerCode: controllerCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
                     jurisdictionCode: jurisdictionCode,

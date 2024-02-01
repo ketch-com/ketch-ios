@@ -249,7 +249,7 @@ extension KetchUI.ExperienceOption {
         case .preferencesTabs(let tabs):
             return (key: "ketch_preferences_tabs", tabs)
             
-        case .sdkEnvironment(let url):
+        case .sdkEnvironmentURL(let url):
             return (key: "ketch_mobilesdk_url", value: url)
         }
     }

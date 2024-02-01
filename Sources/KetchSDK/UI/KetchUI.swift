@@ -222,7 +222,7 @@ extension KetchUI {
         case preferencesTabs(String)
         
         /// URL string for SDK, including `https://`
-        case sdkEnvironment(String)
+        case sdkEnvironmentURL(String)
         
         public enum ExperienceToShow: String {
             case cd, preferences

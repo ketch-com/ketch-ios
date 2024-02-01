@@ -92,7 +92,7 @@
         let params = (new URL(document.location)).searchParams;
         
         // Get url override from query parameters
-        let url = params.get("url") || 'https://global.ketchcdn.com/web/v3';
+        let url = params.get("ketch_mobilesdk_url") || 'https://global.ketchcdn.com/web/v3';
         
         // Get property name from query parameters
         let propertyName = params.get("propertyName");

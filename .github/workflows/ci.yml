@@ -14,7 +14,7 @@ jobs:
     env:
       ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      
+
     steps:
     - uses: actions/checkout@v3
 
@@ -24,7 +24,6 @@ jobs:
     - name: Step 2 - Add artifacts to publish to the temp folder
       run: |
         cp -a Sources ketchSDK/
-        cp -a KetchSDK.podspec ketchSDK/
         cp -a LICENSE ketchSDK/
 
     - name: Step 3 - Archive using zip or tar
@@ -37,9 +36,3 @@ jobs:
       with:
         name: ketchSDK
         path: ketchSDK.tar.gz
-        
-    - name: Step 5 - Upload Artifact to jfrog.io/artifactory
-      run: |
-        curl -u"${{ env.ARTIFACTORY_USERNAME }}":"${{ env.ARTIFACTORY_PASSWORD }}" -XPUT https://ketch.jfrog.io/artifactory/ios/KetchSDK/ -T ketchSDK.tar.gz
-
-      

@@ -32,8 +32,9 @@ extension KetchUI {
         private let userDefaults: UserDefaults = .standard
         private var consent: [String: Any]?
         private var configuration: KetchSDK.Configuration?
+        private let webNavigationHandler = WebNavigationHandler()
         
-        var preloaded: WKWebView
+        private(set) var preloaded: WKWebView
         public var presentationConfig: PresentationConfig?
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
@@ -48,6 +49,7 @@ extension KetchUI {
             
             let webHandler = WebHandler(onEvent: { _, _ in })
             preloaded = config.preferencesWebView(with: webHandler)
+            preloaded.navigationDelegate = webNavigationHandler
         }
         
         public var id: String { String(describing: presentationConfig) }
@@ -73,6 +75,7 @@ extension KetchUI {
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
 
             preloaded = config.preferencesWebView(with: webHandler)
+            preloaded.navigationDelegate = webNavigationHandler
         }
         
         private func webExperience(orgCode: String,
@@ -305,4 +308,15 @@ public enum ExperienceTransition: String {
     case modal = "experiencedisplays.modal"
     case banner = "experiencedisplays.banner"
     case fullScreen = "experiencedisplays.preference"
+}
+
+fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if navigationAction.navigationType == .linkActivated {
+            guard let url = navigationAction.request.url else {return}
+            webView.load(URLRequest(url: url))
+        }
+        
+        decisionHandler(.allow)
+    }
 }

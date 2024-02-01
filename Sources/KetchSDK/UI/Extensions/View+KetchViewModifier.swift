@@ -48,11 +48,10 @@ struct KetchViewModifier: ViewModifier {
             }
             .overlay {
                 if model != nil {
-                    Color.white.opacity(0.001)
-                        .onTapGesture {
-                            withAnimation { model = nil }
-                        }
-                    bannerView
+                    ZStack {
+                        Color.white.opacity(0.001)
+                        bannerView
+                    }
                 }
             }
         }

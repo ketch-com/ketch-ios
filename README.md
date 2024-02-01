@@ -2,6 +2,26 @@
 
 The Ketch Mobile SDK allows to manage and collect a visitor's consent preferences for an organization on the mobile platforms.
 
+## Mobile SDK Beta Program Disclaimer
+
+Thank you for your interest in our Mobile SDK Beta Program! 
+
+Before proceeding, please note that this version of the software library is in its 
+BETA stage. While we have made efforts to ensure functionality and stability, 
+there may still be bugs or incomplete features present.
+
+To ensure a smooth experience and access to the full capabilities of the SDK, 
+we kindly request that all users contact our customer support team 
+to enroll their organization in the Beta program. 
+
+Once approved, you will receive necessary credentials and information to begin 
+using the SDK effectively.
+
+Please reach out to [customer support](mailto:support@ketch.com) to initiate the enrollment process.
+
+Your feedback during this Beta period is invaluable to us as we work towards the official release. 
+Thank you for your collaboration and understanding.
+
 ## Requirements
 
 SDK supports iOS version 15.0 and above.

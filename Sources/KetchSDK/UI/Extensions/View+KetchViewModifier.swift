@@ -48,10 +48,9 @@ struct KetchViewModifier: ViewModifier {
             }
             .overlay {
                 if model != nil {
-                    ZStack {
-                        Color.white.opacity(0.001)
-                        bannerView
-                    }
+                    Color.white.opacity(0.001)
+                        .ignoresSafeArea()
+                    bannerView
                 }
             }
         }

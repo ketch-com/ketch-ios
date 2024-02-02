@@ -25,7 +25,9 @@ Thank you for your collaboration and understanding.
 ## Requirements
 
 This SDK supports iOS version 15.0 and above.
+
 The minimum required version of Xcode is 15.0. 
+
 The minimum required version of Swift is 5.5.
 
 The use of the Mobile SDK requires an [Ketch organization account](https://app.ketch.com/settings/organization) 
@@ -33,9 +35,13 @@ with the [application property](https://app.ketch.com/deployment/applications)  
 
 ## Sandbox
 A sandbox organization and configuration is available for development and tests:
+
 Organization: ketch_samples
+
 Property: ios
+
 Boot.js: https://global.ketchcdn.com/web/v3/config/ketch_samples/ios/boot.js
+
 Site: https://ketch-com.github.io/testing-sites/prod/ketch_samples_ios.html
 
 ## Quick Start

@@ -31,6 +31,8 @@ public final class KetchUI: ObservableObject {
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
     private var options = [ExperienceOption]()
+    private var isConfigLoaded = false
+    private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -82,7 +84,9 @@ public final class KetchUI: ObservableObject {
             case .preference: eventListener?.showPreferences()
             }
             
-            self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
+            if isConfigLoaded {
+                self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
+            }
         case .hasChangedExperience(let presentation):
             let config = transitionConfig(presentation)
             preloadedPresentationItem?.presentationConfig = config
@@ -91,6 +95,14 @@ public final class KetchUI: ObservableObject {
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
             eventListener?.onConfigUpdated(config: configuration)
+            
+            isConfigLoaded = true
+            
+            if let experienceToShow {
+                showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: experienceToShow))
+                self.experienceToShow = nil
+                isConfigLoaded = false
+            }
 
         case .onCCPAUpdated(let value):
             eventListener?.onCCPAUpdated(ccpaString: value)
@@ -186,10 +198,12 @@ extension KetchUI {
     }
 
     public func showPreferences() {
+        experienceToShow = .preference
         preloadedPresentationItem?.showPreferences()
     }
     
     public func showConsent() {
+        experienceToShow = .consent
         preloadedPresentationItem?.showConsent()
     }
         

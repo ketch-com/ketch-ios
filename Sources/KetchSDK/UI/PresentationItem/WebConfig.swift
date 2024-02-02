@@ -73,6 +73,7 @@ struct WebConfig {
     func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
+        
 
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
@@ -84,9 +85,10 @@ struct WebConfig {
         let webView = FullScreenWebView(frame: .zero, configuration: configuration)
         webView.backgroundColor = .clear
         webView.isOpaque = false
+        webView.isInspectable = true
         webView.scrollView.backgroundColor = .clear
         webView.scrollView.bounces = false
-        
+
         if let fileUrl = fileUrl {
             webView.load(URLRequest(url: fileUrl))
         }

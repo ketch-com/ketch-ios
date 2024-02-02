@@ -252,7 +252,7 @@ extension KetchUI {
             let uuid = UUID(uuidString: advertisingIdentifier)
         else { return nil }
         
-        return .init(
+        return WebPresentationItem(
             item: .init(
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,

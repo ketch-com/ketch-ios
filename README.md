@@ -1,6 +1,6 @@
 # Ketch Mobile SDK for iOS
 
-The Ketch Mobile SDK allows to manage and collect a visitor's consent preferences for an organization on the mobile platforms.
+The Ketch Mobile SDK provides iOS and Android native integration of Ketch's consent and preference management capabilities.
 
 ## Mobile SDK Beta Program Disclaimer
 
@@ -24,12 +24,25 @@ Thank you for your collaboration and understanding.
 
 ## Requirements
 
-SDK supports iOS version 15.0 and above.
+This SDK supports iOS version 15.0 and above.
+
 The minimum required version of Xcode is 15.0. 
+
 The minimum required version of Swift is 5.5.
 
 The use of the Mobile SDK requires an [Ketch organization account](https://app.ketch.com/settings/organization) 
 with the [application property](https://app.ketch.com/deployment/applications)  configured.
+
+## Sandbox
+A sandbox organization and configuration is available for development and tests:
+
+Organization: ketch_samples
+
+Property: ios
+
+Boot.js: https://global.ketchcdn.com/web/v3/config/ketch_samples/ios/boot.js
+
+Site: https://ketch-com.github.io/testing-sites/prod/ketch_samples_ios.html
 
 ## Quick Start
 
@@ -37,7 +50,7 @@ with the [application property](https://app.ketch.com/deployment/applications)  
 
 The [Swift Package Manager](https://swift.org/package-manager/) is a tool for automating the distribution of Swift code and is integrated into the `swift` compiler.
 
-Once you have your Swift package set up, adding Ketch iOS SDK as a dependency is as easy as adding it to the `dependencies` value of your `Package.swift` or the Package list in Xcode.
+Add the Ketch iOS SDK as a dependency to the `dependencies` value of your `Package.swift` or the Package list in Xcode.
 
    ```swift
    dependencies: [
@@ -46,7 +59,7 @@ Once you have your Swift package set up, adding Ketch iOS SDK as a dependency is
    ```
 ## Setup
 
-### Step 1. Implement Ketch and KetchUI instances setup
+### Step 1. Instantiate the Ketch and KetchUI objects
 
     ```swift
     ...
@@ -69,17 +82,15 @@ Once you have your Swift package set up, adding Ketch iOS SDK as a dependency is
     }
     ```
 
-### Step 2.  Setup instance of KetchUI with Ketch:
+### Step 2.  Instantiate the KetchUI object:
 
 ```swift
 ketchUI = KetchUI(ketch: ketch)
 ```
 
-Save these instances and that's it. Now Ketch is ready for work and presentation.
+### Step 3. Setup the experiences presentation:
 
-### Step 3.  Setup UI experiences presentation:
-
-If you using SwiftUI, please setup presentation KetchUI.webPresentationItem as ketchView in View that you need:
+If you use SwiftUI, setup KetchUI.webPresentationItem as ketchView in View:
   
 ```swift
 var body: some View {
@@ -90,14 +101,13 @@ var body: some View {
 }
 ```
 
-Experiences will be shown automatically by corresponding call.
+### Step 4. Invoke the view:
+TBD
 
 <details>
 <summary>How to override Ketch view size</summary>
 
-You need to inherit the `KetchUI.PresentationSizeFactory` class.
-
-In your subclass you can override:
+Inherit the `KetchUI.PresentationSizeFactory` class and override:
 
 ```swift
 open func calculateModalSize(
@@ -107,6 +117,7 @@ open func calculateModalSize(
         ) -> CGSize
 ```
 and
+
 ```swift
 open func calculateBannerSize(
             horizontalPosition: KetchUI.PresentationConfig.HPosition,
@@ -123,4 +134,4 @@ Set your presentation subclass to the KetchUI instance:
 
 ### Sample app
 
-You can find a sample app [here](https://github.com/ketch-sdk/ketch-samples/tree/main/ketch-ios/iOS%20Ketch%20SDK%20SwiftUI)
+We provide a complete sample app to illustrate the integration: [here](https://github.com/ketch-sdk/ketch-samples/tree/main/ketch-ios/iOS%20Ketch%20SDK%20SwiftUI)

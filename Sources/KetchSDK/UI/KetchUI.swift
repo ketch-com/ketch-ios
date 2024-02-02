@@ -73,7 +73,9 @@ public final class KetchUI: ObservableObject {
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
         case .onClose:
-            self.webPresentationItem = nil
+            withAnimation {
+                webPresentationItem = nil
+            }
             eventListener?.onClose()
             
         case .show(let content):
@@ -86,7 +88,10 @@ public final class KetchUI: ObservableObject {
         case .hasChangedExperience(let presentation):
             let config = transitionConfig(presentation)
             preloadedPresentationItem?.presentationConfig = config
-            webPresentationItem = preloadedPresentationItem
+            
+            withAnimation {
+                webPresentationItem = preloadedPresentationItem
+            }
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
@@ -182,7 +187,10 @@ extension KetchUI {
     
     public func showExperience(presentationConfig: PresentationConfig? = nil) {
         preloadedPresentationItem?.presentationConfig = presentationConfig
-        webPresentationItem = preloadedPresentationItem
+        
+        withAnimation {
+            webPresentationItem = preloadedPresentationItem
+        }
     }
 
     public func showPreferences() {

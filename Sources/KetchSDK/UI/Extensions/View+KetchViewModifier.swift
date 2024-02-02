@@ -37,20 +37,20 @@ struct KetchViewModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
-            GeometryReader { geometry in
-                ZStack {}
+            if model != nil {
+                GeometryReader { geometry in
+                    ZStack {
+                        Color.black.opacity(0.1)
+                            .ignoresSafeArea()
+                            .transition(.asymmetric(insertion: .opacity, removal: .opacity))
+                        
+                        bannerView
+                    }
                     .onAppear {
                         screenSize = geometry.size
                     }
                     .onChange(of: geometry.size) { screenSize in
                         self.screenSize = screenSize
-                    }
-            }
-            .overlay {
-                if model != nil {
-                    ZStack {
-                        Color.white.opacity(0.001)
-                        bannerView
                     }
                 }
             }

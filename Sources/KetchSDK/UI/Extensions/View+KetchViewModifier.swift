@@ -52,6 +52,12 @@ struct KetchViewModifier: ViewModifier {
                     .onChange(of: geometry.size) { screenSize in
                         self.screenSize = screenSize
                     }
+            }
+            .overlay {
+                if model != nil {
+                    Color.white.opacity(0.001)
+                        .ignoresSafeArea()
+                    bannerView
                 }
             }
         }

@@ -73,6 +73,7 @@ struct WebConfig {
     func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
+        
 
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
@@ -86,7 +87,8 @@ struct WebConfig {
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
         webView.scrollView.bounces = false
-        
+        if #available(iOS 16.4, *) { webView.isInspectable = true; }
+
         if let fileUrl = fileUrl {
             webView.load(URLRequest(url: fileUrl))
         }

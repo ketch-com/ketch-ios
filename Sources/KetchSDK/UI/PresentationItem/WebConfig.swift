@@ -85,9 +85,9 @@ struct WebConfig {
         let webView = FullScreenWebView(frame: .zero, configuration: configuration)
         webView.backgroundColor = .clear
         webView.isOpaque = false
-        webView.isInspectable = true
         webView.scrollView.backgroundColor = .clear
         webView.scrollView.bounces = false
+        if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
         if let fileUrl = fileUrl {
             webView.load(URLRequest(url: fileUrl))

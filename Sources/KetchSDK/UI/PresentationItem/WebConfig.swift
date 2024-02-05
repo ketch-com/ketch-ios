@@ -60,7 +60,8 @@ struct WebConfig {
             "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
             "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
             "ketch_lang":   URLQueryItem(name: "ketch_lang", value: "en"),
-            "mobile_os":    URLQueryItem(name: "mobile_os", value: "ios")
+            "mobile_os":    URLQueryItem(name: "mobile_os", value: "ios"),
+            "mobile_device":    URLQueryItem(name: "mobile_device", value: "tablet"),
         ]
         
         params.forEach {

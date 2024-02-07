@@ -62,22 +62,23 @@
             var oldWarn = logger.warn;
             var oldErr = logger.error;
             logger.log = (...args) => {
-                emitEvent("error", [args.join(' ')]);
+                emitEvent("log", [args.join(' ')]);
                 oldLog(...args);
             };
             logger.warn = (...args) => {
-                emitEvent("error", [args.join(' ')]);
+                emitEvent("warning", [args.join(' ')]);
                 oldWarn(...args);
             };
-            logger.error = (...args) => {
-                emitEvent("error", [args.join(' ')]);
-                oldErr(...args);
-            };
+            // TODO: we don't listed for these for now to avoid collisions with
+            // logger.error = (...args) => {
+            //    emitEvent("error", [args.join(' ')]);
+            //    oldErr(...args);
+            // };
         })(window.console);
 
         // A temporary workaround to get banner/modal dimensions on tablets
         // TODO: remove this once there will be a way to get dialogs position from JS SDK
-        function getDialogSize() {
+        function getDialogDimensions() {
             var domElem = document.querySelector('#lanyard_root div[role="dialog"]');
             if (!domElem) {
                 return;
@@ -85,10 +86,27 @@
             var domRect = domElem.getBoundingClientRect();
             if (domRect) {
                 var dialogDimensions = [domRect.width, domRect.height];
-                emitEvent("willShowExperienceDialog", dialogDimensions);
                 return dialogDimensions;
             }
         }
+
+        function triggerDialogEvent(experienceType) {
+            var dialogDimensions = getDialogDimensions();
+            if (!dialogDimensions) {
+                setTimeout(() => triggerDialogEvent(experienceType), 500)
+            } else {
+                emitEvent("hasShownExperience", [experienceType, dialogDimensions]);
+            }
+        }
+
+        // emulate hasShownExperience after willShowExperience
+        function hasShownExperiencePlugin(host, _config) {
+            host.on('willShowExperience', experienceType => {
+                triggerDialogEvent(experienceType);
+            });
+        }
+
+        ketch('registerPlugin', hasShownExperiencePlugin);
 
         // Get query parameters
         let params = (new URL(document.location)).searchParams;

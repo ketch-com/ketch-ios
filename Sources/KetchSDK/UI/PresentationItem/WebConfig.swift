@@ -58,9 +58,7 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
-            "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
-            "ketch_lang":   URLQueryItem(name: "ketch_lang", value: "en"),
-            "mobile_os":    URLQueryItem(name: "mobile_os", value: "ios")
+            "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString)
         ]
         
         params.forEach {

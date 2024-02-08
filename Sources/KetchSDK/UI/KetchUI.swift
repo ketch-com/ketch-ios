@@ -88,9 +88,10 @@ public final class KetchUI: ObservableObject {
                 self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
             }
         case .hasChangedExperience(let presentation):
-            let config = transitionConfig(presentation)
-            preloadedPresentationItem?.presentationConfig = config
-            webPresentationItem = preloadedPresentationItem
+//            let config = transitionConfig(presentation)
+//            preloadedPresentationItem?.presentationConfig = config
+//            webPresentationItem = preloadedPresentationItem
+            break
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration

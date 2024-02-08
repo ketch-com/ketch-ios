@@ -27,7 +27,7 @@ struct KetchViewModifier: ViewModifier {
                 presentationItem.content
             } else {
                 presentationItem.content
-                    .padding(config.padding(screenSize: screenSize))
+//                    .padding(config.padding(screenSize: screenSize))
                     .transition(transition)
                     .animation(.easeInOut)
             }
@@ -48,8 +48,6 @@ struct KetchViewModifier: ViewModifier {
             }
             .overlay {
                 if model != nil {
-                    Color.white.opacity(0.001)
-                        .ignoresSafeArea()
                     bannerView
                 }
             }

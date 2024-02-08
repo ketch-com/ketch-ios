@@ -17,15 +17,16 @@ extension KetchUI {
         public let vpos: VPosition
         public let hpos: HPosition
         public let style: Style
-        public let size: CGSize?
+        public let sizeFactory: PresentationSizeFactory
         
         private let defaultPadding: CGFloat = 8
         
-        public init(vpos: VPosition, hpos: HPosition, style: Style, size: CGSize = .zero) {
+        public init(vpos: VPosition, hpos: HPosition, style: Style, sizeFactory: PresentationSizeFactory = PresentationSizeFactory()) {
             self.vpos = vpos
             self.hpos = hpos
             self.style = style
-            self.size = size
+            self.sizeFactory = sizeFactory
+
         }
         
         public var isCenterPresentation: Bool {
@@ -35,17 +36,12 @@ extension KetchUI {
         public func padding(screenSize: CGSize) -> EdgeInsets {
             switch style {
             case .modal:
-                guard let size else {
-                    return EdgeInsets()
-                }
-                
-                return calculateModalEdgeInsets(screenSize: screenSize, modalSize: size)
+                let modalSize = sizeFactory.calculateModalSize(horizontalPosition: hpos, verticalPosititon: vpos, screenSize: screenSize)
+                return calculateModalEdgeInsets(screenSize: screenSize, modalSize: modalSize)
             case .banner:
-                guard let size else {
-                    return EdgeInsets()
-                }
-                
-                return calculateBannerEdgeInsets(screenSize: screenSize, bannerSize: size)
+                let bannerSize = sizeFactory.calculateBannerSize(horizontalPosition: hpos, verticalPosititon: vpos, screenSize: screenSize)
+                return calculateBannerEdgeInsets(screenSize: screenSize, bannerSize: bannerSize)
+
             case .fullScreen:
                 return EdgeInsets()
             }

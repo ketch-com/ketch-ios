@@ -1,28 +1,28 @@
 import SwiftUI
 
 extension View {
-    public func ketchView(model: Binding<KetchUI.WebPresentationItem?>) -> some View {
+    public func ketchView(model: KetchUI) -> some View {
         modifier(KetchViewModifier(model: model))
     }
 }
 
 struct KetchViewModifier: ViewModifier {
-    @Binding var model: KetchUI.WebPresentationItem?
+    @ObservedObject var model: KetchUI
     
     @State private var screenSize = CGSize.zero
     
     private var transition: AnyTransition {
-        let isCenterAnimation = model?.presentationConfig?.isCenterPresentation ?? false
+        let isCenterAnimation = model.webPresentationItem?.presentationConfig?.isCenterPresentation ?? false
         
         return isCenterAnimation
         ? AnyTransition.scale(scale: 1).combined(with: .opacity)
-        : AnyTransition.move(edge: model?.presentationConfig?.transitionEdge ?? .bottom).combined(with: .opacity)
+        : AnyTransition.move(edge: model.webPresentationItem?.presentationConfig?.transitionEdge ?? .bottom).combined(with: .opacity)
     }
     
     @ViewBuilder
     var bannerView: some View {
-        if let presentationItem = model,
-           let config = model?.presentationConfig {
+        if let presentationItem = model.webPresentationItem,
+           let config = presentationItem.presentationConfig {
             if config.style == .fullScreen {
                 presentationItem.content
             } else {
@@ -41,13 +41,15 @@ struct KetchViewModifier: ViewModifier {
                 ZStack {}
                     .onAppear {
                         screenSize = geometry.size
+                        model.updateKetchView(screenSize: geometry.size)
                     }
                     .onChange(of: geometry.size) { screenSize in
                         self.screenSize = screenSize
+                        model.updateKetchView(screenSize: screenSize)
                     }
             }
             .overlay {
-                if model != nil {
+                if model.webPresentationItem != nil {
                     Color.white.opacity(0.001)
                         .ignoresSafeArea()
                     bannerView

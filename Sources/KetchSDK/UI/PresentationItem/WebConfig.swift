@@ -40,7 +40,7 @@ struct WebConfig {
         )
 
         DispatchQueue.main.async {
-            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
+            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }), screenSize: .zero)
         }
 
         return config
@@ -71,10 +71,9 @@ struct WebConfig {
         return Array(defaultQuery.values)
     }
 
-    func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
+    func preferencesWebView(with webHandler: WebHandler, screenSize: CGSize) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
-        
 
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
@@ -83,17 +82,16 @@ struct WebConfig {
             configuration.userContentController.add(webHandler, name: event.rawValue)
         }
 
-        let webView = FullScreenWebView(frame: .zero, configuration: configuration)
+        KetchLogger.log.debug("screen size: \(screenSize.debugDescription)")
+        let webView = FullScreenWebView(frame: CGRect(origin: .zero, size: screenSize), configuration: configuration)
         webView.backgroundColor = .clear
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
         webView.scrollView.bounces = false
         
-        #if DEBUG
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
-        #endif
 
         if let fileUrl = fileUrl {
             webView.load(URLRequest(url: fileUrl))

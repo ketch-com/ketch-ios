@@ -26,10 +26,12 @@ public final class KetchUI: ObservableObject {
 
     public weak var eventListener: KetchEventListener?
     public var overridePresentationConfig: PresentationConfig?
-
+    public var sizeFactory = PresentationSizeFactory()
+    
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
     private var options = [ExperienceOption]()
+    private var screenSize = CGSize.zero
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -41,8 +43,6 @@ public final class KetchUI: ObservableObject {
     }
 
     public func bindInput() {
-        preloadWebExperience()
-        
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
@@ -60,6 +60,15 @@ public final class KetchUI: ObservableObject {
                 self.consentStatus = consentStatus
             }
             .store(in: &subscriptions)
+    }
+    
+    public func updateKetchView(screenSize: CGSize) {
+        guard self.screenSize != screenSize else {
+            return
+        }
+        
+        self.screenSize = screenSize
+        preloadWebExperience()
     }
     
     private var preloadedPresentationItem: WebPresentationItem?
@@ -86,9 +95,9 @@ public final class KetchUI: ObservableObject {
             self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
             
         case .hasChangedExperience(let presentation):
-//            let config = transitionConfig(presentation)
-//            preloadedPresentationItem?.presentationConfig = config
-//            webPresentationItem = preloadedPresentationItem
+            let config = transitionConfig(presentation)
+            preloadedPresentationItem?.presentationConfig = config
+            webPresentationItem = preloadedPresentationItem
             break;
             
         case .configurationLoaded(let configuration):
@@ -113,46 +122,48 @@ public final class KetchUI: ObservableObject {
         }
     }
     
-//    private func transitionConfig(_ display: ExperienceTransition) -> PresentationConfig {
-//        switch display {
-//        case .banner:
-//            switch ketch.configuration?.theme?.banner?.container?.position {
-//            case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-//            case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, sizeFactory: sizeFactory)
-//            case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, sizeFactory: sizeFactory)
-//            case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, sizeFactory: sizeFactory)
-//            case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-//            case .center, nil:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-//            }
-//        case .modal:
-//            switch ketch.configuration?.theme?.modal?.container?.position {
-//            case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, sizeFactory: sizeFactory)
-//            case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, sizeFactory: sizeFactory)
-//            case .center, nil:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, sizeFactory: sizeFactory)
-//            }
-//        case .fullScreen:
-//            return PresentationConfig(vpos: .top, hpos: .left, style: .fullScreen, sizeFactory: sizeFactory)
-//        }
-//    }
+    private func transitionConfig(_ display: ExperienceTransition) -> PresentationConfig {
+        switch display {
+        case .banner:
+            switch ketch.configuration?.theme?.banner?.container?.position {
+            case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
+            case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, sizeFactory: sizeFactory)
+            case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, sizeFactory: sizeFactory)
+            case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, sizeFactory: sizeFactory)
+            case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
+            case .center, nil:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, sizeFactory: sizeFactory)
+            }
+        case .modal:
+            switch ketch.configuration?.theme?.modal?.container?.position {
+            case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, sizeFactory: sizeFactory)
+            case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, sizeFactory: sizeFactory)
+            case .center, nil:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, sizeFactory: sizeFactory)
+            }
+        case .fullScreen:
+            return PresentationConfig(vpos: .top, hpos: .left, style: .fullScreen, sizeFactory: sizeFactory)
+        }
+    }
     
     private func presentationConfig(experience: KetchUI.WebPresentationItem.Event.Content) -> PresentationConfig {
         switch experience {
         case .consent(let size):
             switch display {
             case .banner:
+                sizeFactory.prefferedBannerSize = size
+                
                 switch bannerPosition {
-                case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, size: size)
-                case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, size: size)
-                case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, size: size)
-                case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, size: size)
-                case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, size: size)
-                case .center:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, size: size)
+                case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
+                case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, sizeFactory: sizeFactory)
+                case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, sizeFactory: sizeFactory)
+                case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, sizeFactory: sizeFactory)
+                case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
+                case .center:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, sizeFactory: sizeFactory)
                 }
             case .modal:
                 switch modalPosition {
-                case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, size: size)
-                case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, size: size)
-                case .center:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, size: size)
+                case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, sizeFactory: sizeFactory)
+                case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, sizeFactory: sizeFactory)
+                case .center:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, sizeFactory: sizeFactory)
                 }
             }
         case .preference:
@@ -261,6 +272,7 @@ extension KetchUI {
                 propertyName: ketch.propertyCode,
                 advertisingIdentifier: uuid
             ),
+            screenSize: screenSize,
             onEvent: onEvent
         )
     }

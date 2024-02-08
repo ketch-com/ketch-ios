@@ -10,6 +10,8 @@ import UIKit
 extension KetchUI {
     
     open class PresentationSizeFactory {
+        var prefferedBannerSize: CGSize?
+        
         public init() { }
         
         open func calculateModalSize(
@@ -32,7 +34,7 @@ extension KetchUI {
             }
         }
         
-        open func calculateBannerSize(
+        func calculateBannerSize(
             horizontalPosition: KetchUI.PresentationConfig.HPosition,
             verticalPosititon: KetchUI.PresentationConfig.VPosition,
             screenSize: CGSize

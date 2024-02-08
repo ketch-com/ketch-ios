@@ -33,11 +33,12 @@ extension KetchUI {
         private var consent: [String: Any]?
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
+        private let screenSize: CGSize
         
-        private(set) var preloaded: WKWebView
+        private(set) var preloaded: WKWebView!
         public var presentationConfig: PresentationConfig?
         
-        init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
+        init(item: WebExperienceItem, screenSize: CGSize, onEvent: ((Event) -> Void)?) {
             self.item = item
             config = WebConfig(
                 orgCode: item.orgCode,
@@ -46,10 +47,11 @@ extension KetchUI {
             )
             
             self.onEvent = onEvent
+            self.screenSize = screenSize
             
-            let webHandler = WebHandler(onEvent: { _, _ in })
-            preloaded = config.preferencesWebView(with: webHandler)
-            preloaded.navigationDelegate = webNavigationHandler
+//            let webHandler = WebHandler(onEvent: { _, _ in })
+//            preloaded = config.preferencesWebView(with: webHandler, screenSize: screenSize)
+//            preloaded.navigationDelegate = webNavigationHandler
         }
         
         public var id: String { String(describing: presentationConfig) }
@@ -74,7 +76,7 @@ extension KetchUI {
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
 
-            preloaded = config.preferencesWebView(with: webHandler)
+            preloaded = config.preferencesWebView(with: webHandler, screenSize: screenSize)
             preloaded.navigationDelegate = webNavigationHandler
         }
         
@@ -84,7 +86,7 @@ extension KetchUI {
             var config = config
             config.configWebApp = preloaded
 
-            return PreferencesWebView(config: config)
+            return PreferencesWebView(config: config, screenSize: screenSize)
                 .asResponsiveSheet(style: .custom)
         }
         

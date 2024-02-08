@@ -95,11 +95,15 @@ extension KetchUI {
             
             switch event {
             case .hasShownExperience:
-                let values = body as? [Any]
+                guard let string = body as? String,
+                      let data = string.data(using: .utf8),
+                      let valuesJSON = try? JSONSerialization.jsonObject(with: data) as? [Any] else {
+                    return
+                }
                 
-                if let type = values?.first as? String {
+                if let type = valuesJSON.first as? String {
                     if type == "experiences.consent" {
-                        if let size = values?.last as? [Double],
+                        if let size = valuesJSON.last as? [Double],
                            let width = size.first, let height = size.last {
                             onEvent?(.show(.consent(CGSizeMake(width, height))))
                         }

@@ -20,7 +20,7 @@ extension KetchUI {
             case error(description: String)
 
             public enum Content {
-                case consent, preference
+                case consent(CGSize), preference
             }
         }
         
@@ -92,12 +92,20 @@ extension KetchUI {
             KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
             
             switch event {
-            case .showConsentExperience:
-                onEvent?(.show(.consent))
+            case .hasShownExperience:
+                let values = body as? [Any]
                 
-            case .showPreferenceExperience:
-                onEvent?(.show(.preference))
-
+                if let type = values?.first as? String {
+                    if type == "experiences.consent" {
+                        if let size = values?.last as? [Double],
+                           let width = size.first, let height = size.last {
+                            onEvent?(.show(.consent(CGSizeMake(width, height))))
+                        }
+                    } else if type == "experiences.preferences" {
+                        onEvent?(.show(.preference))
+                    }
+                }
+                
             case .hideExperience:
                 guard
                     let status = body as? String,
@@ -266,8 +274,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case jurisdiction
         case identities
         case consent
-        case showConsentExperience
-        case showPreferenceExperience
+        case hasShownExperience
         case hasChangedExperience = "hasChangedExperience"
         case onConfigLoaded
         case onFullConfigLoaded

@@ -57,11 +57,11 @@ struct WebConfig {
     private var queryItems: [URLQueryItem] {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
-            "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
-            "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
-            "ketch_lang":   URLQueryItem(name: "ketch_lang", value: "en"),
-            "mobile_os":    URLQueryItem(name: "mobile_os", value: "ios"),
-            "mobile_device":    URLQueryItem(name: "mobile_device", value: "phone"),
+            "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
+            "idfa": URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString),
+            "ketch_lang": URLQueryItem(name: "ketch_lang", value: "en"),
+            "mobile_os": URLQueryItem(name: "mobile_os", value: "ios"),
+            "mobile_device": URLQueryItem(name: "mobile_device", value: UIDevice.current.userInterfaceIdiom == .phone ? "phone" : "tablet")
         ]
         
         params.forEach {
@@ -88,7 +88,12 @@ struct WebConfig {
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
         webView.scrollView.bounces = false
-        if #available(iOS 16.4, *) { webView.isInspectable = true; }
+        
+        #if DEBUG
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+        #endif
 
         if let fileUrl = fileUrl {
             webView.load(URLRequest(url: fileUrl))

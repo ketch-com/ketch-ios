@@ -48,33 +48,35 @@
         // Capturing all the unhandled crashes of Ketch Tag
         window.addEventListener("error", (event) => {
             const errorMessage = `${event.message}`;
+            console.error('[Mobile SDK]', errorMessage);
             emitEvent("error", [errorMessage]);
         });
         // Capturing all the unhandled rejections of Ketch Tag
         window.addEventListener('unhandledrejection', (event) => {
             const errorMessage = `${event.reason.message}`;
+            console.error('[Mobile SDK]', errorMessage);
             emitEvent("error", [errorMessage]);
         });
         // Capturing all the internal loggin for errors handled by Ketch Tag
         // TODO: Remove this once lanyard.js will emit error events
-        ((logger) => {
-            var oldLog = logger.log;
-            var oldWarn = logger.warn;
-            var oldErr = logger.error;
-            logger.log = (...args) => {
-                emitEvent("log", [args.join(' ')]);
-                oldLog(...args);
-            };
-            logger.warn = (...args) => {
-                emitEvent("warning", [args.join(' ')]);
-                oldWarn(...args);
-            };
+        // ((logger) => {
+            // var oldLog = logger.log;
+            // var oldWarn = logger.warn;
+            // var oldErr = logger.error;
+            // logger.log = (...args) => {
+            //     emitEvent("log", [args.join(' ')]);
+            //     oldLog(...args);
+            // };
+            // logger.warn = (...args) => {
+            //     emitEvent("warning", [args.join(' ')]);
+            //     oldWarn(...args);
+            // };
             // TODO: we don't listed for these for now to avoid collisions with
             // logger.error = (...args) => {
             //    emitEvent("error", [args.join(' ')]);
             //    oldErr(...args);
             // };
-        })(window.console);
+        // })(window.console);
 
         // A temporary workaround to get banner/modal dimensions on tablets
         // TODO: remove this once there will be a way to get dialogs position from JS SDK
@@ -85,22 +87,37 @@
             }
             var domRect = domElem.getBoundingClientRect();
             if (domRect) {
-                var dialogDimensions = [domRect.width, domRect.height];
-                return dialogDimensions;
+                if (domRect.width > 0 && domRect.height > 0) {
+                    var dialogDimensions = [domRect.width, domRect.height];
+                    return dialogDimensions;
+                }
             }
+        }
+
+        var dimensionsUpdateId = null;
+
+        function stopDimensionsUpdate() {
+          clearInterval(dimensionsUpdateId);
+          // release our intervalID from the variable
+          dimensionsUpdateId = null;
         }
 
         function triggerDialogEvent(experienceType) {
-            var dialogDimensions = getDialogDimensions();
-            if (!dialogDimensions) {
-                setTimeout(() => triggerDialogEvent(experienceType), 500)
-            } else {
-                emitEvent("hasShownExperience", [experienceType, dialogDimensions]);
+            if (dimensionsUpdateId) {
+                  stopDimensionsUpdate();
             }
+            dimensionsUpdateId = setInterval(() => {
+                var dialogDimensions = getDialogDimensions();
+                if (dialogDimensions) {
+                    stopDimensionsUpdate();
+                    emitEvent("hasShownExperience", [experienceType, dialogDimensions]);
+                }
+            }, 500);
         }
 
-        // emulate hasShownExperience after willShowExperience
+        // emulate hasShowsExperience after willShowExperience
         function hasShownExperiencePlugin(host, _config) {
+            // Receive every consent change notification
             host.on('willShowExperience', experienceType => {
                 triggerDialogEvent(experienceType);
             });

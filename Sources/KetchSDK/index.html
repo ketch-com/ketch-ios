@@ -61,17 +61,7 @@
         // Capturing all the internal loggin for errors handled by Ketch Tag
         // TODO: Remove this once lanyard.js will emit error events
         ((logger) => {
-            var oldLog = logger.log;
-            var oldWarn = logger.warn;
             var oldErr = logger.error;
-            logger.log = (...args) => {
-                emitEvent("log", [args.join(' ')]);
-                oldLog(...args);
-            };
-            logger.warn = (...args) => {
-                emitEvent("warn", [args.join(' ')]);
-                oldWarn(...args);
-            };
             logger.error = (...args) => {
                 emitEvent("error", [args.join(' ')]);
                 oldErr(...args);

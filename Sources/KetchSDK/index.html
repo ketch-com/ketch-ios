@@ -7,11 +7,6 @@
             window.semaphore.push(arguments)
         }
 
-        // Triggering the full config to load on startup
-        ketch('getFullConfig', function(config) {
-            emitEvent("onConfigLoaded", [config])
-        });
-
         // Simulating events similar to ones coming from lanyard.js
         // TODO: remove this once JS SDK covers all required events
         function emitEvent(event, args) {
@@ -44,17 +39,25 @@
             }
         }
 
+        // This is required to detect the moment when Ketch Tag is loaded sucessfully and ready
+        // TODO: Remove this once lanyard.js will emit "onConfigLoaded" event, to avoid redundant "config.json" requests to server
+        ketch('getFullConfig', function(config) {
+            emitEvent("onConfigLoaded", [config])
+        });
+
         // Simulating "error" event
         // Capturing all the unhandled crashes of Ketch Tag
         window.addEventListener("error", (event) => {
             const errorMessage = `${event.message}`;
             emitEvent("error", [errorMessage]);
         });
-        // Capturing all the unhandled rejections of Ketch Tag
+
+        // Capturing all the unhandled promise rejections of Ketch Tag
         window.addEventListener('unhandledrejection', (event) => {
             const errorMessage = `${event.reason.message}`;
             emitEvent("error", [errorMessage]);
         });
+
         // Capturing all the internal loggin for errors handled by Ketch Tag
         // TODO: Remove this once lanyard.js will emit error events
         ((logger) => {
@@ -62,11 +65,11 @@
             var oldWarn = logger.warn;
             var oldErr = logger.error;
             logger.log = (...args) => {
-                emitEvent("error", [args.join(' ')]);
+                emitEvent("log", [args.join(' ')]);
                 oldLog(...args);
             };
             logger.warn = (...args) => {
-                emitEvent("error", [args.join(' ')]);
+                emitEvent("warn", [args.join(' ')]);
                 oldWarn(...args);
             };
             logger.error = (...args) => {
@@ -84,9 +87,7 @@
             }
             var domRect = domElem.getBoundingClientRect();
             if (domRect) {
-                var dialogDimensions = [domRect.width, domRect.height];
-                emitEvent("willShowExperienceDialog", dialogDimensions);
-                return dialogDimensions;
+                return domRect;
             }
         }
 

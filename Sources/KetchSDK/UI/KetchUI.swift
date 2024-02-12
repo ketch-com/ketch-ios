@@ -215,6 +215,10 @@ extension KetchUI {
     public func getConsent() {
         preloadedPresentationItem?.getConsent()
     }
+    
+    public func closeExperience() {
+        webPresentationItem = nil
+    }
 }
 
 // MARK: - Public

@@ -11,26 +11,11 @@ struct KetchViewModifier: ViewModifier {
     
     @State private var screenSize = CGSize.zero
     
-    private var transition: AnyTransition {
-        let isCenterAnimation = model?.presentationConfig?.isCenterPresentation ?? false
-        
-        return isCenterAnimation
-        ? AnyTransition.scale(scale: 1).combined(with: .opacity)
-        : AnyTransition.move(edge: model?.presentationConfig?.transitionEdge ?? .bottom).combined(with: .opacity)
-    }
-    
     @ViewBuilder
     var bannerView: some View {
         if let presentationItem = model,
            let config = model?.presentationConfig {
-            if config.style == .fullScreen {
-                presentationItem.content
-            } else {
-                presentationItem.content
-//                    .padding(config.padding(screenSize: screenSize))
-                    .transition(transition)
-                    .animation(.easeInOut)
-            }
+            presentationItem.content
         }
     }
     

@@ -25,8 +25,6 @@ public final class KetchUI: ObservableObject {
     @Published public var consentStatus: KetchSDK.ConsentStatus?
 
     public weak var eventListener: KetchEventListener?
-    public var overridePresentationConfig: PresentationConfig?
-    public var sizeFactory = PresentationSizeFactory()
 
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
@@ -75,8 +73,7 @@ public final class KetchUI: ObservableObject {
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
         case .onClose:
-            self.webPresentationItem = nil
-            eventListener?.onClose()
+            didCloseExperience()
             
         case .show(let content):
             switch content {
@@ -85,13 +82,19 @@ public final class KetchUI: ObservableObject {
             }
             
             if isConfigLoaded {
-                self.showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: content))
+                self.showExperience()
             }
-        case .hasChangedExperience(let presentation):
-//            let config = transitionConfig(presentation)
-//            preloadedPresentationItem?.presentationConfig = config
-//            webPresentationItem = preloadedPresentationItem
-            break
+            
+        case .tapOutside:
+            if display == .banner {
+                if ketch.configuration?.theme?.banner?.container?.backdrop.disableContentInteractions == false {
+                    didCloseExperience()
+                }
+            } else if display == .modal {
+                if ketch.configuration?.theme?.modal?.container?.backdrop.disableContentInteractions == false {
+                    didCloseExperience()
+                }
+            }
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
@@ -100,7 +103,7 @@ public final class KetchUI: ObservableObject {
             isConfigLoaded = true
             
             if let experienceToShow {
-                showExperience(presentationConfig: overridePresentationConfig ?? presentationConfig(experience: experienceToShow))
+                showExperience()
                 self.experienceToShow = nil
                 isConfigLoaded = false
             }
@@ -119,55 +122,12 @@ public final class KetchUI: ObservableObject {
             
         case .error(let description):
             eventListener?.onError(description: description)
-
         }
     }
     
-    private func transitionConfig(_ display: ExperienceTransition) -> PresentationConfig {
-        switch display {
-        case .banner:
-            switch ketch.configuration?.theme?.banner?.container?.position {
-            case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-            case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, sizeFactory: sizeFactory)
-            case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, sizeFactory: sizeFactory)
-            case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, sizeFactory: sizeFactory)
-            case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-            case .center, nil:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-            }
-        case .modal:
-            switch ketch.configuration?.theme?.modal?.container?.position {
-            case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, sizeFactory: sizeFactory)
-            case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, sizeFactory: sizeFactory)
-            case .center, nil:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, sizeFactory: sizeFactory)
-            }
-        case .fullScreen:
-            return PresentationConfig(vpos: .top, hpos: .left, style: .fullScreen, sizeFactory: sizeFactory)
-        }
-    }
-    
-    private func presentationConfig(experience: KetchUI.WebPresentationItem.Event.Content) -> PresentationConfig {
-        switch experience {
-        case .consent:
-            switch display {
-            case .banner:
-                switch bannerPosition {
-                case .bottom:       return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-                case .top:          return PresentationConfig(vpos: .top,    hpos: .center, style: .banner, sizeFactory: sizeFactory)
-                case .leftCorner:   return PresentationConfig(vpos: .bottom, hpos: .left, style: .banner, sizeFactory: sizeFactory)
-                case .rightCorner:  return PresentationConfig(vpos: .bottom, hpos: .right, style: .banner, sizeFactory: sizeFactory)
-                case .bottomMiddle: return PresentationConfig(vpos: .bottom, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-                case .center:       return PresentationConfig(vpos: .center, hpos: .center, style: .banner, sizeFactory: sizeFactory)
-                }
-            case .modal:
-                switch modalPosition {
-                case .left:     return PresentationConfig(vpos: .center, hpos: .left, style: .modal, sizeFactory: sizeFactory)
-                case .right:    return PresentationConfig(vpos: .center, hpos: .right, style: .modal, sizeFactory: sizeFactory)
-                case .center:   return PresentationConfig(vpos: .center, hpos: .center, style: .modal, sizeFactory: sizeFactory)
-                }
-            }
-        case .preference:
-            return PresentationConfig(vpos: .top, hpos: .left, style: .fullScreen, sizeFactory: sizeFactory)
-        }
+    private func didCloseExperience() {
+        webPresentationItem = nil
+        eventListener?.onClose()
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {

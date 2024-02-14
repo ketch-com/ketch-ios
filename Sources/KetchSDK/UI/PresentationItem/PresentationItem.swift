@@ -11,13 +11,13 @@ extension KetchUI {
         public enum Event {
             case onClose
             case show(Content)
-            case hasChangedExperience(ExperienceTransition)
             case configurationLoaded(KetchSDK.Configuration)
             case onCCPAUpdated(String?)
             case onTCFUpdated(String?)
             case onGPPUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
             case error(description: String)
+            case tapOutside
 
             public enum Content {
                 case consent, preference
@@ -30,11 +30,12 @@ extension KetchUI {
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
         private let userDefaults: UserDefaults = .standard
-        private var consent: [String: Any]?
+//        private var consent: [String: Any]?
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
         private(set) var preloaded: WKWebView
+        private var presentedItem: WebPresentationItem.Event.Content?
         public var presentationConfig: PresentationConfig?
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
@@ -107,17 +108,12 @@ extension KetchUI {
                     onEvent?(.onClose)
                     return
                 }
-                
-            case .hasChangedExperience:
-                guard let presentationString = body as? String,
-                      let transition = ExperienceTransition(rawValue: presentationString) else {
-                    return
-                }
-                onEvent?(.hasChangedExperience(transition))
+            
+            case .tapOutside:
+                onEvent?(.tapOutside)
                 
             case .updateCCPA:
                 guard let stringBody = body as? String else {
-                    #warning("TODO: log")
                     KetchLogger.log.error("Failed to retrieve CCPA string")
                     return
                 }
@@ -268,10 +264,10 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case consent
         case showConsentExperience
         case showPreferenceExperience
-        case hasChangedExperience = "hasChangedExperience"
         case onConfigLoaded
         case onFullConfigLoaded
         case error
+        case tapOutside
         
         enum Message: String, Codable {
             case willNotShow

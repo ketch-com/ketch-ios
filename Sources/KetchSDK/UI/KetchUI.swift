@@ -167,14 +167,6 @@ extension KetchUI {
         experienceToShow = .consent
         preloadedPresentationItem?.showConsent()
     }
-        
-    public func getConfig() {
-        preloadedPresentationItem?.getConfig()
-    }
-    
-    public func getConsent() {
-        preloadedPresentationItem?.getConsent()
-    }
     
     public func closeExperience() {
         webPresentationItem = nil
@@ -186,15 +178,20 @@ extension KetchUI {
     public enum ExperienceOption {
         // ketch_show forces an experience to show
         case forceExperience(ExperienceToShow)
-        // staging, production    overrides environment detection and uses a specific environment
+        
+        // staging, production overrides environment detection and uses a specific environment
         case environement(Environement)
-        //ketch_region (swb_region)    ISO-3166 country code    overrides region detection and uses a specific region
+        
+        // ketch_region (swb_region) ISO-3166 country code overrides region detection and uses a specific region
         case region(String)
-        //ketch_jurisdiction (swb_p)    jurisdiction code    overrides jurisdiction detection and uses a specific jurisdiction
+        
+        // ketch_jurisdiction (swb_p) jurisdiction code overrides jurisdiction detection and uses a specific jurisdiction
         case jurisdiction(code: String)
-        //ketch_lang (lang, swb_l)    ISO 639-1 language code, with optional regional extension    overrides language detection and uses a specific language
+        
+        // ketch_lang (lang, swb_l) ISO 639-1 language code, with optional regional extension    overrides language detection and uses a specific language
         case language(langId: String)
-        // ketch_preferences_tab (swb_preferences_tab)
+        
+        // ketch_preferences_tab, default tab that will be opened
         case preferencesTab(PreferencesTab)
         
         /// `ketch_preferences_tabs`, comma separated list of tabs to display on the preference experience
@@ -204,7 +201,7 @@ extension KetchUI {
         case sdkEnvironmentURL(String)
         
         public enum ExperienceToShow: String {
-            case cd, preferences
+            case consent, preferences
         }
         
         public enum Environement: String {
@@ -243,17 +240,13 @@ extension KetchUI {
 }
 
 // MARK: - Dialog presentation item generation of each type
+
 public protocol KetchEventListener: AnyObject {
-    func onLoad()
     func showConsent()
     func showPreferences()
     func onCCPAUpdated(ccpaString: String?)
     func onTCFUpdated(tcfString: String?)
     func onConfigUpdated(config: KetchSDK.Configuration?)
-    func onEnvironmentUpdated(environment: String?)
-    func onRegionInfoUpdated(regionInfo: String?)
-    func onJurisdictionUpdated(jurisdiction: String?)
-    func onIdentitiesUpdated(identities: String?)
     func onConsentUpdated(consent: KetchSDK.ConsentStatus)
     func onClose()
     func onError(description: String)

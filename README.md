@@ -104,34 +104,6 @@ var body: some View {
 ### Step 4. Invoke the view:
 TBD
 
-<details>
-<summary>How to override Ketch view size</summary>
-
-Inherit the `KetchUI.PresentationSizeFactory` class and override:
-
-```swift
-open func calculateModalSize(
-            horizontalPosition: KetchUI.PresentationConfig.HPosition,
-            verticalPosititon: KetchUI.PresentationConfig.VPosition,
-            screenSize: CGSize
-        ) -> CGSize
-```
-and
-
-```swift
-open func calculateBannerSize(
-            horizontalPosition: KetchUI.PresentationConfig.HPosition,
-            verticalPosititon: KetchUI.PresentationConfig.VPosition,
-            screenSize: CGSize
-        ) -> CGSize
-```
-
-Set your presentation subclass to the KetchUI instance:
-
-`ketchUI.sizeFactory = ExampleSizeFactory()`
-  
-</details>
-
 ### Sample app
 
 We provide a complete sample app to illustrate the integration: [here](https://github.com/ketch-sdk/ketch-samples/tree/main/ketch-ios/iOS%20Ketch%20SDK%20SwiftUI)

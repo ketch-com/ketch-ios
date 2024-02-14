@@ -30,7 +30,6 @@ extension KetchUI {
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
         private let userDefaults: UserDefaults = .standard
-//        private var consent: [String: Any]?
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
@@ -210,14 +209,6 @@ extension KetchUI.WebPresentationItem {
     
     public func showConsent() {
         preloaded.evaluateJavaScript("ketch('showConsent')")
-    }
-    
-    public func getConfig() {
-        preloaded.evaluateJavaScript("ketch('getFullConfig')")
-    }
-    
-    public func getConsent() {
-        preloaded.evaluateJavaScript("ketch('getConsent')")
     }
 }
 

@@ -7,7 +7,7 @@ import SwiftUI
 import WebKit
 
 extension KetchUI {
-    public struct WebPresentationItem: Identifiable, Equatable {
+    public struct WebPresentationItem: Equatable {
         public enum Event {
             case onClose
             case show(Content)
@@ -18,13 +18,17 @@ extension KetchUI {
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
             case error(description: String)
             case tapOutside
+            case environment(String?)
+            case regionInfo(String?)
+            case jurisdiction(String?)
+            case identities(String?)
 
             public enum Content {
                 case consent, preference
             }
         }
         
-        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
+        public static func == (lhs: Self, rhs: Self) -> Bool { lhs == rhs }
         
         let item: WebExperienceItem
         let config: WebConfig
@@ -35,7 +39,7 @@ extension KetchUI {
         
         private(set) var preloaded: WKWebView
         private var presentedItem: WebPresentationItem.Event.Content?
-        public var presentationConfig: PresentationConfig?
+//        public var presentationConfig: PresentationConfig?
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
@@ -52,7 +56,7 @@ extension KetchUI {
             preloaded.navigationDelegate = webNavigationHandler
         }
         
-        public var id: String { String(describing: presentationConfig) }
+//        public var id: String { String(describing: presentationConfig) }
         
         struct WebExperienceItem {
             let orgCode: String
@@ -174,7 +178,16 @@ extension KetchUI {
                 }
                 onEvent?(.error(description: description))
                 
-            default: break
+            case .environment:
+                onEvent?(.environment(body as? String))
+            case .regionInfo:
+                onEvent?(.regionInfo(body as? String))
+            case .jurisdiction:
+                onEvent?(.jurisdiction(body as? String))
+            case .identities:
+                onEvent?(.identities(body as? String))
+            default:
+                break;
             }
         }
         
@@ -215,11 +228,14 @@ extension KetchUI.WebPresentationItem {
 extension KetchUI.ExperienceOption {
     var queryParameter: (key: String, value: String) {
         switch self {
+        case .logLevel(let level):
+            return (key: "ketch_log", value: level.rawValue)
+            
         case .forceExperience(let exp):
             return (key: "ketch_show", value: exp.rawValue)
             
-        case .environement(let value):
-            return (key: "ketch_env", value: value.rawValue)
+        case .environment(let value):
+            return (key: "ketch_env", value: value)
             
         case .region(let value):
             return (key: "ketch_region", value: value)
@@ -236,7 +252,7 @@ extension KetchUI.ExperienceOption {
         case .preferencesTabs(let tabs):
             return (key: "ketch_preferences_tabs", tabs)
             
-        case .sdkEnvironmentURL(let url):
+        case .ketchURL(let url):
             return (key: "ketch_mobilesdk_url", value: url)
         }
     }
@@ -256,9 +272,9 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case showConsentExperience
         case showPreferenceExperience
         case onConfigLoaded
-        case onFullConfigLoaded
         case error
         case tapOutside
+        case geoip
         
         enum Message: String, Codable {
             case willNotShow

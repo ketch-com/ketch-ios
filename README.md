@@ -61,26 +61,22 @@ Add the Ketch iOS SDK as a dependency to the `dependencies` value of your `Packa
 
 ### Step 1. Instantiate the Ketch and KetchUI objects
 
-    ```swift
-    ...
-
-    var ketch: Ketch?
-    var ketchUI: KetchUI?
-
-    ...
-
-    private func setupKetch(advertisingIdentifier: UUID) {
-        let ketch = KetchSDK.create(
-            organizationCode: "#{your_org_code}#",
-            propertyCode: "#{your_property}#",
-            environmentCode: "#{your_environment}#",
-            identities: [.custom("#{your_id}#")]
-        )
-
-        self.ketch = ketch
-        ...
-    }
-    ```
+```swift
+var ketch: Ketch?
+var ketchUI: KetchUI?
+```
+    
+```swift
+private func setupKetch(advertisingIdentifier: UUID) {
+   let ketch = KetchSDK.create(
+      organizationCode: "#{your_org_code}#",
+      propertyCode: "#{your_property}#",
+      environmentCode: "#{your_environment}#",
+      identities: [.custom("#{your_id}#")]
+   )
+   self.ketch = ketch
+}
+```
 
 ### Step 2.  Instantiate the KetchUI object:
 
@@ -103,49 +99,55 @@ var body: some View {
 
 ### Parameters
 #### Available
+
 ```swift
 extension KetchUI {
     public enum ExperienceOption {
-        // ketch_show forces an experience to show
+        
+        /// Enables console logging by Ketch components
+        case logLevel(LogLevel)
+        
+        /// Forces an experience to show
         case forceExperience(ExperienceToShow)
         
-        // staging, production overrides environment detection and uses a specific environment
-        case environement(Environement)
+        /// Overrides environment detection and uses a specific environment
+        case environment(String)
         
-        // ketch_region (swb_region) ISO-3166 country code overrides region detection and uses a specific region
-        case region(String)
+        /// ISO-3166 country code overrides region detection and uses a specific region
+        case region(code: String)
         
-        // ketch_jurisdiction (swb_p) jurisdiction code overrides jurisdiction detection and uses a specific jurisdiction
+        /// Jurisdiction code overrides jurisdiction detection and uses a specific jurisdiction
         case jurisdiction(code: String)
         
-        // ketch_lang (lang, swb_l) ISO 639-1 language code, with optional regional extension    overrides language detection and uses a specific language
-        case language(langId: String)
+        /// ISO 639-1 language code, with optional regional extension overrides language detection and uses a specific language
+        case language(code: String)
         
-        // ketch_preferences_tab, default tab that will be opened
+        /// Default tab that will be opened
         case preferencesTab(PreferencesTab)
         
-        /// `ketch_preferences_tabs`, comma separated list of tabs to display on the preference experience
+        /// Comma separated list of tabs to display on the preference experience
         case preferencesTabs(String)
         
         /// URL string for SDK, including `https://`
-        case sdkEnvironmentURL(String)
+        case ketchURL(String)
         
         public enum ExperienceToShow: String {
             case consent, preferences
         }
         
-        public enum Environement: String {
-            case staging, production
-        }
-        
         public enum PreferencesTab: String, CaseIterable {
             case overviewTab, rightsTab, consentsTab, subscriptionsTab
+        }
+        
+        public enum LogLevel: String, Codable {
+            case trace, debug, info, warn, error
         }
     }
 }
 ```
 
 #### Passing Parameters
+
 ```swift
 var params: [KetchUI.ExperienceOption] = [
                 .region("US"),
@@ -161,14 +163,18 @@ ketchUI.reload(with: params)
 #### Available Events
 ```swift
 public protocol KetchEventListener: AnyObject {
-    func showConsent()
-    func showPreferences()
+    func onLoad()
+    func onShow()
+    func onDismiss()
+    func onEnvironmentUpdated(environment: String?)
+    func onRegionInfoUpdated(regionInfo: String?)
+    func onJurisdictionUpdated(jurisdiction: String?)
+    func onIdentitiesUpdated(identities: String?)
+    func onConsentUpdated(consent: KetchSDK.ConsentStatus)
+    func onError(description: String)
     func onCCPAUpdated(ccpaString: String?)
     func onTCFUpdated(tcfString: String?)
-    func onConfigUpdated(config: KetchSDK.Configuration?)
-    func onConsentUpdated(consent: KetchSDK.ConsentStatus)
-    func onClose()
-    func onError(description: String)
+    func onGPPUpdated(gppString: String?)
 }
 ```
 

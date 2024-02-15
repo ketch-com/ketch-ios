@@ -101,36 +101,81 @@ var body: some View {
 }
 ```
 
-### Step 4. Invoke the view:
-TBD
-
-<details>
-<summary>How to override Ketch view size</summary>
-
-Inherit the `KetchUI.PresentationSizeFactory` class and override:
-
+### Parameters
+#### Available
 ```swift
-open func calculateModalSize(
-            horizontalPosition: KetchUI.PresentationConfig.HPosition,
-            verticalPosititon: KetchUI.PresentationConfig.VPosition,
-            screenSize: CGSize
-        ) -> CGSize
+extension KetchUI {
+    public enum ExperienceOption {
+        // ketch_show forces an experience to show
+        case forceExperience(ExperienceToShow)
+        
+        // staging, production overrides environment detection and uses a specific environment
+        case environement(Environement)
+        
+        // ketch_region (swb_region) ISO-3166 country code overrides region detection and uses a specific region
+        case region(String)
+        
+        // ketch_jurisdiction (swb_p) jurisdiction code overrides jurisdiction detection and uses a specific jurisdiction
+        case jurisdiction(code: String)
+        
+        // ketch_lang (lang, swb_l) ISO 639-1 language code, with optional regional extension    overrides language detection and uses a specific language
+        case language(langId: String)
+        
+        // ketch_preferences_tab, default tab that will be opened
+        case preferencesTab(PreferencesTab)
+        
+        /// `ketch_preferences_tabs`, comma separated list of tabs to display on the preference experience
+        case preferencesTabs(String)
+        
+        /// URL string for SDK, including `https://`
+        case sdkEnvironmentURL(String)
+        
+        public enum ExperienceToShow: String {
+            case consent, preferences
+        }
+        
+        public enum Environement: String {
+            case staging, production
+        }
+        
+        public enum PreferencesTab: String, CaseIterable {
+            case overviewTab, rightsTab, consentsTab, subscriptionsTab
+        }
+    }
+}
 ```
-and
 
+#### Passing Parameters
 ```swift
-open func calculateBannerSize(
-            horizontalPosition: KetchUI.PresentationConfig.HPosition,
-            verticalPosititon: KetchUI.PresentationConfig.VPosition,
-            screenSize: CGSize
-        ) -> CGSize
+var params: [KetchUI.ExperienceOption] = [
+                .region("US"),
+                .language(langId: "EN"),
+                .forceExperience(.consent),
+                .jurisdiction(code: "default")
+            ]
+
+ketchUI.reload(with: params)
 ```
 
-Set your presentation subclass to the KetchUI instance:
+### Event Listener
+#### Available Events
+```swift
+public protocol KetchEventListener: AnyObject {
+    func showConsent()
+    func showPreferences()
+    func onCCPAUpdated(ccpaString: String?)
+    func onTCFUpdated(tcfString: String?)
+    func onConfigUpdated(config: KetchSDK.Configuration?)
+    func onConsentUpdated(consent: KetchSDK.ConsentStatus)
+    func onClose()
+    func onError(description: String)
+}
+```
 
-`ketchUI.sizeFactory = ExampleSizeFactory()`
-  
-</details>
+#### Subscribe on Events
+```swift
+ketchUI.eventListener = #{myEventListener}#
+```
 
 ### Sample app
 

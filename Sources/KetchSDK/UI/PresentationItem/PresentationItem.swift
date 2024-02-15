@@ -28,7 +28,7 @@ extension KetchUI {
             }
         }
         
-        public static func == (lhs: Self, rhs: Self) -> Bool { lhs == rhs }
+        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.preloaded == rhs.preloaded }
         
         let item: WebExperienceItem
         let config: WebConfig
@@ -39,7 +39,6 @@ extension KetchUI {
         
         private(set) var preloaded: WKWebView
         private var presentedItem: WebPresentationItem.Event.Content?
-//        public var presentationConfig: PresentationConfig?
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
@@ -55,8 +54,6 @@ extension KetchUI {
             preloaded = config.preferencesWebView(with: webHandler)
             preloaded.navigationDelegate = webNavigationHandler
         }
-        
-//        public var id: String { String(describing: presentationConfig) }
         
         struct WebExperienceItem {
             let orgCode: String

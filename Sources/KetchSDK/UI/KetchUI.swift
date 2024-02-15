@@ -163,8 +163,7 @@ extension KetchUI {
         preloadedPresentationItem?.reload(options: options)
     }
     
-    public func showExperience(presentationConfig: PresentationConfig? = nil) {
-//        preloadedPresentationItem?.presentationConfig = presentationConfig
+    public func showExperience() {
         webPresentationItem = preloadedPresentationItem
     }
 

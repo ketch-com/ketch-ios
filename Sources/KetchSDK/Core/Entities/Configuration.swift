@@ -43,7 +43,6 @@ extension KetchSDK.Configuration {
     public struct BannerContainerConfig: Codable {
         let position: Position?
         let size: Size?
-        let backdrop: Backdrop
         
         public enum Position: String, Codable {
             case bottom, top, leftCorner, rightCorner, bottomMiddle, center
@@ -54,21 +53,17 @@ extension KetchSDK.Configuration {
         }
     }
     
+    
     public struct ModalConfig: Codable {
         let container: ModalContainerConfig?
     }
     
     public struct ModalContainerConfig: Codable {
         let position: Position?
-        let backdrop: Backdrop
         
         public enum Position: String, Codable {
             case left, right, center
         }
-    }
-    
-    public struct Backdrop: Codable {
-        let disableContentInteractions: Bool
     }
 }
 

@@ -13,8 +13,7 @@ struct KetchViewModifier: ViewModifier {
     
     @ViewBuilder
     var bannerView: some View {
-        if let presentationItem = model,
-           let config = model?.presentationConfig {
+        if let presentationItem = model {
             presentationItem.content
         }
     }

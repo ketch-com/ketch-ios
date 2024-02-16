@@ -101,5 +101,14 @@
     </script>
 </head>
 <body>
+<script>
+    // We put the script inside body, otherwise document.body will be null
+    // Trigger taps outside of the dialog
+    document.body.addEventListener("touchstart", function(e) {
+        if (e.target === document.body) {
+            emitEvent("tapOutside", [getDialogSize()]);
+        }
+    });
+</script>
 </body>
 </html>

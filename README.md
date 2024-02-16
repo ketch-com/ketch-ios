@@ -34,6 +34,8 @@ The use of the Mobile SDK requires an [Ketch organization account](https://app.k
 with the [application property](https://app.ketch.com/deployment/applications)  configured.
 
 ## Sandbox
+The SDK provides a pre-registered sample organization for quick testing and evaluation. While convenient, it’s advisable to switch to your own organization promptly. Your own organization ensures isolation, security, scalability, and tailored support, optimizing your development process. Simply sign up for a new account, update SDK configurations, and transition seamlessly for production readiness and long-term usage.
+
 A sandbox organization and configuration is available for development and tests:
 
 Organization: ketch_samples
@@ -97,8 +99,58 @@ var body: some View {
 }
 ```
 
-### Parameters
-#### Available
+If you use UIKit, present KetchUI as modal:
+
+```swift
+func presentKetchUI() {
+    // 1. collect needed parameter
+    let params: [KetchUI.ExperienceOption] = [
+        .environment("production"),
+        .language(code: "EN")
+    ]
+
+    // 2. reload ketch
+    ketchUI.reload(with: params)
+}
+```
+
+In UIKit you are responsible for KetchUI presenting/dismissal, so make sure you subscribe on Ketch events
+
+```swift
+ketchUI.eventListener = self
+```  
+
+```swift
+extension ViewController: KetchEventListener {
+    func onLoad() { }
+    
+    // present the Ketch View Controller
+    func onShow() {
+        guard let presentationItem = ketchUI.webPresentationItem else {
+            return
+        }
+    
+        present(presentationItem.viewController, animated: false)
+    }
+    
+    // handle dssmiss
+    func onDismiss() {
+        dismiss(animated: false)
+    }
+    
+    func onEnvironmentUpdated(environment: String?) { }
+    func onRegionInfoUpdated(regionInfo: String?) { }
+    func onJurisdictionUpdated(jurisdiction: String?) { }
+    func onIdentitiesUpdated(identities: String?) { }
+    func onConsentUpdated(consent: KetchSDK.ConsentStatus) { }
+    func onError(description: String) { }
+    func onCCPAUpdated(ccpaString: String?) { }
+    func onTCFUpdated(tcfString: String?) { }
+    func onGPPUpdated(gppString: String?) { }
+}
+```  
+
+### Available Parameters
 
 ```swift
 extension KetchUI {
@@ -146,14 +198,15 @@ extension KetchUI {
 }
 ```
 
-#### Passing Parameters
+#### Updating KetchUI with new parameters
 
 ```swift
 var params: [KetchUI.ExperienceOption] = [
                 .region(code: "US"),
                 .language(code: "EN"),
                 .forceExperience(.consent),
-                .jurisdiction(code: "default")
+                .jurisdiction(code: "default"),
+                .environment("production")
             ]
 
 ketchUI.reload(with: params)

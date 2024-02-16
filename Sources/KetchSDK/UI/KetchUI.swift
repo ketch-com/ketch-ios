@@ -86,15 +86,7 @@ public final class KetchUI: ObservableObject {
             }
             
         case .tapOutside:
-            if display == .banner {
-                if ketch.configuration?.theme?.banner?.container?.backdrop.disableContentInteractions == false {
-                    didCloseExperience()
-                }
-            } else if display == .modal {
-                if ketch.configuration?.theme?.modal?.container?.backdrop.disableContentInteractions == false {
-                    didCloseExperience()
-                }
-            }
+            didCloseExperience()
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration

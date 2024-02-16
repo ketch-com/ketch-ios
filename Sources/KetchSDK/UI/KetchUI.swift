@@ -76,13 +76,11 @@ public final class KetchUI: ObservableObject {
             didCloseExperience()
             
         case .show(let content):
-            switch content {
-            case .consent: eventListener?.onShow()
-            case .preference: eventListener?.onShow()
-            }
-            
             if isConfigLoaded {
                 self.showExperience()
+                eventListener?.onShow()
+            } else {
+                experienceToShow = content
             }
             
         case .tapOutside:
@@ -97,6 +95,7 @@ public final class KetchUI: ObservableObject {
                 showExperience()
                 self.experienceToShow = nil
                 isConfigLoaded = false
+                eventListener?.onShow()
             }
 
         case .onCCPAUpdated(let value):

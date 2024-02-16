@@ -150,8 +150,8 @@ extension KetchUI {
 
 ```swift
 var params: [KetchUI.ExperienceOption] = [
-                .region("US"),
-                .language(langId: "EN"),
+                .region(code: "US"),
+                .language(code: "EN"),
                 .forceExperience(.consent),
                 .jurisdiction(code: "default")
             ]

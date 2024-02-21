@@ -74,7 +74,11 @@ private func setupKetch(advertisingIdentifier: UUID) {
       organizationCode: "#{your_org_code}#",
       propertyCode: "#{your_property}#",
       environmentCode: "#{your_environment}#",
-      identities: [.custom("#{your_id}#")]
+      identities: [
+          Ketch.Identity(key: "aaid", value: "00000000-0000-0000-0000-000000000000"),
+          Ketch.Identity(key: "email", value: "user@mywebsite.com"),
+          Ketch.Identity(key: "account_id", value: "1234")
+      ]
    )
    self.ketch = ketch
 }

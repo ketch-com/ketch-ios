@@ -9,7 +9,7 @@ import WebKit
 struct WebConfig {
     let orgCode: String
     let propertyName: String
-    let advertisingIdentifier: UUID
+    let advertisingIdentifiers: [Ketch.Identity]
     let htmlFileName: String
     var params = [String: String]()
     var configWebApp: WKWebView?
@@ -17,25 +17,25 @@ struct WebConfig {
     init(
         orgCode: String,
         propertyName: String,
-        advertisingIdentifier: UUID,
+        advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) {
         self.propertyName = propertyName
         self.orgCode = orgCode
-        self.advertisingIdentifier = advertisingIdentifier
+        self.advertisingIdentifiers = advertisingIdentifiers
         self.htmlFileName = htmlFileName
     }
 
     static func configure(
         orgCode: String,
         propertyName: String,
-        advertisingIdentifier: UUID,
+        advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) -> Self {
         var config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
-            advertisingIdentifier: advertisingIdentifier,
+            advertisingIdentifiers: advertisingIdentifiers,
             htmlFileName: htmlFileName
         )
 
@@ -58,11 +58,14 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
-            "idfa":         URLQueryItem(name: "idfa", value: advertisingIdentifier.uuidString)
         ]
         
         params.forEach {
             defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
+        }
+        
+        advertisingIdentifiers.forEach {
+            defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
         }
         
         return Array(defaultQuery.values)
@@ -97,7 +100,7 @@ struct WebConfig {
 
 extension WebConfig: Identifiable {
     var id: String {
-        orgCode + propertyName + advertisingIdentifier.uuidString
+        orgCode + propertyName
     }
 }
 

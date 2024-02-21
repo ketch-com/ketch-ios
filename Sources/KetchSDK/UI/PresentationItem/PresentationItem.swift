@@ -45,7 +45,7 @@ extension KetchUI {
             config = WebConfig(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
-                advertisingIdentifier: item.advertisingIdentifier
+                advertisingIdentifiers: item.advertisingIdentifiers
             )
             
             self.onEvent = onEvent
@@ -58,7 +58,7 @@ extension KetchUI {
         struct WebExperienceItem {
             let orgCode: String
             let propertyName: String
-            let advertisingIdentifier: UUID
+            let advertisingIdentifiers: [Ketch.Identity]
         }
         
         @ViewBuilder
@@ -66,7 +66,7 @@ extension KetchUI {
             webExperience(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
-                advertisingIdentifier: item.advertisingIdentifier
+                advertisingIdentifiers: item.advertisingIdentifiers
             )
         }
         
@@ -81,7 +81,7 @@ extension KetchUI {
         
         private func webExperience(orgCode: String,
                                    propertyName: String,
-                                   advertisingIdentifier: UUID) -> some View {
+                                   advertisingIdentifiers: [Ketch.Identity]) -> some View {
             var config = config
             config.configWebApp = preloaded
 

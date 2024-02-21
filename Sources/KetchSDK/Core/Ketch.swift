@@ -8,22 +8,13 @@ import Foundation
 
 public final class Ketch: ObservableObject {
     /// Identity entity consumable by Ketch
-    public enum Identity {
-        case idfa(String) // Default identity for iOS (AdvertisementIdentifier)
-        case custom(key: String, value: String)
-
-        var key: String {
-            switch self {
-            case .idfa: return "idfa"
-            case .custom(let key, _): return key
-            }
-        }
-
-        var value: String {
-            switch self {
-            case .idfa(let id): return id
-            case .custom(_, let value): return value
-            }
+    public struct Identity {
+        let key: String
+        let value: String
+        
+        public init(key: String, value: String) {
+            self.key = key
+            self.value = value
         }
     }
 

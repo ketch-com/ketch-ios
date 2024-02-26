@@ -58,6 +58,7 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode":      URLQueryItem(name: "orgCode", value: orgCode),
+            "mobile_device": UIDevice.current.userInterfaceIdiom == .phone ? "phone" : "tablet"
         ]
         
         params.forEach {

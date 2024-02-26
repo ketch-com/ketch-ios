@@ -62,7 +62,12 @@ struct WebConfig {
         ]
         
         params.forEach {
-            defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
+            // TODO: remove after web fix
+            if $0 == "ketch_lang" {
+                defaultQuery[$0] = URLQueryItem(name: $0, value: $1.lowercased())
+            } else {
+                defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
+            }
         }
         
         advertisingIdentifiers.forEach {

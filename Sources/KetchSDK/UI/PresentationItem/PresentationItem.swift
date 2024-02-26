@@ -319,8 +319,15 @@ public enum ExperienceTransition: String {
 fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if navigationAction.navigationType == .linkActivated {
-            guard let url = navigationAction.request.url else {return}
-            webView.load(URLRequest(url: url))
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.cancel)
+                return
+            }
+            
+            decisionHandler(.cancel)
+            UIApplication.shared.open(url)
+            
+            return
         }
         
         decisionHandler(.allow)

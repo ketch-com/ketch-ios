@@ -57,8 +57,7 @@ struct WebConfig {
     private var queryItems: [URLQueryItem] {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
-            "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
-            "mobile_device": URLQueryItem(name: "mobile_device", value: UIDevice.current.userInterfaceIdiom == .phone ? "phone" : "tablet")
+            "orgCode": URLQueryItem(name: "orgCode", value: orgCode)
         ]
         
         params.forEach {
@@ -115,6 +114,6 @@ class FullScreenWebView: WKWebView {
     override var safeAreaInsets: UIEdgeInsets {
         let insets = super.safeAreaInsets
         
-        return UIEdgeInsets(top: insets.top, left: insets.left, bottom: 0, right: insets.right)
+        return .zero
     }
 }

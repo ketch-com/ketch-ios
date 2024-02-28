@@ -115,6 +115,6 @@ class FullScreenWebView: WKWebView {
     override var safeAreaInsets: UIEdgeInsets {
         let insets = super.safeAreaInsets
         
-        return UIEdgeInsets(top: insets.top, left: insets.left, bottom: 0, right: insets.right)
+        return UIEdgeInsets(top: insets.top, left: insets.left, bottom: insets.bottom, right: insets.right)
     }
 }

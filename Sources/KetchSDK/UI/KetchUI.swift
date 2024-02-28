@@ -34,10 +34,12 @@ public final class KetchUI: ObservableObject {
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
+    /// - Parameter options: default options
     /// protocol plugins updates
     public init(ketch: Ketch, experienceOptions options: [ExperienceOption] = []) {
         self.ketch = ketch
-
+        self.options = options
+        
         bindInput()
     }
 
@@ -150,8 +152,17 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
-        self.options = options
-        preloadedPresentationItem?.reload(options: options)
+        // merge options, override existing if needed
+        var newOptions = self.options
+        options.forEach { option in
+            if let duplicateIndex = newOptions.firstIndex(of: option) {
+                newOptions.remove(at: duplicateIndex)
+            }
+            
+            newOptions.append(option)
+        }
+        
+        preloadedPresentationItem?.reload(options: newOptions)
     }
     
     public func showExperience() {
@@ -175,7 +186,7 @@ extension KetchUI {
 
 // MARK: - Public
 extension KetchUI {
-    public enum ExperienceOption {
+    public enum ExperienceOption: Equatable {
         
         /// Enables console logging by Ketch components
         case logLevel(LogLevel)
@@ -214,6 +225,31 @@ extension KetchUI {
         
         public enum LogLevel: String, Codable {
             case trace, debug, info, warn, error
+        }
+        
+        public static func == (lhs: ExperienceOption, rhs: ExperienceOption) -> Bool {
+            switch (lhs, rhs) {
+            case (.logLevel(_), .logLevel(_)):
+                return true
+            case (.forceExperience(_), .forceExperience(_)):
+                return true
+            case (.environment(_), .environment(_)):
+                return true
+            case (.region(code: _), .region(code: _)):
+                return true
+            case (.jurisdiction(code: _), .jurisdiction(code: _)):
+                return true
+            case (.language(code: _), .language(code: _)):
+                return true
+            case (.preferencesTab(_), .preferencesTab(_)):
+                return true
+            case (.preferencesTabs(_), .preferencesTabs(_)):
+                return true
+            case (.ketchURL(_), .ketchURL(_)):
+                return true
+            default:
+                return false
+            }
         }
     }
 }

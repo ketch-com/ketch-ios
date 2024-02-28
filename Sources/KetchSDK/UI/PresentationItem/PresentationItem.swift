@@ -257,9 +257,9 @@ extension KetchUI.ExperienceOption {
 
 class WebHandler: NSObject, WKScriptMessageHandler {
     enum Event: String, CaseIterable {
-        case updateCCPA = "usprivacy_updated"
-        case updateTCF = "tcf_updated"
-        case updateGPP = "gpp_updated"
+        case updateCCPA = "usprivacy_updated_data"
+        case updateTCF = "tcf_updated_data"
+        case updateGPP = "gpp_updated_data"
         case hideExperience
         case environment
         case regionInfo

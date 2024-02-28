@@ -92,6 +92,7 @@ struct WebConfig {
         webView.backgroundColor = .clear
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
+        webView.scrollView.contentInsetAdjustmentBehavior = .always
         webView.scrollView.bounces = false
         if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
@@ -111,9 +112,4 @@ extension WebConfig: Identifiable {
 
 /// This WKWebView ignores bottom safe area inset
 class FullScreenWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        let insets = super.safeAreaInsets
-        
-        return .zero
-    }
 }

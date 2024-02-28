@@ -88,7 +88,7 @@ struct WebConfig {
             configuration.userContentController.add(webHandler, name: event.rawValue)
         }
 
-        let webView = FullScreenWebView(frame: .zero, configuration: configuration)
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.backgroundColor = .clear
         webView.isOpaque = false
         webView.scrollView.backgroundColor = .clear
@@ -107,13 +107,5 @@ struct WebConfig {
 extension WebConfig: Identifiable {
     var id: String {
         orgCode + propertyName
-    }
-}
-
-/// This WKWebView ignores bottom safe area inset
-class FullScreenWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        let insets = super.safeAreaInsets
-        return UIEdgeInsets(top: insets.top, left: insets.left, bottom: insets.bottom, right: insets.right)
     }
 }

@@ -57,7 +57,8 @@ struct WebConfig {
     private var queryItems: [URLQueryItem] {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
-            "orgCode": URLQueryItem(name: "orgCode", value: orgCode)
+            "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
+            "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
         
         params.forEach {

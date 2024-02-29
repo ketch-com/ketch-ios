@@ -1,6 +1,5 @@
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         window.semaphore = window.semaphore || [];
         window.ketch = function () {
@@ -99,6 +98,14 @@
         e.defer = e.async = !0;
         document.getElementsByTagName("head")[0].appendChild(e);
     </script>
+    <style>
+        body {
+            height: 100dvh;
+            width: 100dvw;
+            min-height: -webkit-fill-available;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover" />
 </head>
 <body>
 <script>

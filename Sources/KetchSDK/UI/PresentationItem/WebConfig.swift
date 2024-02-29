@@ -81,7 +81,6 @@ struct WebConfig {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
         
-
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
 

@@ -90,16 +90,18 @@ extension KetchUI {
         }
         
         private func handle(event: WebHandler.Event, body: Any) {
-            KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
-            
             switch event {
             case .showConsentExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.show(.consent))
                 
             case .showPreferenceExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.show(.preference))
 
             case .hideExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
+                
                 guard
                     let status = body as? String,
                     WebHandler.Event.Message(rawValue: status) == .willNotShow
@@ -110,6 +112,7 @@ extension KetchUI {
                 }
             
             case .tapOutside:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
                 onEvent?(.tapOutside)
                 
             case .updateCCPA:
@@ -164,6 +167,7 @@ extension KetchUI {
                     return
                 }
                 
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
                 onEvent?(.configurationLoaded(configuration))
                 
             case .error:
@@ -176,12 +180,16 @@ extension KetchUI {
                 onEvent?(.error(description: description))
                 
             case .environment:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.environment(body as? String))
             case .regionInfo:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.regionInfo(body as? String))
             case .jurisdiction:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.jurisdiction(body as? String))
             case .identities:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.identities(body as? String))
             default:
                 break;

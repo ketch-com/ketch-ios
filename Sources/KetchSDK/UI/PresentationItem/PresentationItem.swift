@@ -53,6 +53,7 @@ extension KetchUI {
             let webHandler = WebHandler(onEvent: { _, _ in })
             preloaded = config.preferencesWebView(with: webHandler)
             preloaded.navigationDelegate = webNavigationHandler
+            preloaded.uiDelegate = webNavigationHandler
         }
         
         struct WebExperienceItem {
@@ -77,6 +78,7 @@ extension KetchUI {
 
             preloaded = config.preferencesWebView(with: webHandler)
             preloaded.navigationDelegate = webNavigationHandler
+            preloaded.uiDelegate = webNavigationHandler
         }
         
         private func webExperience(orgCode: String,
@@ -339,5 +341,14 @@ fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDele
         }
         
         decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        guard let url = navigationAction.request.url else {
+            return nil
+        }
+        
+        UIApplication.shared.open(url)
+        return nil
     }
 }

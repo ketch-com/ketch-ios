@@ -251,7 +251,8 @@ public final class Ketch: ObservableObject {
 
     public func updateConsent(
         purposes: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]?,
-        vendors: [String]?
+        vendors: [String]?,
+        protocols: [String: String]?
     ) {
         guard let jurisdictionCode = configurationSubject.value?.jurisdiction?.code else { return }
 
@@ -269,7 +270,8 @@ public final class Ketch: ObservableObject {
                     jurisdictionCode: jurisdictionCode,
                     migrationOption: .migrateDefault,
                     purposes: purposes ?? [:],
-                    vendors: vendors
+                    vendors: vendors,
+                    protocols: protocols
                 )
             )
             .sink { result in
@@ -282,7 +284,8 @@ public final class Ketch: ObservableObject {
                 })
                 let consentUpdate = KetchSDK.ConsentStatus(
                     purposes: purposesUpdate ?? [:],
-                    vendors: vendors
+                    vendors: vendors,
+                    protocols: protocols
                 )
 
                 self.consentSubject.send(consentUpdate)

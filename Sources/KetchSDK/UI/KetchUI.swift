@@ -271,7 +271,6 @@ extension KetchUI {
 // MARK: - Dialog presentation item generation of each type
 
 public protocol KetchEventListener: AnyObject {
-    func onLoad()
     func onShow()
     func onDismiss()
     func onEnvironmentUpdated(environment: String?)

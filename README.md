@@ -126,8 +126,6 @@ ketchUI.eventListener = self
 
 ```swift
 extension ViewController: KetchEventListener {
-    func onLoad() { }
-    
     // present the Ketch View Controller
     func onShow() {
         guard let presentationItem = ketchUI.webPresentationItem else {
@@ -220,7 +218,6 @@ ketchUI.reload(with: params)
 #### Available Events
 ```swift
 public protocol KetchEventListener: AnyObject {
-    func onLoad()
     func onShow()
     func onDismiss()
     func onEnvironmentUpdated(environment: String?)

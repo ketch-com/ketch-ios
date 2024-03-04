@@ -93,7 +93,8 @@ extension KetchSDK {
         jurisdictionCode: String,
         migrationOption: ConsentUpdate.MigrationOption,
         purposes: [String : ConsentUpdate.PurposeAllowedLegalBasis],
-        vendors: [String]?
+        vendors: [String]?,
+        protocols: [String: String]?
     ) -> AnyPublisher<Void, KetchError> {
         KetchApiRequest()
             .updateConsent(
@@ -105,7 +106,8 @@ extension KetchSDK {
                     jurisdictionCode: jurisdictionCode,
                     migrationOption: migrationOption,
                     purposes: purposes,
-                    vendors: vendors
+                    vendors: vendors,
+                    protocols: protocols
                 )
             )
             .eraseToAnyPublisher()

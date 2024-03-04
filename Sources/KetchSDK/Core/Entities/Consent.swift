@@ -15,6 +15,7 @@ extension KetchSDK {
         public let migrationOption: MigrationOption
         public let purposes: [String: PurposeAllowedLegalBasis]
         public let vendors: [String]?
+        public let protocols: [String: String]?
 
         public init(
             organizationCode: String,
@@ -24,7 +25,8 @@ extension KetchSDK {
             jurisdictionCode: String,
             migrationOption: MigrationOption,
             purposes: [String: PurposeAllowedLegalBasis],
-            vendors: [String]?
+            vendors: [String]?,
+            protocols: [String: String]?
         ) {
             self.organizationCode = organizationCode
             self.propertyCode = propertyCode
@@ -34,6 +36,7 @@ extension KetchSDK {
             self.migrationOption = migrationOption
             self.purposes = purposes
             self.vendors = vendors
+            self.protocols = protocols
         }
     }
 }
@@ -108,27 +111,26 @@ extension KetchSDK.ConsentConfig {
 
 extension KetchSDK {
     public struct ConsentStatus: Codable {
-        public let purposes: [String: Bool]
+        public let purposes: [String: Bool]?
         public let vendors: [String]?
+        public var protocols: [String: String]?
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            vendors = try? container.decode([String].self, forKey: .vendors)
-            let purposes = try? container.decode([String: String].self, forKey: .purposes)
-            let keyValues: [(String, Bool)] = purposes?.compactMap {
-                guard let value = Bool($1) else { return nil }
+            purposes = try? container.decodeIfPresent([String: Bool].self, forKey: .purposes)
+            vendors = try? container.decodeIfPresent([String].self, forKey: .vendors)
+            protocols = try? container.decodeIfPresent([String: String].self, forKey: .protocols)
 
-                return ($0, value)
-            } ?? []
-            self.purposes = [String: Bool](uniqueKeysWithValues: keyValues)
         }
 
         public init(
-            purposes: [String: Bool],
-            vendors: [String]?
+            purposes: [String: Bool]?,
+            vendors: [String]?,
+            protocols: [String: String]?
         ) {
             self.purposes = purposes
             self.vendors = vendors
+            self.protocols = protocols
         }
     }
 }

@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 import Combine
 
@@ -200,3 +202,4 @@ struct KetchApiError: Codable {
     }
 }
 
+#endif

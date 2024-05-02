@@ -5,6 +5,8 @@
 //  Created by Ryan Overton on 8/15/23.
 //
 
+#if !os(macOS)
+
 import Foundation
 extension KetchSDK{
     public struct LocalizedStrings: Codable {
@@ -337,3 +339,5 @@ extension KetchSDK{
         }
     }
 }
+
+#endif

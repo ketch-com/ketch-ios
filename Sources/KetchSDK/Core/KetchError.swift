@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 extension KetchSDK {
@@ -12,3 +14,5 @@ extension KetchSDK {
         case decodingError(message: String)
     }
 }
+
+#endif

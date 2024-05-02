@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 import Combine
 import WebKit
@@ -283,3 +285,5 @@ public protocol KetchEventListener: AnyObject {
     func onTCFUpdated(tcfString: String?)
     func onGPPUpdated(gppString: String?)
 }
+
+#endif

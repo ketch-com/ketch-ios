@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 
 extension View {
@@ -208,3 +210,5 @@ fileprivate extension UIEdgeInsets {
         EdgeInsets(top: top, leading: left, bottom: bottom, trailing: right)
     }
 }
+
+#endif

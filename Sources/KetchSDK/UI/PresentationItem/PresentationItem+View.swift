@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 
 struct PreferencesWebView: UIViewRepresentable {
@@ -19,3 +21,5 @@ struct PreferencesWebView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UIViewType, context: Context) { }
 }
+
+#endif

@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 
 struct IdentifiableIndices<Base: RandomAccessCollection>
@@ -59,3 +61,5 @@ extension ForEach where ID == Data.Element.ID,
         }
     }
 }
+
+#endif

@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 extension KetchSDK {
@@ -50,3 +52,5 @@ extension KetchSDK.Vendors {
         public let policyUrl: String?
     }
 }
+
+#endif

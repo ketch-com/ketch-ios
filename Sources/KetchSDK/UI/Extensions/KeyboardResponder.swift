@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 
 final class KeyboardResponder: ObservableObject {
@@ -56,3 +58,5 @@ extension View {
             )
     }
 }
+
+#endif

@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import SwiftUI
 import WebKit
 
@@ -352,3 +354,5 @@ fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDele
         return nil
     }
 }
+
+#endif

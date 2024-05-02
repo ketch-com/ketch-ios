@@ -192,7 +192,11 @@ fileprivate struct ClearBackgroundView: UIViewRepresentable {
 //MARK: - EnvironmentKey & Values
 fileprivate struct SafeAreaInsetsKey: EnvironmentKey {
     static var defaultValue: EdgeInsets {
-        (UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.safeAreaInsets ?? .zero).insets
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) else {
+            return EdgeInsets.init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        }
+        return keyWindow.safeAreaInsets.insets
     }
 }
 

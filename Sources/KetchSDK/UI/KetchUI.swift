@@ -93,7 +93,7 @@ public final class KetchUI: ObservableObject {
             
             isConfigLoaded = true
             
-            if let experienceToShow {
+            if experienceToShow != nil {
                 showExperience()
                 self.experienceToShow = nil
                 isConfigLoaded = false

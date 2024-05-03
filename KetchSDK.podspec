@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'KetchSDK'
-  s.version          = '4.0.2'
+  s.version          = '4.0.3'
   s.summary          = 'Ketch iOS SDK'
   s.swift_versions   = '5.7'
 
@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '15.0'
 
-  s.source_files = 'Sources/KetchSDK/**/*.{h,m,swift}'
+  s.source_files = 'Sources/KetchSDK/**/*.{h,m,swift,html}'
+  s.resources = 'Sources/KetchSDK/**/*.html'
 
 end

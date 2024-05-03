@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '15.0'
 
-  s.source_files = 'Sources/KetchSDK/**/*.{h,m,swift}'
+  s.source_files = 'Sources/KetchSDK/**/*.{h,m,swift,html}'
+  s.resources = 'Sources/KetchSDK/**/*.html'
 
 end

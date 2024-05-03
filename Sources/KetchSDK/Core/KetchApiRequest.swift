@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 import Combine
 
@@ -137,3 +139,5 @@ extension KetchSDK.KetchError {
         }
     }
 }
+
+#endif

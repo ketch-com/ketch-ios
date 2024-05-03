@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 /// Protocol of PolicyPlugin. Can be consumed and run by Ketch instance.
@@ -104,3 +106,5 @@ extension PolicyPlugin: Hashable {
         hasher.combine(protocolID)
     }
 }
+
+#endif

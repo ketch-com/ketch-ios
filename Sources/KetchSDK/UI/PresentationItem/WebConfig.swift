@@ -3,6 +3,8 @@
 //  iOS Ketch Pref Center using SwiftUI
 //
 
+#if !os(macOS)
+
 import Foundation
 import WebKit
 
@@ -109,3 +111,5 @@ extension WebConfig: Identifiable {
         orgCode + propertyName
     }
 }
+
+#endif

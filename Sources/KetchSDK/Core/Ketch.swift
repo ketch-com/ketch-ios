@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Combine
 import Foundation
 
@@ -435,3 +437,5 @@ extension Ketch {
         userDefaults.value(forKey: PREFERENCE_VERSION) as? Int
     }
 }
+
+#endif

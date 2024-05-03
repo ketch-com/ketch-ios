@@ -1,3 +1,5 @@
+#if !os(macOS)
+
 import SwiftUI
 
 extension View {
@@ -38,3 +40,5 @@ struct KetchViewModifier: ViewModifier {
         }
     }
 }
+
+#endif

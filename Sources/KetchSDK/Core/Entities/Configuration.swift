@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 extension KetchSDK {
@@ -106,3 +108,5 @@ extension KetchSDK.Configuration {
         }
     }
 }
+
+#endif

@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 extension Bundle {
@@ -19,3 +21,5 @@ extension Bundle {
         #endif
     }
 }
+
+#endif

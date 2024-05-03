@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Combine
 
 public enum KetchSDK {
@@ -158,3 +160,5 @@ extension KetchSDK {
             .eraseToAnyPublisher()
     }
 }
+
+#endif

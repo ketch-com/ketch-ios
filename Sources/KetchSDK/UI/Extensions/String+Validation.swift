@@ -3,6 +3,8 @@
 //  KetchSDK
 //
 
+#if !os(macOS)
+
 import Foundation
 
 extension String {
@@ -41,3 +43,5 @@ extension String.Validation {
         return emailPredicate.evaluate(with: string)
     }
 }
+
+#endif

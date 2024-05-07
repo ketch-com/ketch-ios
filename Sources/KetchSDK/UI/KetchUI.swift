@@ -74,8 +74,8 @@ public final class KetchUI: ObservableObject {
     
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
-        case .onClose:
-            didCloseExperience()
+        case .onClose(let status):
+            didCloseExperience(status: status)
             
         case .show(let content):
             if isConfigLoaded {
@@ -86,7 +86,7 @@ public final class KetchUI: ObservableObject {
             }
             
         case .tapOutside:
-            didCloseExperience()
+            didCloseExperience(status: KetchSDK.HideExperienceStatus.None)
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
@@ -128,9 +128,9 @@ public final class KetchUI: ObservableObject {
         }
     }
     
-    private func didCloseExperience() {
+    private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
         webPresentationItem = nil
-        eventListener?.onDismiss()
+        eventListener?.onDismiss(status: status)
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {
@@ -272,7 +272,7 @@ extension KetchUI {
 
 public protocol KetchEventListener: AnyObject {
     func onShow()
-    func onDismiss()
+    func onDismiss(status: KetchSDK.HideExperienceStatus)
     func onEnvironmentUpdated(environment: String?)
     func onRegionInfoUpdated(regionInfo: String?)
     func onJurisdictionUpdated(jurisdiction: String?)

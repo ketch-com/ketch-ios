@@ -47,10 +47,15 @@ struct WebConfig {
     }
 
     private var fileUrl: URL? {
-        let url = Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")!
+        // Handle bundling differences with swift packages vs cocoa pods when fetching static assests (index.html)
+        #if SWIFT_PACKAGE
+            // SWIFT_PACKAGE is a variable we define in Package.swift
+            let url = Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")!
+        #else
+            let url = Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")!
+        #endif
         var urlComponents = URLComponents(string: url.absoluteString)
         urlComponents?.queryItems = queryItems
-
         return urlComponents?.url
     }
 

@@ -158,3 +158,13 @@ extension KetchSDK {
             .eraseToAnyPublisher()
     }
 }
+
+extension KetchSDK {
+    public enum HideExperienceStatus: String, Codable {
+        case SetConsent = "setConsent"
+        case InvokeRight = "invokeRight"
+        case Close = "close"
+        case WillNotShow = "willNotShow"
+        case None = "none"
+    }
+}

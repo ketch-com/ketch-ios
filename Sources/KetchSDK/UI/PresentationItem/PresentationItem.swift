@@ -9,7 +9,7 @@ import WebKit
 extension KetchUI {
     public struct WebPresentationItem: Equatable {
         public enum Event {
-            case onClose
+            case onClose(KetchSDK.HideExperienceStatus)
             case show(Content)
             case configurationLoaded(KetchSDK.Configuration)
             case onCCPAUpdated(String?)
@@ -104,14 +104,12 @@ extension KetchUI {
             case .hideExperience:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 
-                guard
-                    let status = body as? String,
-                    WebHandler.Event.Message(rawValue: status) == .willNotShow
-                else {
-                    KetchLogger.log.debug("onClose")
-                    onEvent?(.onClose)
-                    return
-                }
+                // Parse status from event body
+                let statusString = body as? String ?? ""
+                let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None  // Default to none if parsing fails
+                    
+                onEvent?(.onClose(status))
+                return
             
             case .tapOutside:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
@@ -282,12 +280,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case error
         case tapOutside
         case geoip
-        
-        enum Message: String, Codable {
-            case willNotShow
-            case setConsent
-            case close
-        }
+
     }
     
     private var onEvent: ((Event, Any) -> Void)?

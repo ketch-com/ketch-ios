@@ -164,6 +164,7 @@ extension KetchSDK {
         case SetConsent = "setConsent"
         case InvokeRight = "invokeRight"
         case Close = "close"
+        case CloseWithoutSettingConsent = "closeWithoutSettingConsent"
         case WillNotShow = "willNotShow"
         case None = "none"
     }

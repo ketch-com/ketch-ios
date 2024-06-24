@@ -31,6 +31,7 @@ public final class KetchUI: ObservableObject {
     private var options = [ExperienceOption]()
     private var isConfigLoaded = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
+    private var preloadedPresentationItem: WebPresentationItem?
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -144,7 +145,7 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
-        webPresentationItem = webExperience(onEvent: handle)
+        preloadedPresentationItem = webExperience(onEvent: handle)
         
         // merge options, override existing if needed
         var newOptions = self.options
@@ -156,12 +157,12 @@ extension KetchUI {
             newOptions.append(option)
         }
         
-        webPresentationItem?.reload(options: newOptions)
+        preloadedPresentationItem?.reload(options: newOptions)
     }
     
     public func showExperience() {
-        webPresentationItem = webExperience(onEvent: handle)
-        webPresentationItem?.reload(options: options)
+        webPresentationItem = preloadedPresentationItem
+        preloadedPresentationItem = nil
     }
 
     public func showPreferences() {

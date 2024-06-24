@@ -45,6 +45,8 @@ public final class KetchUI: ObservableObject {
     }
 
     private func bindInput() {
+        preloadWebExperience()
+        
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
@@ -62,6 +64,11 @@ public final class KetchUI: ObservableObject {
                 self.consentStatus = consentStatus
             }
             .store(in: &subscriptions)
+    }
+    
+    private func preloadWebExperience() {
+        preloadedPresentationItem = webExperience(onEvent: handle)
+        preloadedPresentationItem?.reload(options: options)
     }
     
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
@@ -121,7 +128,6 @@ public final class KetchUI: ObservableObject {
     }
     
     private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
-        webPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
     }
@@ -145,6 +151,7 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
+        preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
         preloadedPresentationItem = webExperience(onEvent: handle)
         
         // merge options, override existing if needed
@@ -162,7 +169,6 @@ extension KetchUI {
     
     public func showExperience() {
         webPresentationItem = preloadedPresentationItem
-        preloadedPresentationItem = nil
     }
 
     public func showPreferences() {

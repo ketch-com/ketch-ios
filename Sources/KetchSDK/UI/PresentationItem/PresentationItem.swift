@@ -45,6 +45,7 @@ extension KetchUI {
             config = WebConfig(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
+                environmentCode: item.environmentCode,
                 advertisingIdentifiers: item.advertisingIdentifiers
             )
             
@@ -54,6 +55,7 @@ extension KetchUI {
         struct WebExperienceItem {
             let orgCode: String
             let propertyName: String
+            let environmentCode: String
             let advertisingIdentifiers: [Ketch.Identity]
         }
         

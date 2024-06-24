@@ -263,6 +263,7 @@ extension KetchUI {
             item: .init(
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
+                environmentCode: ketch.environmentCode,
                 advertisingIdentifiers: ketch.identities
             ),
             onEvent: onEvent

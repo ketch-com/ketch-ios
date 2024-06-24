@@ -29,7 +29,7 @@ public final class Ketch: ObservableObject {
 
     let organizationCode: String
     let propertyCode: String
-    private let environmentCode: String
+    let environmentCode: String
     let identities: [Identity]
     private let userDefaults: UserDefaults
     private var plugins = Set<PolicyPlugin>()

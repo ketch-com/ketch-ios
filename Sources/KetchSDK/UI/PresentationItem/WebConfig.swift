@@ -38,11 +38,7 @@ struct WebConfig {
             advertisingIdentifiers: advertisingIdentifiers,
             htmlFileName: htmlFileName
         )
-
-        DispatchQueue.main.async {
-            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
-        }
-
+        
         return config
     }
 
@@ -82,15 +78,17 @@ struct WebConfig {
         return Array(defaultQuery.values)
     }
 
-    func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
+    func preferencesWebView(with webHandler: WebHandler? = nil) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
         
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
 
-        WebHandler.Event.allCases.forEach { event in
-            configuration.userContentController.add(webHandler, name: event.rawValue)
+        if let webHandler {
+            WebHandler.Event.allCases.forEach { event in
+                configuration.userContentController.add(webHandler, name: event.rawValue)
+            }
         }
 
         let webView = WKWebView(frame: .zero, configuration: configuration)

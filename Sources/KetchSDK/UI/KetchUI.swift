@@ -43,9 +43,7 @@ public final class KetchUI: ObservableObject {
         bindInput()
     }
 
-    public func bindInput() {
-        preloadWebExperience()
-        
+    private func bindInput() {
         ketch.$configuration
             .sink { configuration in
                 self.configuration = configuration
@@ -63,13 +61,6 @@ public final class KetchUI: ObservableObject {
                 self.consentStatus = consentStatus
             }
             .store(in: &subscriptions)
-    }
-    
-    private var preloadedPresentationItem: WebPresentationItem?
-
-    private func preloadWebExperience() {
-        preloadedPresentationItem = webExperience(onEvent: handle)
-        preloadedPresentationItem?.reload(options: options)
     }
     
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
@@ -129,6 +120,7 @@ public final class KetchUI: ObservableObject {
     }
     
     private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
+        webPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
     }
@@ -152,6 +144,8 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
+        webPresentationItem = webExperience(onEvent: handle)
+        
         // merge options, override existing if needed
         var newOptions = self.options
         options.forEach { option in
@@ -162,21 +156,22 @@ extension KetchUI {
             newOptions.append(option)
         }
         
-        preloadedPresentationItem?.reload(options: newOptions)
+        webPresentationItem?.reload(options: newOptions)
     }
     
     public func showExperience() {
-        webPresentationItem = preloadedPresentationItem
+        webPresentationItem = webExperience(onEvent: handle)
+        webPresentationItem?.reload(options: options)
     }
 
     public func showPreferences() {
         experienceToShow = .preference
-        preloadedPresentationItem?.showPreferences()
+        webPresentationItem?.showPreferences()
     }
     
     public func showConsent() {
         experienceToShow = .consent
-        preloadedPresentationItem?.showConsent()
+        webPresentationItem?.showConsent()
     }
     
     public func closeExperience() {

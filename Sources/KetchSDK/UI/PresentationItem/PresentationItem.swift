@@ -28,7 +28,7 @@ extension KetchUI {
             }
         }
         
-        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.preloaded == rhs.preloaded }
+        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.webView == rhs.webView }
         
         let item: WebExperienceItem
         let config: WebConfig
@@ -37,7 +37,7 @@ extension KetchUI {
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
-        private(set) var preloaded: WKWebView
+        private(set) var webView: WKWebView?
         private var presentedItem: WebPresentationItem.Event.Content?
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
@@ -49,11 +49,6 @@ extension KetchUI {
             )
             
             self.onEvent = onEvent
-            
-            let webHandler = WebHandler(onEvent: { _, _ in })
-            preloaded = config.preferencesWebView(with: webHandler)
-            preloaded.navigationDelegate = webNavigationHandler
-            preloaded.uiDelegate = webNavigationHandler
         }
         
         struct WebExperienceItem {
@@ -76,16 +71,19 @@ extension KetchUI {
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
 
-            preloaded = config.preferencesWebView(with: webHandler)
-            preloaded.navigationDelegate = webNavigationHandler
-            preloaded.uiDelegate = webNavigationHandler
+            webView?.configuration.userContentController.removeAllScriptMessageHandlers()
+            webView = config.preferencesWebView(with: webHandler)
+            webView?.navigationDelegate = webNavigationHandler
+            webView?.uiDelegate = webNavigationHandler
         }
         
         private func webExperience(orgCode: String,
                                    propertyName: String,
                                    advertisingIdentifiers: [Ketch.Identity]) -> some View {
             var config = config
-            config.configWebApp = preloaded
+            
+            config.configWebApp?.configuration.userContentController.removeAllScriptMessageHandlers()
+            config.configWebApp = webView ?? WKWebView(frame: .zero)
 
             return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .custom)
@@ -222,11 +220,11 @@ extension KetchUI {
 
 extension KetchUI.WebPresentationItem {
     public func showPreferences() {
-        preloaded.evaluateJavaScript("ketch('showPreferences')")
+        webView?.evaluateJavaScript("ketch('showPreferences')")
     }
     
     public func showConsent() {
-        preloaded.evaluateJavaScript("ketch('showConsent')")
+        webView?.evaluateJavaScript("ketch('showConsent')")
     }
 }
 

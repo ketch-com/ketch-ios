@@ -64,7 +64,7 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
-            "environmentCode": URLQueryItem(name: "environmentCode", value: environmentCode),
+            "ketch_env": URLQueryItem(name: "ketch_env", value: environmentCode),
             "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
         

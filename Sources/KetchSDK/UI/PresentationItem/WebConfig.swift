@@ -9,6 +9,7 @@ import WebKit
 struct WebConfig {
     let orgCode: String
     let propertyName: String
+    let environmentCode: String
     let advertisingIdentifiers: [Ketch.Identity]
     let htmlFileName: String
     var params = [String: String]()
@@ -17,11 +18,13 @@ struct WebConfig {
     init(
         orgCode: String,
         propertyName: String,
+        environmentCode: String,
         advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) {
         self.propertyName = propertyName
         self.orgCode = orgCode
+        self.environmentCode = environmentCode
         self.advertisingIdentifiers = advertisingIdentifiers
         self.htmlFileName = htmlFileName
     }
@@ -29,20 +32,18 @@ struct WebConfig {
     static func configure(
         orgCode: String,
         propertyName: String,
+        environmentCode: String,
         advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) -> Self {
         var config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
+            environmentCode: environmentCode,
             advertisingIdentifiers: advertisingIdentifiers,
             htmlFileName: htmlFileName
         )
-
-        DispatchQueue.main.async {
-            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
-        }
-
+        
         return config
     }
 
@@ -63,6 +64,7 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
+            "ketch_env": URLQueryItem(name: "ketch_env", value: environmentCode),
             "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
         

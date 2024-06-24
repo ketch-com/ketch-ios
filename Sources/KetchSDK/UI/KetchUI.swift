@@ -173,12 +173,12 @@ extension KetchUI {
 
     public func showPreferences() {
         experienceToShow = .preference
-        webPresentationItem?.showPreferences()
+        preloadedPresentationItem?.showPreferences()
     }
     
     public func showConsent() {
         experienceToShow = .consent
-        webPresentationItem?.showConsent()
+        preloadedPresentationItem?.showConsent()
     }
     
     public func closeExperience() {

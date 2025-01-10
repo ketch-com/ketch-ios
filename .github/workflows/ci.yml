@@ -3,36 +3,35 @@ name: iOS CI
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     env:
       ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Step 1 - Create a temporary artifact folder ketchSDK
-      run: mkdir ketchSDK
+      - name: Step 1 - Create a temporary artifact folder ketchSDK
+        run: mkdir ketchSDK
 
-    - name: Step 2 - Add artifacts to publish to the temp folder
-      run: |
-        cp -a Sources ketchSDK/
-        cp -a LICENSE ketchSDK/
+      - name: Step 2 - Add artifacts to publish to the temp folder
+        run: |
+          cp -a Sources ketchSDK/
+          cp -a LICENSE ketchSDK/
 
-    - name: Step 3 - Archive using zip or tar
-      uses: NSCoder/archive-action@v1.0.0
-      with:
-        args: tar -czvf ketchSDK.tar.gz ketchSDK/
+      - name: Step 3 - Archive using zip or tar
+        uses: NSCoder/archive-action@v1.0.0
+        with:
+          args: tar -czvf ketchSDK.tar.gz ketchSDK/
 
-    - name: Step 4 - Use the Upload Artifact GitHub Action
-      uses: actions/upload-artifact@v2
-      with:
-        name: ketchSDK
-        path: ketchSDK.tar.gz
+      - name: Step 4 - Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v4
+        with:
+          name: ketchSDK
+          path: ketchSDK.tar.gz

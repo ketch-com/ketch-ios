@@ -40,6 +40,9 @@ extension KetchUI {
         private(set) var webView: WKWebView?
         private var presentedItem: WebPresentationItem.Event.Content?
         
+        // Protocol prefixes to delete on every load
+        private static let prefixesToRemove = ["IABTCF", "IABGPP", "IABUS"]
+        
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
             config = WebConfig(
@@ -50,6 +53,9 @@ extension KetchUI {
             )
             
             self.onEvent = onEvent
+            
+            // Clear keys during initialization
+            clearKeysWithPrefixes()
         }
         
         struct WebExperienceItem {
@@ -77,6 +83,22 @@ extension KetchUI {
             webView = config.preferencesWebView(with: webHandler)
             webView?.navigationDelegate = webNavigationHandler
             webView?.uiDelegate = webNavigationHandler
+            
+            // Clear keys during reload
+            clearKeysWithPrefixes()
+        }
+        
+        // Utility function to clear keys with specified prefixes
+        private func clearKeysWithPrefixes() {
+            let keysToRemove = userDefaults.dictionaryRepresentation().keys.filter { key in
+                WebPresentationItem.prefixesToRemove.contains { prefix in key.hasPrefix(prefix) }
+            }
+            
+            keysToRemove.forEach { key in
+                userDefaults.removeObject(forKey: key)
+            }
+            
+            KetchLogger.log.debug("Cleared \(keysToRemove.count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
         }
         
         private func webExperience(orgCode: String,
@@ -125,7 +147,7 @@ extension KetchUI {
                 
                 onEvent?(.onCCPAUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "CCPA")
                 
             case .updateTCF:
                 guard let stringBody = body as? String else {
@@ -137,7 +159,7 @@ extension KetchUI {
                 
                 onEvent?(.onTCFUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "TCF")
                 
             case .updateGPP:
                 guard let stringBody = body as? String else {
@@ -149,7 +171,7 @@ extension KetchUI {
                 
                 onEvent?(.onGPPUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "GPP")
                 
             case .consent:
                 guard let consentStatus: KetchSDK.ConsentStatus = payload(with: body) else {
@@ -204,18 +226,21 @@ extension KetchUI {
             return try? JSONDecoder().decode(T.self, from: payloadData)
         }
         
-        private func savePrivacyString(_ string: String) {
+        private func savePrivacyString(_ string: String, for privacyType: String) {
             guard let data = string.data(using: .utf8),
                   let privacyObject = try? JSONSerialization.jsonObject(with: data) as? [Any],
-                  let pricacyStrings = privacyObject.last as? [String: Any?] else {
-                
+                  let privacyStrings = privacyObject.last as? [String: Any?] else {
+                KetchLogger.log.error("Failed to parse \(privacyType) privacy string: \(string)")
                 return
             }
-            
-            // in current implementation we have a single key with object where all other pairs are lieve
-            pricacyStrings.forEach { pair in
+
+            // Save privacy strings to UserDefaults
+            privacyStrings.forEach { pair in
                 userDefaults.set(pair.value, forKey: pair.key)
             }
+
+            // Log the number of keys saved and the privacy type
+            KetchLogger.log.debug("\(privacyType) - Saved \(privacyStrings.count) privacy keys to NSUserDefaults.")
         }
     }
 }

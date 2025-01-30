@@ -11,6 +11,7 @@ extension KetchUI {
         public enum Event {
             case onClose(KetchSDK.HideExperienceStatus)
             case show(Content)
+            case willShowExperience(KetchSDK.WillShowExperienceType)
             case configurationLoaded(KetchSDK.Configuration)
             case onCCPAUpdated(String?)
             case onTCFUpdated(String?)
@@ -128,11 +129,20 @@ extension KetchUI {
                 
                 // Parse status from event body
                 let statusString = body as? String ?? ""
-                let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None  // Default to none if parsing fails
+                let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None
                     
                 onEvent?(.onClose(status))
                 return
-            
+                
+            case .willShowExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
+                
+                // Parse type from event body
+                let typeString = body as? String ?? ""
+                let type = KetchSDK.WillShowExperienceType(rawValue: typeString) ?? KetchSDK.WillShowExperienceType.None
+                
+                onEvent?(.willShowExperience(type))
+                
             case .tapOutside:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
                 onEvent?(.tapOutside)
@@ -301,6 +311,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case consent
         case showConsentExperience
         case showPreferenceExperience
+        case willShowExperience
         case onConfigLoaded
         case error
         case tapOutside

@@ -168,4 +168,10 @@ extension KetchSDK {
         case WillNotShow = "willNotShow"
         case None = "none"
     }
+    
+    public enum WillShowExperienceType: String, Codable {
+        case ConsentExperience = "experiences.consent"
+        case PreferenceExperience = "experiences.preference"
+        case None = "none"
+    }
 }

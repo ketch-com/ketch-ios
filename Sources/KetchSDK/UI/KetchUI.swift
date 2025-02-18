@@ -226,6 +226,9 @@ extension KetchUI {
         /// URL string for SDK, including `https://`
         case ketchURL(String)
         
+        /// Overrides identities passed on init
+        case identity(Ketch.Identity)
+        
         public enum ExperienceToShow: String {
             case consent, preferences
         }

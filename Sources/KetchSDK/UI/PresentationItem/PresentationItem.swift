@@ -300,6 +300,9 @@ extension KetchUI.ExperienceOption {
             
         case .ketchURL(let url):
             return (key: "ketch_mobilesdk_url", value: url)
+        
+        case .identity(let identity):
+            return (key: identity.key, value: identity.value)
         }
     }
 }

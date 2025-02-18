@@ -199,6 +199,12 @@ extension KetchUI {
         /// Forces an experience to show
         case forceExperience(ExperienceToShow)
         
+        /// Overrides organization code
+        case organizationCode(String)
+        
+        /// Overrides property code
+        case propertyCode(String)
+        
         /// Overrides environment detection and uses a specific environment
         case environment(String)
         

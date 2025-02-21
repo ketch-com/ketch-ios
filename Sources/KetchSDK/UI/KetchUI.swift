@@ -199,6 +199,12 @@ extension KetchUI {
         /// Forces an experience to show
         case forceExperience(ExperienceToShow)
         
+        /// Overrides organization code
+        case organizationCode(String)
+        
+        /// Overrides property code
+        case propertyCode(String)
+        
         /// Overrides environment detection and uses a specific environment
         case environment(String)
         
@@ -219,6 +225,9 @@ extension KetchUI {
         
         /// URL string for SDK, including `https://`
         case ketchURL(String)
+        
+        /// Overrides identities passed on init
+        case identity(Ketch.Identity)
         
         public enum ExperienceToShow: String {
             case consent, preferences

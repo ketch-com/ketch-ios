@@ -274,6 +274,12 @@ extension KetchUI.ExperienceOption {
         case .forceExperience(let exp):
             return (key: "ketch_show", value: exp.rawValue)
             
+        case .organizationCode(let code):
+            return (key: "orgCode", value: code)
+            
+        case .propertyCode(let code):
+            return (key: "propertyName", value: code)
+            
         case .environment(let value):
             return (key: "ketch_env", value: value)
             
@@ -294,6 +300,9 @@ extension KetchUI.ExperienceOption {
             
         case .ketchURL(let url):
             return (key: "ketch_mobilesdk_url", value: url)
+        
+        case .identity(let identity):
+            return (key: identity.key, value: identity.value)
         }
     }
 }

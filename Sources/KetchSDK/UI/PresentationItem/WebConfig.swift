@@ -68,6 +68,10 @@ struct WebConfig {
             "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
         
+        advertisingIdentifiers.forEach {
+            defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
+        }
+        
         params.forEach {
             // TODO: remove after web fix
             if $0 == "ketch_lang" {
@@ -75,10 +79,6 @@ struct WebConfig {
             } else {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
             }
-        }
-        
-        advertisingIdentifiers.forEach {
-            defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
         }
         
         return Array(defaultQuery.values)

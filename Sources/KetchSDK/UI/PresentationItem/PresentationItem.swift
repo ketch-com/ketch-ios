@@ -12,6 +12,7 @@ extension KetchUI {
             case onClose(KetchSDK.HideExperienceStatus)
             case show(Content)
             case willShowExperience(KetchSDK.WillShowExperienceType)
+            case hasShownExperience
             case configurationLoaded(KetchSDK.Configuration)
             case onCCPAUpdated(String?)
             case onTCFUpdated(String?)
@@ -133,7 +134,7 @@ extension KetchUI {
                     
                 onEvent?(.onClose(status))
                 return
-                
+                                
             case .willShowExperience:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 
@@ -142,6 +143,10 @@ extension KetchUI {
                 let type = KetchSDK.WillShowExperienceType(rawValue: typeString) ?? KetchSDK.WillShowExperienceType.None
                 
                 onEvent?(.willShowExperience(type))
+                
+            case .hasShownExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
+                onEvent?(.hasShownExperience)
                 
             case .tapOutside:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
@@ -321,6 +326,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case showConsentExperience
         case showPreferenceExperience
         case willShowExperience
+        case hasShownExperience
         case onConfigLoaded
         case error
         case tapOutside

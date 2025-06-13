@@ -229,6 +229,7 @@ extension KetchUI {
         /// Overrides identities passed on init
         case identity(Ketch.Identity)
         
+        /// Inject CSS into the Ketch IU
         case css(String)
         
         public enum ExperienceToShow: String {

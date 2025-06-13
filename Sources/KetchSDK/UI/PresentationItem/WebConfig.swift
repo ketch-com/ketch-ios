@@ -36,7 +36,7 @@ struct WebConfig {
         advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) -> Self {
-        var config = WebConfig(
+        let config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
             environmentCode: environmentCode,
@@ -76,6 +76,8 @@ struct WebConfig {
             // TODO: remove after web fix
             if $0 == "ketch_lang" {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1.lowercased())
+            } else if $0 == "ketch_css_inject" {
+                // ignore this parameter
             } else {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
             }
@@ -103,8 +105,14 @@ struct WebConfig {
         webView.scrollView.bounces = false
         if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
-        if let fileUrl = fileUrl {
-            webView.load(URLRequest(url: fileUrl))
+        if let fileUrl = fileUrl, var htmlString = try? String(contentsOf: fileUrl) {
+            // inject css if needed
+            if let css = params["ketch_css_inject"] {
+                let wrappedCSS = "<style>\n\(css)\n</style>"
+                htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
+            }
+            
+            webView.loadHTMLString(htmlString, baseURL: fileUrl.deletingLastPathComponent())
         }
 
         return webView

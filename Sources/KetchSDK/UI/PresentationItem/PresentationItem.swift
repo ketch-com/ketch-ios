@@ -77,6 +77,8 @@ extension KetchUI {
         }
         
         public mutating func reload(options: [ExperienceOption] = []) {
+            let options = validateOptions(options)
+            
             let webHandler = WebHandler(onEvent: handle)
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
@@ -88,6 +90,36 @@ extension KetchUI {
             
             // Clear keys during reload
             clearKeysWithPrefixes()
+        }
+        
+        private func validateOptions(_ options: [ExperienceOption]) -> [ExperienceOption] {
+            // validate css
+            guard let cssString = options.compactMap({
+                if case let .css(value) = $0 { return value }
+                else { return nil }
+            }).first else {
+                return options
+            }
+            
+            func clearedOptions() -> [ExperienceOption] {
+                // remove css from options
+                return options.filter {
+                    if case .css(_) = $0 {
+                        return false
+                    }
+                    return true
+                }
+            }
+            
+            if cssString.count > 1024 {
+                onEvent?(.error(description: "[Ketch] CSS injection rejected: CSS too long (>1kb limit)!"))
+                return clearedOptions()
+            } else if cssString.range(of: "<[^>]+>", options: .regularExpression) != nil  {
+                onEvent?(.error(description: "Ketch] CSS injection rejected: must not contain HTML tags!"))
+                return clearedOptions()
+            }
+            
+            return options
         }
         
         // Utility function to clear keys with specified prefixes
@@ -308,6 +340,9 @@ extension KetchUI.ExperienceOption {
         
         case .identity(let identity):
             return (key: identity.key, value: identity.value)
+            
+        case .css(let string):
+            return (key: "ketch_css_inject", value: string)
         }
     }
 }

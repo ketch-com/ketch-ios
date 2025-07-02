@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'KetchSDK'
-  s.version          = '4.4.4'
+  s.version          = '4.5.0'
   s.summary          = 'Ketch iOS SDK'
   s.swift_versions   = '5.7'
 

@@ -6,6 +6,10 @@
 import SwiftUI
 import WebKit
 
+#if canImport(AppTrackingTransparency)
+import AppTrackingTransparency
+#endif
+
 extension KetchUI {
     public struct WebPresentationItem: Equatable {
         public enum Event {
@@ -77,11 +81,16 @@ extension KetchUI {
         }
         
         public mutating func reload(options: [ExperienceOption] = []) {
-            let options = validateOptions(options)
+            var options = validateOptions(options)
             
             let webHandler = WebHandler(onEvent: handle)
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
+            
+            // Pass ATT status
+            let status = ATTrackingManager.trackingAuthorizationStatus
+            config.params["ketch_att"] = status.asString
+            KetchLogger.log.debug("Params: \(config.params)")
 
             webView?.configuration.userContentController.removeAllScriptMessageHandlers()
             webView = config.preferencesWebView(with: webHandler)
@@ -429,5 +438,17 @@ fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDele
         
         UIApplication.shared.open(url)
         return nil
+    }
+}
+
+extension ATTrackingManager.AuthorizationStatus {
+    var asString: String {
+        switch self {
+        case .notDetermined: return "notDetermined"
+        case .restricted: return "restricted"
+        case .denied: return "denied"
+        case .authorized: return "authorized"
+        @unknown default: return "unknown"
+        }
     }
 }

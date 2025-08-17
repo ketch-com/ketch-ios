@@ -4,7 +4,8 @@ This directory hosts the automated integration-test suite for the **Ketch iOS SD
 The suite contains:
 
 * **Sample App** – a minimal SwiftUI application that embeds the **KetchSDK** package and exposes all major APIs through buttons and live status labels.  
-* **UI Tests** – XCUITest cases that drive the sample app end-to-end, interacting with the embedded `WKWebView` to validate consent flows exactly as our Android tests do.
+* **UI Tests** – XCUITest cases that drive the sample app end-to-end.  
+  *Unlike the Android test-bed, we **do not** inject JavaScript into the underlying `WKWebView` because `KetchUI.WebPresentationItem` (and its web view) is not part of the public API.  Validation is instead performed through `KetchEventListener` callbacks which update app-level status and `testResult` labels that the tests assert against.*
 
 ---
 
@@ -32,8 +33,9 @@ integration-tests/
 
 ### 1  Prerequisites
 
-* macOS with **Xcode 15** (or newer) installed
-* **iOS Simulator** available (default: *iPhone 15, iOS 17*)
+* macOS with **Xcode 15** or newer
+* **iOS Simulator runtime ≥ iOS 15** installed  
+  The helper script automatically picks the first available simulator (e.g. *iPhone 16, iOS 18*).
 * **XcodeGen** – used to generate the project  
   Install once:
 
@@ -52,7 +54,7 @@ xcodegen generate            # creates KetchIntegrationTests.xcodeproj
 
 1. Open `KetchIntegrationTests.xcodeproj`.
 2. Select the **KetchIntegrationTestsApp** scheme.
-3. Choose a simulator (e.g., *iPhone 15*).
+3. Choose any iOS 15+ simulator.
 4. ⌘U to run all tests.
 
 ### 4  Run from command line (CI-friendly)
@@ -61,15 +63,10 @@ xcodegen generate            # creates KetchIntegrationTests.xcodeproj
 ./run-integration-tests.sh
 ```
 
-The script is a thin wrapper around:
-
-```bash
-xcodebuild \
-  -project KetchIntegrationTests.xcodeproj \
-  -scheme KetchIntegrationTestsApp \
-  -destination 'platform=iOS Simulator,name=iPhone 15' \
-  test | xcpretty
-```
+The script:
+* generates the project (if missing)
+* finds an available iOS simulator (preferring newest runtimes/devices)
+* runs `xcodebuild test` on that destination and forwards output.
 
 ---
 
@@ -77,12 +74,12 @@ xcodebuild \
 
 Current UI tests verify:
 
-* **SDK Initialization** – app starts and displays initial state.
-* **Configuration & Consent Loading** – `load()` triggers config and consent callbacks.
-* **Dialog Presentation** – `showConsent()` and `showPreferences()` display the proper web experiences and DOM elements (`ketch-consent-banner`, `ketch-preferences`).
-* **User Interaction** – tests click banner buttons (opt-out / opt-in) via injected JavaScript and assert resulting events and state changes.
-* **State Display** – labels for environment, consent, TCF, US Privacy, GPP update as expected.
-* **UI Sanity** – all action buttons are visible and tappable.
+* **SDK boot-up** – app launches, `Ketch` is created, status shows *Ketch initialized*.
+* **Configuration & Consent loading** – tapping **Load** triggers config & consent callbacks which update the on-screen labels.
+* **Dialog presentation** – **Show Consent** / **Show Preferences** buttons present the expected experience; presence is confirmed via event-driven flags captured in `testResult` labels.
+* **Dialog dismissal** – banner buttons are simulated (close action in ViewModel) and dismissal is confirmed via `onDismiss` → status label.
+* **State display** – environment, consent, US Privacy, TCF & GPP values update as expected.
+* **UI sanity** – all primary action buttons exist and are tappable.
 
 ---
 
@@ -96,7 +93,7 @@ Buttons (all have accessibility identifiers matching Android IDs):
 Labels:
 
 * Status, Environment, Consent, US Privacy, TCF, GPP  
-* Hidden **Test Actions** section used by UITests for WebView JS validation.
+* Hidden **Test Actions** section exposes helper buttons & a `testResultText` label used by UI tests.
 
 ---
 
@@ -118,9 +115,9 @@ Expanding to additional environments is trivial: pass extra `ExperienceOption` v
 
 | Issue | Fix |
 |-------|-----|
-| **Simulator “iPhone 15” not found** | Open Xcode → Settings → Platforms → install the desired iOS runtime or edit `run-integration-tests.sh` to use an available simulator (`xcrun simctl list devices`). |
-| **`xcodegen` command not found** | `brew install xcodegen` or add to PATH via Mint. |
-| **Network / CDN errors** | Ensure the machine has internet access to `global.ketchcdn.com` and `cdn.ketchjs.com`; corporate VPNs / proxies can block downloads. |
+| **No suitable simulator found** | Install a recent iOS runtime in Xcode Settings → Platforms, or create a simulator via `xcrun simctl`. The script will auto-select once available. |
+| **`xcodegen` command not found** | `brew install xcodegen` or install via Mint and ensure it’s in your `PATH`. |
+| **Network / CDN errors or tests timing out** | The suite loads live configuration & experiences from Ketch servers. Make sure the machine has internet access (`cdn.ketchjs.com`, `global.ketchcdn.com`). Offline runs will fail or hang waiting for callbacks. |
 | **`WKWebView` fails to load content in tests** | Reset simulator content & settings, then rerun. |
 
 ---

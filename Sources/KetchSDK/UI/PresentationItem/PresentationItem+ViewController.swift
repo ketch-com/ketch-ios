@@ -5,7 +5,10 @@
 //  Created by Anton Lyfar on 10.11.2022.
 //
 
-import UIKit 
+// Check if UIKit is importable - makes our SDK more robust when imported into other Swift packages
+#if canImport(UIKit)
+import UIKit
+#endif
 import SwiftUI
 
 extension KetchUI.WebPresentationItem {

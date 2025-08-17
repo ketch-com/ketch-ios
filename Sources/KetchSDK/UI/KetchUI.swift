@@ -31,6 +31,7 @@ public final class KetchUI: ObservableObject {
     private var options = [ExperienceOption]()
     private var isConfigLoaded = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
+    private var preloadedPresentationItem: WebPresentationItem?
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -43,7 +44,7 @@ public final class KetchUI: ObservableObject {
         bindInput()
     }
 
-    public func bindInput() {
+    private func bindInput() {
         preloadWebExperience()
         
         ketch.$configuration
@@ -65,8 +66,6 @@ public final class KetchUI: ObservableObject {
             .store(in: &subscriptions)
     }
     
-    private var preloadedPresentationItem: WebPresentationItem?
-
     private func preloadWebExperience() {
         preloadedPresentationItem = webExperience(onEvent: handle)
         preloadedPresentationItem?.reload(options: options)
@@ -74,8 +73,8 @@ public final class KetchUI: ObservableObject {
     
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
-        case .onClose:
-            didCloseExperience()
+        case .onClose(let status):
+            didCloseExperience(status: status)
             
         case .show(let content):
             if isConfigLoaded {
@@ -85,15 +84,21 @@ public final class KetchUI: ObservableObject {
                 experienceToShow = content
             }
             
+        case .willShowExperience(let type):
+            eventListener?.onWillShowExperience(type: type)
+            
+        case .hasShownExperience:
+            eventListener?.onHasShownExperience()
+            
         case .tapOutside:
-            didCloseExperience()
+            didCloseExperience(status: KetchSDK.HideExperienceStatus.None)
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
             
             isConfigLoaded = true
             
-            if let experienceToShow {
+            if experienceToShow != nil {
                 showExperience()
                 self.experienceToShow = nil
                 isConfigLoaded = false
@@ -128,9 +133,9 @@ public final class KetchUI: ObservableObject {
         }
     }
     
-    private func didCloseExperience() {
+    private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
         webPresentationItem = nil
-        eventListener?.onDismiss()
+        eventListener?.onDismiss(status: status)
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {
@@ -152,6 +157,9 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
+        preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
+        preloadedPresentationItem = webExperience(onEvent: handle)
+        
         // merge options, override existing if needed
         var newOptions = self.options
         options.forEach { option in
@@ -194,6 +202,12 @@ extension KetchUI {
         /// Forces an experience to show
         case forceExperience(ExperienceToShow)
         
+        /// Overrides organization code
+        case organizationCode(String)
+        
+        /// Overrides property code
+        case propertyCode(String)
+        
         /// Overrides environment detection and uses a specific environment
         case environment(String)
         
@@ -214,6 +228,12 @@ extension KetchUI {
         
         /// URL string for SDK, including `https://`
         case ketchURL(String)
+        
+        /// Overrides identities passed on init
+        case identity(Ketch.Identity)
+        
+        /// Inject CSS into the Ketch UI
+        case css(String)
         
         public enum ExperienceToShow: String {
             case consent, preferences
@@ -261,6 +281,7 @@ extension KetchUI {
             item: .init(
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
+                environmentCode: ketch.environmentCode,
                 advertisingIdentifiers: ketch.identities
             ),
             onEvent: onEvent
@@ -271,9 +292,10 @@ extension KetchUI {
 // MARK: - Dialog presentation item generation of each type
 
 public protocol KetchEventListener: AnyObject {
-    func onLoad()
     func onShow()
-    func onDismiss()
+    func onWillShowExperience(type: KetchSDK.WillShowExperienceType)
+    func onHasShownExperience()
+    func onDismiss(status: KetchSDK.HideExperienceStatus)
     func onEnvironmentUpdated(environment: String?)
     func onRegionInfoUpdated(regionInfo: String?)
     func onJurisdictionUpdated(jurisdiction: String?)

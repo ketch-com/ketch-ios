@@ -6,11 +6,17 @@
 import SwiftUI
 import WebKit
 
+#if canImport(AppTrackingTransparency)
+import AppTrackingTransparency
+#endif
+
 extension KetchUI {
     public struct WebPresentationItem: Equatable {
         public enum Event {
-            case onClose
+            case onClose(KetchSDK.HideExperienceStatus)
             case show(Content)
+            case willShowExperience(KetchSDK.WillShowExperienceType)
+            case hasShownExperience
             case configurationLoaded(KetchSDK.Configuration)
             case onCCPAUpdated(String?)
             case onTCFUpdated(String?)
@@ -28,7 +34,7 @@ extension KetchUI {
             }
         }
         
-        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.preloaded == rhs.preloaded }
+        public static func == (lhs: Self, rhs: Self) -> Bool { lhs.webView == rhs.webView }
         
         let item: WebExperienceItem
         let config: WebConfig
@@ -37,27 +43,31 @@ extension KetchUI {
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
-        private(set) var preloaded: WKWebView
+        private(set) var webView: WKWebView?
         private var presentedItem: WebPresentationItem.Event.Content?
+        
+        // Protocol prefixes to delete on every load
+        private static let prefixesToRemove = ["IABTCF", "IABGPP", "IABUS"]
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
             config = WebConfig(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
+                environmentCode: item.environmentCode,
                 advertisingIdentifiers: item.advertisingIdentifiers
             )
             
             self.onEvent = onEvent
             
-            let webHandler = WebHandler(onEvent: { _, _ in })
-            preloaded = config.preferencesWebView(with: webHandler)
-            preloaded.navigationDelegate = webNavigationHandler
+            // Clear keys during initialization
+            clearKeysWithPrefixes()
         }
         
         struct WebExperienceItem {
             let orgCode: String
             let propertyName: String
+            let environmentCode: String
             let advertisingIdentifiers: [Ketch.Identity]
         }
         
@@ -71,19 +81,76 @@ extension KetchUI {
         }
         
         public mutating func reload(options: [ExperienceOption] = []) {
+            var options = validateOptions(options)
+            
             let webHandler = WebHandler(onEvent: handle)
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
+            
+            // Pass ATT status
+            let status = ATTrackingManager.trackingAuthorizationStatus
+            config.params["ketch_att"] = status.asString
+            KetchLogger.log.debug("Params: \(config.params)")
 
-            preloaded = config.preferencesWebView(with: webHandler)
-            preloaded.navigationDelegate = webNavigationHandler
+            webView?.configuration.userContentController.removeAllScriptMessageHandlers()
+            webView = config.preferencesWebView(with: webHandler)
+            webView?.navigationDelegate = webNavigationHandler
+            webView?.uiDelegate = webNavigationHandler
+            
+            // Clear keys during reload
+            clearKeysWithPrefixes()
+        }
+        
+        private func validateOptions(_ options: [ExperienceOption]) -> [ExperienceOption] {
+            // validate css
+            guard let cssString = options.compactMap({
+                if case let .css(value) = $0 { return value }
+                else { return nil }
+            }).first else {
+                return options
+            }
+            
+            func clearedOptions() -> [ExperienceOption] {
+                // remove css from options
+                return options.filter {
+                    if case .css(_) = $0 {
+                        return false
+                    }
+                    return true
+                }
+            }
+            
+            if cssString.count > 1024 {
+                onEvent?(.error(description: "[Ketch] CSS injection rejected: CSS too long (>1kb limit)!"))
+                return clearedOptions()
+            } else if cssString.range(of: "<[^>]+>", options: .regularExpression) != nil  {
+                onEvent?(.error(description: "Ketch] CSS injection rejected: must not contain HTML tags!"))
+                return clearedOptions()
+            }
+            
+            return options
+        }
+        
+        // Utility function to clear keys with specified prefixes
+        private func clearKeysWithPrefixes() {
+            let keysToRemove = userDefaults.dictionaryRepresentation().keys.filter { key in
+                WebPresentationItem.prefixesToRemove.contains { prefix in key.hasPrefix(prefix) }
+            }
+            
+            keysToRemove.forEach { key in
+                userDefaults.removeObject(forKey: key)
+            }
+            
+            KetchLogger.log.debug("Cleared \(keysToRemove.count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
         }
         
         private func webExperience(orgCode: String,
                                    propertyName: String,
                                    advertisingIdentifiers: [Ketch.Identity]) -> some View {
             var config = config
-            config.configWebApp = preloaded
+            
+            config.configWebApp?.configuration.userContentController.removeAllScriptMessageHandlers()
+            config.configWebApp = webView ?? WKWebView(frame: .zero)
 
             return PreferencesWebView(config: config)
                 .asResponsiveSheet(style: .custom)
@@ -102,15 +169,26 @@ extension KetchUI {
             case .hideExperience:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 
-                guard
-                    let status = body as? String,
-                    WebHandler.Event.Message(rawValue: status) == .willNotShow
-                else {
-                    KetchLogger.log.debug("onClose")
-                    onEvent?(.onClose)
-                    return
-                }
-            
+                // Parse status from event body
+                let statusString = body as? String ?? ""
+                let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None
+                    
+                onEvent?(.onClose(status))
+                return
+                                
+            case .willShowExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
+                
+                // Parse type from event body
+                let typeString = body as? String ?? ""
+                let type = KetchSDK.WillShowExperienceType(rawValue: typeString) ?? KetchSDK.WillShowExperienceType.None
+                
+                onEvent?(.willShowExperience(type))
+                
+            case .hasShownExperience:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
+                onEvent?(.hasShownExperience)
+                
             case .tapOutside:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
                 onEvent?(.tapOutside)
@@ -125,7 +203,7 @@ extension KetchUI {
                 
                 onEvent?(.onCCPAUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "CCPA")
                 
             case .updateTCF:
                 guard let stringBody = body as? String else {
@@ -137,7 +215,7 @@ extension KetchUI {
                 
                 onEvent?(.onTCFUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "TCF")
                 
             case .updateGPP:
                 guard let stringBody = body as? String else {
@@ -149,7 +227,7 @@ extension KetchUI {
                 
                 onEvent?(.onGPPUpdated(stringBody))
                 
-                savePrivacyString(stringBody)
+                savePrivacyString(stringBody, for: "GPP")
                 
             case .consent:
                 guard let consentStatus: KetchSDK.ConsentStatus = payload(with: body) else {
@@ -204,29 +282,32 @@ extension KetchUI {
             return try? JSONDecoder().decode(T.self, from: payloadData)
         }
         
-        private func savePrivacyString(_ string: String) {
+        private func savePrivacyString(_ string: String, for privacyType: String) {
             guard let data = string.data(using: .utf8),
                   let privacyObject = try? JSONSerialization.jsonObject(with: data) as? [Any],
-                  let pricacyStrings = privacyObject.last as? [String: Any?] else {
-                
+                  let privacyStrings = privacyObject.last as? [String: Any?] else {
+                KetchLogger.log.error("Failed to parse \(privacyType) privacy string: \(string)")
                 return
             }
-            
-            // in current implementation we have a single key with object where all other pairs are lieve
-            pricacyStrings.forEach { pair in
+
+            // Save privacy strings to UserDefaults
+            privacyStrings.forEach { pair in
                 userDefaults.set(pair.value, forKey: pair.key)
             }
+
+            // Log the number of keys saved and the privacy type
+            KetchLogger.log.debug("\(privacyType) - Saved \(privacyStrings.count) privacy keys to NSUserDefaults.")
         }
     }
 }
 
 extension KetchUI.WebPresentationItem {
     public func showPreferences() {
-        preloaded.evaluateJavaScript("ketch('showPreferences')")
+        webView?.evaluateJavaScript("ketch('showPreferences')")
     }
     
     public func showConsent() {
-        preloaded.evaluateJavaScript("ketch('showConsent')")
+        webView?.evaluateJavaScript("ketch('showConsent')")
     }
 }
 
@@ -238,6 +319,12 @@ extension KetchUI.ExperienceOption {
             
         case .forceExperience(let exp):
             return (key: "ketch_show", value: exp.rawValue)
+            
+        case .organizationCode(let code):
+            return (key: "orgCode", value: code)
+            
+        case .propertyCode(let code):
+            return (key: "propertyName", value: code)
             
         case .environment(let value):
             return (key: "ketch_env", value: value)
@@ -259,6 +346,12 @@ extension KetchUI.ExperienceOption {
             
         case .ketchURL(let url):
             return (key: "ketch_mobilesdk_url", value: url)
+        
+        case .identity(let identity):
+            return (key: identity.key, value: identity.value)
+            
+        case .css(let string):
+            return (key: "ketch_css_inject", value: string)
         }
     }
 }
@@ -276,16 +369,13 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case consent
         case showConsentExperience
         case showPreferenceExperience
+        case willShowExperience
+        case hasShownExperience
         case onConfigLoaded
         case error
         case tapOutside
         case geoip
-        
-        enum Message: String, Codable {
-            case willNotShow
-            case setConsent
-            case close
-        }
+
     }
     
     private var onEvent: ((Event, Any) -> Void)?
@@ -339,5 +429,26 @@ fileprivate class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDele
         }
         
         decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        guard let url = navigationAction.request.url else {
+            return nil
+        }
+        
+        UIApplication.shared.open(url)
+        return nil
+    }
+}
+
+extension ATTrackingManager.AuthorizationStatus {
+    var asString: String {
+        switch self {
+        case .notDetermined: return "notDetermined"
+        case .restricted: return "restricted"
+        case .denied: return "denied"
+        case .authorized: return "authorized"
+        @unknown default: return "unknown"
+        }
     }
 }

@@ -9,6 +9,7 @@ import WebKit
 struct WebConfig {
     let orgCode: String
     let propertyName: String
+    let environmentCode: String
     let advertisingIdentifiers: [Ketch.Identity]
     let htmlFileName: String
     var params = [String: String]()
@@ -17,11 +18,13 @@ struct WebConfig {
     init(
         orgCode: String,
         propertyName: String,
+        environmentCode: String,
         advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) {
         self.propertyName = propertyName
         self.orgCode = orgCode
+        self.environmentCode = environmentCode
         self.advertisingIdentifiers = advertisingIdentifiers
         self.htmlFileName = htmlFileName
     }
@@ -29,28 +32,31 @@ struct WebConfig {
     static func configure(
         orgCode: String,
         propertyName: String,
+        environmentCode: String,
         advertisingIdentifiers: [Ketch.Identity],
         htmlFileName: String = "index"
     ) -> Self {
-        var config = WebConfig(
+        let config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
+            environmentCode: environmentCode,
             advertisingIdentifiers: advertisingIdentifiers,
             htmlFileName: htmlFileName
         )
-
-        DispatchQueue.main.async {
-            config.configWebApp = config.preferencesWebView(with: WebHandler(onEvent: { _, _ in }))
-        }
-
+        
         return config
     }
 
     private var fileUrl: URL? {
-        let url = Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")!
+        // Handle bundling differences with swift packages vs cocoa pods when fetching static assests (index.html)
+        #if SWIFT_PACKAGE
+            // SWIFT_PACKAGE is a variable we define in Package.swift
+            let url = Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")!
+        #else
+            let url = Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")!
+        #endif
         var urlComponents = URLComponents(string: url.absoluteString)
         urlComponents?.queryItems = queryItems
-
         return urlComponents?.url
     }
 
@@ -58,20 +64,23 @@ struct WebConfig {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
+            "ketch_env": URLQueryItem(name: "ketch_env", value: environmentCode),
             "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
+        
+        advertisingIdentifiers.forEach {
+            defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
+        }
         
         params.forEach {
             // TODO: remove after web fix
             if $0 == "ketch_lang" {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1.lowercased())
+            } else if $0 == "ketch_css_inject" {
+                // ignore this parameter
             } else {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
             }
-        }
-        
-        advertisingIdentifiers.forEach {
-            defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
         }
         
         return Array(defaultQuery.values)
@@ -81,7 +90,6 @@ struct WebConfig {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
         
-
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
 
@@ -97,8 +105,14 @@ struct WebConfig {
         webView.scrollView.bounces = false
         if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
-        if let fileUrl = fileUrl {
-            webView.load(URLRequest(url: fileUrl))
+        if let fileUrl = fileUrl, var htmlString = try? String(contentsOf: fileUrl) {
+            // inject css if needed
+            if let css = params["ketch_css_inject"] {
+                let wrappedCSS = "<style>\n\(css)\n</style>"
+                htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
+            }
+            
+            webView.loadHTMLString(htmlString, baseURL: fileUrl.deletingLastPathComponent())
         }
 
         return webView

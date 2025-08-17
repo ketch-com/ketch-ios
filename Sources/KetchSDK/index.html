@@ -104,6 +104,11 @@
             width: 100dvw;
             min-height: -webkit-fill-available;
         }
+        
+        /* Fixes issue where inputs zoom when clicked on iOS */
+        input, select:focus, textarea {
+            font-size: 16px !important;
+        }
     </style>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover" />
 </head>

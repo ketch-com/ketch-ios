@@ -117,9 +117,9 @@ extension KetchSDK {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            purposes = try container.decodeIfPresent([String: Bool].self, forKey: .purposes)
-            vendors = try container.decodeIfPresent([String].self, forKey: .vendors)
-            protocols = try container.decodeIfPresent([String: String].self, forKey: .protocols)
+            purposes = try? container.decodeIfPresent([String: Bool].self, forKey: .purposes)
+            vendors = try? container.decodeIfPresent([String].self, forKey: .vendors)
+            protocols = try? container.decodeIfPresent([String: String].self, forKey: .protocols)
 
         }
 

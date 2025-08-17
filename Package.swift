@@ -21,6 +21,9 @@ let package = Package(
             resources: [
                 .copy("Assets.xcassets"),
                 .copy("index.html")
+            ],
+            swiftSettings: [
+                .define("SWIFT_PACKAGE")
             ]
         ),
         .testTarget(

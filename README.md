@@ -180,6 +180,15 @@ extension KetchUI {
         /// Inject CSS into the Ketch UI
         case css(String)
 
+        /// Exact age for age band legal basis resolution
+        case age(UInt)
+
+        /// Lower bound of age range for age band legal basis resolution
+        case ageLower(UInt)
+
+        /// Upper bound of age range for age band legal basis resolution
+        case ageUpper(UInt)
+
         public enum ExperienceToShow: String {
             case consent, preferences
         }

@@ -352,6 +352,15 @@ extension KetchUI.ExperienceOption {
             
         case .css(let string):
             return (key: "ketch_css_inject", value: string)
+
+        case .age(let value):
+            return (key: "ketch_age", value: String(value))
+
+        case .ageLower(let value):
+            return (key: "ketch_age_lower", value: String(value))
+
+        case .ageUpper(let value):
+            return (key: "ketch_age_upper", value: String(value))
         }
     }
 }

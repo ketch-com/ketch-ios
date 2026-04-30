@@ -1,0 +1,43 @@
+---
+alwaysApply: true
+---
+
+# Ketch iOS SDK — Project Context
+
+## Purpose
+
+The **Ketch iOS SDK** (`KetchSDK`) is a Swift library that embeds Ketch consent and preference experiences in native apps via **WebKit**, with first-class **SwiftUI** (`.ketchView`) and **UIKit** (modal / view-controller) integration.
+
+## Technology Stack
+
+- **Language**: Swift 5.7+ (package tools version 5.7)
+- **Platform**: iOS 15.0+
+- **Distribution**: Swift Package Manager (`Package.swift`), CocoaPods (`KetchSDK.podspec`)
+- **UI**: `WKWebView`, SwiftUI, UIKit; bundled `index.html` and assets under `Sources/KetchSDK`
+- **Concurrency / state**: Combine (`ObservableObject`, `@Published`), async URL loading
+- **Logging**: `os.Logger` with subsystem **`com.ketch.sdk`** (`KetchLogger`) for Unified Logging / `simctl` filters
+- **Tests**: XCTest (`Tests/KetchSDKTests`)
+
+## Project Structure
+
+```
+Sources/KetchSDK/
+  Core/           # Ketch, KetchSDK factory, HTTP (ApiRequest), configuration & consent models, errors, logging
+  UI/             # KetchUI orchestration, WebPresentationItem, WKWebView config, SwiftUI modifiers & sheets
+  Assets.xcassets # Bundled images
+  index.html      # Bootstraps the web experience inside the WebView
+Tests/                    # SPM test target (KetchSDKTests)
+Examples/KetchSDKSample/  # SwiftUI sample app + Xcode project + sample XCTest target
+.cursor/skills/           # Cursor skill to configure SPM source and run the sample on a simulator
+```
+
+## Key Design Patterns
+
+- **`KetchUI` vs `Ketch`**: `Ketch` holds org/property/env, identities, and loads configuration; `KetchUI` owns the hidden preloaded `WebPresentationItem`, merges `ExperienceOption`s on `reload(with:)`, and publishes `webPresentationItem` when the web layer asks to show an experience.
+- **Reload and presentation**: `reload(with:)` replaces the preloaded web stack and reapplies options. The web view emits events (`show`, `configurationLoaded`, `onClose`, etc.); SwiftUI hosts the sheet when `webPresentationItem` is non-nil. **Do not assume** `showConsent()` alone will present UI after a reload that resolved to “no banner” — use **`.forceExperience(.consent)`** or **`.forceExperience(.preferences)`** in the reload parameter list when you need the experience regardless of auto-evaluation (see sample `ContentView` helpers).
+- **Event surface**: Set `ketchUI.eventListener` to a `KetchEventListener` for `onShow`, `onDismiss`, consent/protocol updates, and lifecycle hooks (`onWillShowExperience`, `onHasShownExperience`).
+- **SPM vs app**: Library code uses `#if SWIFT_PACKAGE` where paths differ (e.g. resource / bundle resolution); preserve those guards when touching loading or HTML injection.
+
+## Architecture
+
+Single library product **`KetchSDK`**: **Core** (models + networking + storage-facing APIs) stays independent of SwiftUI; **UI** depends on Core and WebKit and bridges script messages into typed events and published state. Host apps only reference public types on `KetchSDK` (e.g. `KetchSDK.create`, `KetchUI`, `KetchEventListener`).

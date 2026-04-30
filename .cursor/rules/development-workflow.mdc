@@ -1,0 +1,68 @@
+---
+alwaysApply: true
+---
+
+# Development Workflow — Ketch iOS SDK
+
+## Prerequisites
+
+- macOS with **Xcode 15+** (matches README; iOS 17+ simulators commonly used)
+- **Apple ID** not required for simulator-only work
+- For **CocoaPods** validation: `pod` CLI installed
+
+## Setup
+
+```bash
+git clone git@github.com:ketch-com/ketch-ios.git
+cd ketch-ios
+# Open Package.swift in Xcode, or work from the CLI with xcodebuild (below)
+```
+
+To run the **in-repo SwiftUI sample** (SPM points at GitHub tag or local package — see skill):
+
+```bash
+bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh        # remote package (default)
+bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh local # this checkout
+```
+
+## Common Commands
+
+| Command | Purpose |
+| --- | --- |
+| `xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=<Simulator Name>' build` | Compile the **SPM library** for a simulator (required — plain `swift build` targets macOS and fails on iOS-only APIs). |
+| `xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=<Simulator Name>' test` | Run **KetchSDKTests** on a simulator. |
+| `xcodebuild -project Examples/KetchSDKSample/KetchSDK.xcodeproj -scheme KetchSDK-Example -destination 'platform=iOS Simulator,name=<Simulator Name>' -derivedDataPath Examples/KetchSDKSample/build build` | Build the **sample app** (use repo-ignored `build` under `Examples/` for derived data). |
+| `bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh --build-only` | Configure SPM (if needed), build, and install the sample without attaching logs. |
+| `pod lib lint KetchSDK.podspec --allow-warnings` | Sanity-check the **podspec** after changing sources, version, or resources. |
+
+Pick a simulator name from `xcrun simctl list devices available` (e.g. `iPhone 17`).
+
+## Validation Checklist
+
+Before merging SDK changes:
+
+1. `xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=<Simulator Name>' build` — **must pass**
+2. `xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=<Simulator Name>' test` — **must pass**
+3. If `KetchSDK.podspec` or `Sources/` layout changed: `pod lib lint KetchSDK.podspec` (or CI-equivalent review)
+4. If sample or SPM wiring changed: build **KetchSDK-Example** (command above) or `run-sample-app.sh --build-only`
+
+## CI note
+
+`.github/workflows/ci.yml` runs on **ubuntu** and only **archives `Sources/`** for Artifactory — it does **not** compile Swift. **Xcode builds are local / Actions-on-macOS responsibility**; do not rely on that workflow for compile signal.
+
+## Testing
+
+- **Framework**: XCTest
+- **SPM tests**: `Tests/KetchSDKTests/` (minimal placeholder today — extend when adding behavior)
+- **Sample tests**: `Examples/KetchSDKSample/Tests/` (`KetchSDK_Tests` target in the Xcode project)
+- **Running**: always use an **iOS Simulator destination** with `xcodebuild`, not host `swift test` for library code that imports UIKit/WebKit
+
+## Code Quality
+
+- Match existing **Swift** style and access control; keep public API surface intentional.
+- Prefer **small, focused diffs**; do not reformat unrelated files.
+- When adding web bridge behavior, update **both** script expectations in `PresentationItem` / `WebHandler` and any **README** contract if host integrators are affected.
+
+## Simulator automation
+
+For CLI-driven taps, screenshots, and unified log capture without XCTest, see `.cursor/rules/ios-simulator-control.mdc`.

@@ -9,5 +9,6 @@ import Foundation
 import OSLog
 
 struct KetchLogger {
-    static let log = Logger()
+    /// Fixed subsystem so host apps can filter simulator unified logs
+    static let log = Logger(subsystem: "com.ketch.sdk", category: "KetchSDK")
 }

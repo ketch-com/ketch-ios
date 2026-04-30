@@ -1,0 +1,41 @@
+---
+description: Drive the iOS Simulator from the shell and macOS UI automation (taps, typing, screenshots, logs)
+globs: "**/*"
+alwaysApply: false
+---
+
+# iOS Simulator control (CLI + AppleScript)
+
+`simctl` can **boot, install, launch, screenshot, and stream logs**—not taps or swipes. For those, use **AppleScript → System Events** (`click at`, `keystroke`) on macOS.
+
+## Common `simctl` flows
+
+- UDID: `xcrun simctl list devices available` → `export SIM_ID='<uuid>'`
+- Boot / wait: `xcrun simctl boot "$SIM_ID"`; `xcrun simctl bootstatus "$SIM_ID" -b`
+- Install / launch / quit: `install`, `launch`, `terminate` with bundle id (launch may exit `3` if already running—terminate first for a cold start)
+- Screenshot: `xcrun simctl io "$SIM_ID" screenshot /tmp/device.png` — check pixels with `sips -g pixelWidth -g pixelHeight` (often **3×** points)
+
+## Log streaming
+
+Run **in the background** so the agent does not hang:
+
+`xcrun simctl spawn "$SIM_ID" log stream --style compact --predicate 'process == "AppName" AND subsystem == "com.vendor.subsystem"' &`
+
+## Taps and typing (no XCTest)
+
+1. `osascript -e 'tell application "Simulator" to activate'`
+2. Read **screen** position and size of `process "Simulator"` window 1 via System Events.
+3. `click at {screenX, screenY}` is **absolute display coordinates**, not window-relative: add the window’s `position` to offsets derived from the device frame inside the window (title bar + bezel eat vertical space—calibrate with a screenshot if taps miss).
+4. After focusing a field: `tell application "System Events" to keystroke "text"`
+
+```applescript
+tell application "Simulator" to activate
+delay 0.3
+tell application "System Events"
+  click at {1234, 567}
+  delay 0.2
+  keystroke "42"
+end tell
+```
+
+Prefer **XCUITest** for stable automation; do not assume `cliclick` or `idb` exists. Dismiss the keyboard or tap away before small targets so clicks are not swallowed by the keyplane.

@@ -97,3 +97,7 @@ iOSInjectionProject/
 #DS_Store
 Framework/.DS_Store
 .DS_Store
+
+# Python (Cursor skills / tooling)
+__pycache__/
+*.pyc

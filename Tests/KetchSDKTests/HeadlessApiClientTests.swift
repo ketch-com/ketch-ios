@@ -1,0 +1,47 @@
+import XCTest
+@testable import KetchSDK
+
+final class HeadlessApiClientTests: XCTestCase {
+    private var client: HeadlessApiClient!
+
+    override func setUp() {
+        super.setUp()
+        client = HeadlessApiClient(dataCenter: .us)
+    }
+
+    func testBuildURL_ip() {
+        let url = client.buildURL(path: "/ip")
+        XCTAssertEqual(url?.absoluteString, "https://global.ketchcdn.com/web/v3/ip")
+    }
+
+    func testBuildURL_bootstrap() {
+        let url = client.buildURL(path: "/config/acme/prop/boot.json")
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/config/acme/prop/boot.json"
+        )
+    }
+
+    func testBuildURL_fullConfigurationWithHash() {
+        let url = client.buildURL(
+            path: "/config/acme/prop/prod/us-ca/en-US/config.json",
+            queryItems: [URLQueryItem(name: "hash", value: "8913461971881236311")]
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/config/acme/prop/prod/us-ca/en-US/config.json?hash=8913461971881236311"
+        )
+    }
+
+    func testBuildURL_euDataCenter() {
+        let eu = HeadlessApiClient(dataCenter: .eu)
+        let url = eu.buildURL(path: "/ip")
+        XCTAssertEqual(url?.absoluteString, "https://eu.ketchcdn.com/web/v3/ip")
+    }
+
+    func testKetchDataCenterBaseURLs() {
+        XCTAssertEqual(KetchDataCenter.us.baseURL.absoluteString, "https://global.ketchcdn.com/web/v3")
+        XCTAssertEqual(KetchDataCenter.eu.baseURL.absoluteString, "https://eu.ketchcdn.com/web/v3")
+        XCTAssertEqual(KetchDataCenter.uat.baseURL.absoluteString, "https://dev.ketchcdn.com/web/v3")
+    }
+}

@@ -73,6 +73,49 @@ private func setupKetch(advertisingIdentifier: UUID) {
 }
 ```
 
+### Headless API (web/v3, pre-WebView)
+
+Use native HTTP for ATT-critical flows **before** loading the WebView—location, config, and consent with `protocols` from the CDN. Contract: [mobile-headless-api.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-headless-api.md) in ketch-tag.
+
+```swift
+let ketch = KetchSDK.create(
+    organizationCode: "your_org",
+    propertyCode: "your_property",
+    environmentCode: "production",
+    identities: [Ketch.Identity(key: "idfa", value: "...")],
+    dataCenter: .us  // .us | .eu | .uat
+)
+
+// Recommended order for cold start / ATT
+ketch.fetchLocation { result in /* jurisdiction hint */ }
+ketch.fetchBootstrapConfiguration { result in /* boot.json */ }
+ketch.fetchFullConfiguration(
+    request: .init(
+        organizationCode: "your_org",
+        propertyCode: "your_property",
+        environmentCode: "production",
+        jurisdictionCode: "us-ca",
+        languageCode: "en-US",
+        hash: optionalHashFromBootstrap
+    )
+) { result in /* full config */ }
+
+ketch.fetchConsent(consentConfig: config) { result in
+    // ConsentStatus includes purposes and protocols (GPP, TCF, US Privacy, …)
+}
+
+ketch.setConsent(consentUpdate: update) { result in
+    // Server-computed protocols in response
+}
+
+// iOS 14+: read ATT before headless + WebView
+if #available(iOS 14, *) {
+    let att = KetchSDK.trackingAuthorizationStatusString()
+}
+```
+
+Static equivalents (default `dataCenter: .us`): `KetchSDK.fetchLocation()`, `KetchSDK.fetchConsent(config:)`, etc.
+
 ### Step 2. Instantiate the KetchUI object:
 
 ```swift

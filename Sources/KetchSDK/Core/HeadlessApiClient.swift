@@ -1,0 +1,344 @@
+//
+//  HeadlessApiClient.swift
+//  KetchSDK
+//
+//  Native HTTP client mirroring ketch-tag KetchWebAPI (web/v3).
+//
+
+import Combine
+import Foundation
+
+/// Builds v3 CDN URLs and performs headless API calls.
+final class HeadlessApiClient {
+    typealias KetchError = KetchSDK.KetchError
+    typealias Configuration = KetchSDK.Configuration
+    typealias ConsentStatus = KetchSDK.ConsentStatus
+    typealias ConsentConfig = KetchSDK.ConsentConfig
+    typealias ConsentUpdate = KetchSDK.ConsentUpdate
+
+    private let baseURL: URL
+    private let apiClient: ApiClient
+    private let session: URLSession
+
+    init(
+        dataCenter: KetchDataCenter = .us,
+        apiClient: ApiClient = DefaultApiClient(),
+        session: URLSession = .shared
+    ) {
+        self.baseURL = dataCenter.baseURL
+        self.apiClient = apiClient
+        self.session = session
+    }
+
+    // MARK: - P0
+
+    func fetchLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
+        get(path: "/ip")
+            .decode(type: KetchSDK.LocationResponse.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func fetchBootstrapConfiguration(
+        organization: String,
+        property: String
+    ) -> AnyPublisher<Configuration, KetchError> {
+        get(path: "/config/\(organization)/\(property)/boot.json")
+            .decode(type: Configuration.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func fetchFullConfiguration(
+        request: KetchSDK.FullConfigurationRequest
+    ) -> AnyPublisher<Configuration, KetchError> {
+        var path = "/config/\(request.organizationCode)/\(request.propertyCode)"
+        if let env = request.environmentCode,
+           let jurisdiction = request.jurisdictionCode,
+           let language = request.languageCode {
+            path += "/\(env)/\(jurisdiction)/\(language)"
+        }
+        path += "/config.json"
+        var query: [URLQueryItem] = []
+        if let hash = request.hash {
+            query.append(URLQueryItem(name: "hash", value: hash))
+        }
+        return get(path: path, queryItems: query)
+            .decode(type: Configuration.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func fetchConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        let path = "/consent/\(config.organizationCode)/get"
+        guard let body = try? JSONEncoder().encode(ConsentConfigPayload(config: config)) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postConsent(path: path, body: body, config: config)
+    }
+
+    func fetchProtocols(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        fetchConsent(config: config)
+            .map { response in
+                guard let protocols = response.protocols, !protocols.isEmpty else {
+                    return ConsentStatus(purposes: nil, vendors: nil, protocols: nil)
+                }
+                return ConsentStatus(
+                    purposes: response.purposes,
+                    vendors: response.vendors,
+                    protocols: protocols
+                )
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Returns server consent including computed `protocols`; omits `protocols` from request body.
+    func setConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
+        let path = "/consent/\(update.organizationCode)/update"
+        guard let body = try? JSONEncoder().encode(SetConsentPayload(update: update)) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postSetConsent(path: path, body: body, fallback: update)
+    }
+
+    // MARK: - Legacy v3 endpoints (used by existing KetchApiRequest)
+
+    func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
+        fetchFullConfiguration(
+            request: .init(organizationCode: organization, propertyCode: property)
+        )
+    }
+
+    func fetchConfig(
+        organization: String,
+        property: String,
+        environment: String,
+        hash: String,
+        jurisdiction: String,
+        language: String
+    ) -> AnyPublisher<Configuration, KetchError> {
+        fetchFullConfiguration(
+            request: .init(
+                organizationCode: organization,
+                propertyCode: property,
+                environmentCode: environment,
+                jurisdictionCode: jurisdiction,
+                languageCode: language,
+                hash: hash
+            )
+        )
+    }
+
+    func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        fetchConsent(config: config)
+    }
+
+    func updateConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
+        setConsent(update: update)
+    }
+
+    func invokeRights(organization: String, config: KetchSDK.InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
+        let path = "/rights/\(organization)/invoke"
+        guard let body = try? JSONEncoder().encode(config) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return post(path: path, body: body)
+            .map { _ in () }
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func getVendors() -> AnyPublisher<KetchSDK.Vendors, KetchError> {
+        get(path: "/gvl/vendor-list.json")
+            .decode(type: KetchSDK.Vendors.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    // MARK: - Networking
+
+    private func get(path: String, queryItems: [URLQueryItem] = []) -> AnyPublisher<Data, KetchError> {
+        guard let url = buildURL(path: path, queryItems: queryItems) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        let request = ApiRequest(
+            endPoint: EndPoint(url: url),
+            method: .get,
+            body: nil
+        )
+        return apiClient.execute(request: request)
+            .mapError { KetchError(with: $0) }
+            .eraseToAnyPublisher()
+    }
+
+    private func post(path: String, body: Data) -> AnyPublisher<Data, KetchError> {
+        guard let url = buildURL(path: path) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        let request = ApiRequest(
+            endPoint: EndPoint(url: url),
+            method: .post,
+            body: body
+        )
+        return apiClient.execute(request: request)
+            .mapError { KetchError(with: $0) }
+            .eraseToAnyPublisher()
+    }
+
+    private func postConsent(
+        path: String,
+        body: Data,
+        config: ConsentConfig
+    ) -> AnyPublisher<ConsentStatus, KetchError> {
+        guard let url = buildURL(path: path) else {
+            return Just(Self.emptyConsentStatus(for: config))
+                .setFailureType(to: KetchError.self)
+                .eraseToAnyPublisher()
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.httpBody = body
+        applyJSONHeaders(&urlRequest)
+
+        return session.dataTaskPublisher(for: urlRequest)
+            .tryMap { output -> ConsentStatus in
+                let data = output.data
+                if let http = output.response as? HTTPURLResponse,
+                   !(200..<300).contains(http.statusCode) {
+                    throw URLError(.badServerResponse)
+                }
+                if data.isEmpty || String(data: data, encoding: .utf8) == "null" {
+                    return Self.emptyConsentStatus(for: config)
+                }
+                if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
+                   decoded.purposes != nil || decoded.protocols != nil {
+                    return decoded
+                }
+                return Self.emptyConsentStatus(for: config)
+            }
+            .catch { _ in Just(Self.emptyConsentStatus(for: config)) }
+            .setFailureType(to: KetchError.self)
+            .eraseToAnyPublisher()
+    }
+
+    private func postSetConsent(
+        path: String,
+        body: Data,
+        fallback: ConsentUpdate
+    ) -> AnyPublisher<ConsentStatus, KetchError> {
+        guard let url = buildURL(path: path) else {
+            return Just(Self.consentStatus(from: fallback))
+                .setFailureType(to: KetchError.self)
+                .eraseToAnyPublisher()
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.httpBody = body
+        applyJSONHeaders(&urlRequest)
+
+        return session.dataTaskPublisher(for: urlRequest)
+            .tryMap { output -> ConsentStatus in
+                let data = output.data
+                if let http = output.response as? HTTPURLResponse,
+                   !(200..<300).contains(http.statusCode) {
+                    throw URLError(.badServerResponse)
+                }
+                if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
+                   let purposes = decoded.purposes,
+                   !purposes.isEmpty {
+                    return decoded
+                }
+                return Self.consentStatus(from: fallback)
+            }
+            .catch { _ in Just(Self.consentStatus(from: fallback)) }
+            .setFailureType(to: KetchError.self)
+            .eraseToAnyPublisher()
+    }
+
+    func buildURL(path: String, queryItems: [URLQueryItem] = []) -> URL? {
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
+            return nil
+        }
+        let normalized = path.hasPrefix("/") ? path : "/\(path)"
+        let basePath = components.path.hasSuffix("/") ? String(components.path.dropLast()) : components.path
+        components.path = basePath + normalized
+        if !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
+        return components.url
+    }
+
+    private func applyJSONHeaders(_ request: inout URLRequest) {
+        request.setValue(
+            ApiRequest.HeaderValue.applicationJson,
+            forHTTPHeaderField: ApiRequest.HeaderField.accept
+        )
+        request.setValue(
+            ApiRequest.HeaderValue.contentTypeJson,
+            forHTTPHeaderField: ApiRequest.HeaderField.contentType
+        )
+    }
+
+    private static func emptyConsentStatus(for config: ConsentConfig) -> ConsentStatus {
+        ConsentStatus(purposes: [:], vendors: nil, protocols: nil)
+    }
+
+    private static func consentStatus(from update: ConsentUpdate) -> ConsentStatus {
+        let purposes = update.purposes.reduce(into: [String: Bool]()) { result, entry in
+            result[entry.key] = entry.value.allowed
+        }
+        return ConsentStatus(
+            purposes: purposes,
+            vendors: update.vendors,
+            protocols: nil
+        )
+    }
+}
+
+// MARK: - Request payloads
+
+private struct ConsentConfigPayload: Encodable {
+    let organizationCode: String
+    let propertyCode: String
+    let environmentCode: String
+    let jurisdictionCode: String
+    let identities: [String: String]
+    let purposes: [String: KetchSDK.ConsentConfig.PurposeLegalBasis]
+
+    init(config: KetchSDK.ConsentConfig) {
+        organizationCode = config.organizationCode
+        propertyCode = config.propertyCode
+        environmentCode = config.environmentCode
+        jurisdictionCode = config.jurisdictionCode
+        identities = config.identities
+        purposes = config.purposes
+    }
+}
+
+private struct SetConsentPayload: Encodable {
+    let organizationCode: String
+    let propertyCode: String
+    let environmentCode: String
+    let identities: [String: String]
+    let jurisdictionCode: String
+    let migrationOption: KetchSDK.ConsentUpdate.MigrationOption
+    let purposes: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]
+    let vendors: [String]?
+
+    init(update: KetchSDK.ConsentUpdate) {
+        organizationCode = update.organizationCode
+        propertyCode = update.propertyCode
+        environmentCode = update.environmentCode
+        identities = update.identities
+        jurisdictionCode = update.jurisdictionCode
+        migrationOption = update.migrationOption
+        purposes = update.purposes
+        vendors = update.vendors
+    }
+}
+
+extension KetchSDK.KetchError {
+    fileprivate init(with error: ApiClientError) {
+        self.init(with: error as Error)
+    }
+}

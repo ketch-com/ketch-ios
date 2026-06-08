@@ -70,9 +70,11 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
                     ?? bootConfig?.jurisdiction?.code
                     ?? "us"
                 let purposeMap = Dictionary(
-                    uniqueKeysWithValues: purposes.compactMap { purpose -> (String, KetchSDK.ConsentConfig.PurposeLegalBasis)? in
-                        guard let code = purpose.code, let legalBasis = purpose.legalBasisCode else { return nil }
-                        return (code, .init(legalBasisCode: legalBasis))
+                    uniqueKeysWithValues: purposes.map { purpose in
+                        (
+                            purpose.code,
+                            KetchSDK.ConsentConfig.PurposeLegalBasis(legalBasisCode: purpose.legalBasisCode)
+                        )
                     }
                 )
                 return KetchSDK.ConsentConfig(

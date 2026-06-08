@@ -112,9 +112,27 @@ ketch.setConsent(consentUpdate: update) { result in
 if #available(iOS 14, *) {
     let att = KetchSDK.trackingAuthorizationStatusString()
 }
+
+// Rights, profile, subscriptions (preferences tab flows)
+ketch.invokeRight(request: invokeRightRequest) { _ in }
+ketch.getProfile(request: profileRequest) { _ in }
+ketch.putProfile(request: putProfileRequest) { _ in }
+ketch.getSubscriptions(request: subscriptionsRequest) { _ in }
+ketch.setSubscriptions(request: subscriptionsRequest) { _ in }
+
+// Subscriptions config, QR URL builder, telemetry
+ketch.fetchSubscriptionsConfiguration(request: subConfigRequest) { _ in }
+let qrUrl = ketch.preferenceQRUrl(request: .init(
+    organizationCode: "your_org",
+    propertyCode: "your_property",
+    environmentCode: "production",
+    imageSize: 1024,
+    parameters: [:]
+))
+ketch.webReport(channel: "mychannel", request: reportRequest) { _ in }
 ```
 
-Static equivalents (default `dataCenter: .us`): `KetchSDK.fetchLocation()`, `KetchSDK.fetchConsent(config:)`, etc.
+Static equivalents (default `dataCenter: .us`): `KetchSDK.fetchLocation()`, `KetchSDK.fetchConsent(config:)`, `KetchSDK.invokeRight(request:)`, etc.
 
 ### Step 2. Instantiate the KetchUI object:
 

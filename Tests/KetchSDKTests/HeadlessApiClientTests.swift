@@ -39,6 +39,25 @@ final class HeadlessApiClientTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://eu.ketchcdn.com/web/v3/ip")
     }
 
+    func testPreferenceQRUrl_matchesContractFixture() {
+        let url = client.preferenceQRUrl(
+            request: .init(
+                organizationCode: "switchbitcorp",
+                propertyCode: "switchbit",
+                environmentCode: "production",
+                imageSize: 1024,
+                path: "/policy.html",
+                backgroundColor: "white",
+                foregroundColor: "black",
+                parameters: ["foo": "bar"]
+            )
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/qr/switchbitcorp/switchbit/preferences.png?env=production&size=1024&path=%2Fpolicy.html&bgcolor=white&fgcolor=black&foo=bar"
+        )
+    }
+
     func testBuildURL_rightsProfileSubscriptions() {
         let invoke = client.buildURL(path: "/rights/switchbitcorp/invoke")
         XCTAssertEqual(

@@ -187,6 +187,65 @@ final class HeadlessApiClient {
         invokeRight(request: .init(organizationCode: organization, config: config))
     }
 
+    func fetchSubscriptionsConfiguration(
+        request: KetchSDK.SubscriptionConfigurationRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionConfiguration, KetchError> {
+        let path = "/config/\(request.organizationCode)/\(request.propertyCode)/\(request.languageCode)/\(request.experienceCode)/subscriptions.json"
+        return get(path: path)
+            .decode(type: KetchSDK.SubscriptionConfiguration.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        var pairs: [(String, String)] = []
+        if let environmentCode = request.environmentCode {
+            pairs.append(("env", environmentCode))
+        }
+        if let imageSize = request.imageSize {
+            pairs.append(("size", String(imageSize)))
+        }
+        if let path = request.path {
+            pairs.append(("path", path))
+        }
+        if let backgroundColor = request.backgroundColor {
+            pairs.append(("bgcolor", backgroundColor))
+        }
+        if let foregroundColor = request.foregroundColor {
+            pairs.append(("fgcolor", foregroundColor))
+        }
+        for (key, value) in request.parameters {
+            pairs.append((key, value))
+        }
+        guard let base = buildURL(
+            path: "/qr/\(request.organizationCode)/\(request.propertyCode)/preferences.png"
+        ) else {
+            return nil
+        }
+        guard !pairs.isEmpty else {
+            return base
+        }
+        let query = pairs
+            .map { "\($0.0)=\(Self.encodeURIComponent($0.1))" }
+            .joined(separator: "&")
+        return URL(string: base.absoluteString + "?" + query)
+    }
+
+    /// Matches JavaScript `encodeURIComponent` (ketch-tag `URL.searchParams`).
+    private static func encodeURIComponent(_ value: String) -> String {
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-_.~")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+    }
+
+    func webReport(channel: String, request: KetchSDK.WebReportRequest) -> AnyPublisher<Void, KetchError> {
+        let path = "/report/\(channel)"
+        guard let body = try? JSONEncoder().encode(request) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postVoid(path: path, body: body)
+    }
+
     func getVendors() -> AnyPublisher<KetchSDK.Vendors, KetchError> {
         get(path: "/gvl/vendor-list.json")
             .decode(type: KetchSDK.Vendors.self, decoder: JSONDecoder())

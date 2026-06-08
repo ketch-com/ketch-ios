@@ -116,6 +116,20 @@ class KetchApiRequest {
         headless.setSubscriptions(request: request)
     }
 
+    func fetchSubscriptionsConfiguration(
+        request: KetchSDK.SubscriptionConfigurationRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionConfiguration, KetchError> {
+        headless.fetchSubscriptionsConfiguration(request: request)
+    }
+
+    func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        headless.preferenceQRUrl(request: request)
+    }
+
+    func webReport(channel: String, request: KetchSDK.WebReportRequest) -> AnyPublisher<Void, KetchError> {
+        headless.webReport(channel: channel, request: request)
+    }
+
     func getVendors() -> AnyPublisher<Vendors, KetchError> {
         headless.getVendors()
     }

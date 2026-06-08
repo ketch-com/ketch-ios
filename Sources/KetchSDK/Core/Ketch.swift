@@ -400,6 +400,31 @@ extension Ketch {
             receiveValue: { completion(.success(())) }
             .store(in: &subscriptions)
     }
+
+    public func fetchSubscriptionsConfiguration(
+        request: KetchSDK.SubscriptionConfigurationRequest,
+        completion: @escaping (Result<KetchSDK.SubscriptionConfiguration, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.fetchSubscriptionsConfiguration(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        apiRequest.preferenceQRUrl(request: request)
+    }
+
+    public func webReport(
+        channel: String,
+        request: KetchSDK.WebReportRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.webReport(channel: channel, request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
 }
 
 // MARK: - Publishers with error.

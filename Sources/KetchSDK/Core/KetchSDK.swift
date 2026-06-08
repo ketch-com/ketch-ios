@@ -4,6 +4,7 @@
 //
 
 import Combine
+import Foundation
 
 public enum KetchSDK {
     /// Instantiation of Ketch core class
@@ -135,6 +136,28 @@ extension KetchSDK {
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<Void, KetchError> {
         KetchApiRequest(dataCenter: dataCenter).setSubscriptions(request: request)
+    }
+
+    public static func fetchSubscriptionsConfiguration(
+        request: SubscriptionConfigurationRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<SubscriptionConfiguration, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).fetchSubscriptionsConfiguration(request: request)
+    }
+
+    public static func preferenceQRUrl(
+        request: PreferenceQRRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> URL? {
+        HeadlessApiClient(dataCenter: dataCenter).preferenceQRUrl(request: request)
+    }
+
+    public static func webReport(
+        channel: String,
+        request: WebReportRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).webReport(channel: channel, request: request)
     }
 }
 

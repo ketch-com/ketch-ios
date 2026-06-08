@@ -6,6 +6,35 @@
 import Foundation
 
 extension KetchSDK {
+    /// ketch-types `GetSubscriptionConfigurationRequest`
+    public struct SubscriptionConfigurationRequest {
+        public let organizationCode: String
+        public let propertyCode: String
+        public let languageCode: String
+        public let experienceCode: String
+
+        public init(
+            organizationCode: String,
+            propertyCode: String,
+            languageCode: String,
+            experienceCode: String
+        ) {
+            self.organizationCode = organizationCode
+            self.propertyCode = propertyCode
+            self.languageCode = languageCode
+            self.experienceCode = experienceCode
+        }
+    }
+
+    /// Response from `GET .../subscriptions.json` (subset of ketch-types `SubscriptionConfiguration`).
+    public struct SubscriptionConfiguration: Codable {
+        public let identities: [String: String]?
+        public let controls: [SubscriptionConfigurationEntry]?
+        public let topics: [SubscriptionConfigurationEntry]?
+    }
+
+    public struct SubscriptionConfigurationEntry: Codable {}
+
     /// ketch-types `GetSubscriptionsRequest` / `SetSubscriptionsRequest`
     public struct SubscriptionsRequest: Codable {
         public let organizationCode: String

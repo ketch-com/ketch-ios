@@ -350,6 +350,56 @@ extension Ketch {
             receiveValue: { completion(.success($0)) }
             .store(in: &subscriptions)
     }
+
+    public func invokeRight(
+        request: KetchSDK.InvokeRightRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.invokeRight(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
+
+    public func getProfile(
+        request: KetchSDK.GetProfileRequest,
+        completion: @escaping (Result<KetchSDK.GetProfileResponse, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.getProfile(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func putProfile(
+        request: KetchSDK.PutProfileRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.putProfile(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
+
+    public func getSubscriptions(
+        request: KetchSDK.SubscriptionsRequest,
+        completion: @escaping (Result<KetchSDK.SubscriptionsResponse, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.getSubscriptions(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func setSubscriptions(
+        request: KetchSDK.SubscriptionsRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.setSubscriptions(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
 }
 
 // MARK: - Publishers with error.

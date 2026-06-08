@@ -30,8 +30,6 @@ final class HeadlessApiClient {
         self.session = session
     }
 
-    // MARK: - P0
-
     func fetchLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
         get(path: "/ip")
             .decode(type: KetchSDK.LocationResponse.self, decoder: JSONDecoder())
@@ -137,15 +135,56 @@ final class HeadlessApiClient {
         setConsent(update: update)
     }
 
-    func invokeRights(organization: String, config: KetchSDK.InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
-        let path = "/rights/\(organization)/invoke"
-        guard let body = try? JSONEncoder().encode(config) else {
+    func invokeRight(request: KetchSDK.InvokeRightRequest) -> AnyPublisher<Void, KetchError> {
+        let path = "/rights/\(request.organizationCode)/invoke"
+        guard let body = try? JSONEncoder().encode(request) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postVoid(path: path, body: body)
+    }
+
+    func getProfile(request: KetchSDK.GetProfileRequest) -> AnyPublisher<KetchSDK.GetProfileResponse, KetchError> {
+        let path = "/profile/\(request.organizationCode)/get"
+        guard let body = try? JSONEncoder().encode(request) else {
             return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
         return post(path: path, body: body)
-            .map { _ in () }
+            .decode(type: KetchSDK.GetProfileResponse.self, decoder: JSONDecoder())
             .mapError(KetchError.init)
             .eraseToAnyPublisher()
+    }
+
+    func putProfile(request: KetchSDK.PutProfileRequest) -> AnyPublisher<Void, KetchError> {
+        let path = "/profile/\(request.organizationCode)/put"
+        guard let body = try? JSONEncoder().encode(request) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postVoid(path: path, body: body)
+    }
+
+    func getSubscriptions(
+        request: KetchSDK.SubscriptionsRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionsResponse, KetchError> {
+        let path = "/subscriptions/\(request.organizationCode)/get"
+        guard let body = try? JSONEncoder().encode(request) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return post(path: path, body: body)
+            .decode(type: KetchSDK.SubscriptionsResponse.self, decoder: JSONDecoder())
+            .mapError(KetchError.init)
+            .eraseToAnyPublisher()
+    }
+
+    func setSubscriptions(request: KetchSDK.SubscriptionsRequest) -> AnyPublisher<Void, KetchError> {
+        let path = "/subscriptions/\(request.organizationCode)/update"
+        guard let body = try? JSONEncoder().encode(request) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return postVoid(path: path, body: body)
+    }
+
+    func invokeRights(organization: String, config: KetchSDK.InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
+        invokeRight(request: .init(organizationCode: organization, config: config))
     }
 
     func getVendors() -> AnyPublisher<KetchSDK.Vendors, KetchError> {
@@ -182,6 +221,27 @@ final class HeadlessApiClient {
         )
         return apiClient.execute(request: request)
             .mapError { KetchError(with: $0) }
+            .eraseToAnyPublisher()
+    }
+
+    private func postVoid(path: String, body: Data) -> AnyPublisher<Void, KetchError> {
+        guard let url = buildURL(path: path) else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.httpBody = body
+        applyJSONHeaders(&urlRequest)
+
+        return session.dataTaskPublisher(for: urlRequest)
+            .tryMap { output -> Void in
+                if let http = output.response as? HTTPURLResponse,
+                   !(200..<300).contains(http.statusCode) {
+                    throw URLError(.badServerResponse)
+                }
+                return ()
+            }
+            .mapError(KetchError.init)
             .eraseToAnyPublisher()
     }
 

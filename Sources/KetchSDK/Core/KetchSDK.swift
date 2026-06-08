@@ -96,6 +96,46 @@ extension KetchSDK {
             protocols: nil
         )
     }
+
+    /// Invokes a data subject right (`POST .../rights/{org}/invoke`).
+    public static func invokeRight(
+        request: InvokeRightRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).invokeRight(request: request)
+    }
+
+    /// Gets profile preferences (`POST .../profile/{org}/get`).
+    public static func getProfile(
+        request: GetProfileRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<GetProfileResponse, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).getProfile(request: request)
+    }
+
+    /// Updates profile preferences (`POST .../profile/{org}/put`).
+    public static func putProfile(
+        request: PutProfileRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).putProfile(request: request)
+    }
+
+    /// Gets subscription topics/controls (`POST .../subscriptions/{org}/get`).
+    public static func getSubscriptions(
+        request: SubscriptionsRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<SubscriptionsResponse, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).getSubscriptions(request: request)
+    }
+
+    /// Updates subscription topics/controls (`POST .../subscriptions/{org}/update`).
+    public static func setSubscriptions(
+        request: SubscriptionsRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<Void, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).setSubscriptions(request: request)
+    }
 }
 
 // MARK: - Legacy static publishers

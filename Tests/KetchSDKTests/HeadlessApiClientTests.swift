@@ -39,6 +39,24 @@ final class HeadlessApiClientTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://eu.ketchcdn.com/web/v3/ip")
     }
 
+    func testBuildURL_rightsProfileSubscriptions() {
+        let invoke = client.buildURL(path: "/rights/switchbitcorp/invoke")
+        XCTAssertEqual(
+            invoke?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/rights/switchbitcorp/invoke"
+        )
+        let profile = client.buildURL(path: "/profile/acme/get")
+        XCTAssertEqual(
+            profile?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/profile/acme/get"
+        )
+        let subs = client.buildURL(path: "/subscriptions/acme/update")
+        XCTAssertEqual(
+            subs?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/subscriptions/acme/update"
+        )
+    }
+
     func testKetchDataCenterBaseURLs() {
         XCTAssertEqual(KetchDataCenter.us.baseURL.absoluteString, "https://global.ketchcdn.com/web/v3")
         XCTAssertEqual(KetchDataCenter.eu.baseURL.absoluteString, "https://eu.ketchcdn.com/web/v3")

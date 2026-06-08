@@ -94,6 +94,28 @@ class KetchApiRequest {
         headless.invokeRights(organization: organization, config: config)
     }
 
+    func invokeRight(request: KetchSDK.InvokeRightRequest) -> AnyPublisher<Void, KetchError> {
+        headless.invokeRight(request: request)
+    }
+
+    func getProfile(request: KetchSDK.GetProfileRequest) -> AnyPublisher<KetchSDK.GetProfileResponse, KetchError> {
+        headless.getProfile(request: request)
+    }
+
+    func putProfile(request: KetchSDK.PutProfileRequest) -> AnyPublisher<Void, KetchError> {
+        headless.putProfile(request: request)
+    }
+
+    func getSubscriptions(
+        request: KetchSDK.SubscriptionsRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionsResponse, KetchError> {
+        headless.getSubscriptions(request: request)
+    }
+
+    func setSubscriptions(request: KetchSDK.SubscriptionsRequest) -> AnyPublisher<Void, KetchError> {
+        headless.setSubscriptions(request: request)
+    }
+
     func getVendors() -> AnyPublisher<Vendors, KetchError> {
         headless.getVendors()
     }

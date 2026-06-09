@@ -269,6 +269,13 @@ extension KetchUI {
             case .identities:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.identities(body as? String))
+            case .openAppSettings:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
+                DispatchQueue.main.async {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                }
             default:
                 break;
             }
@@ -384,6 +391,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case error
         case tapOutside
         case geoip
+        case openAppSettings
 
     }
     

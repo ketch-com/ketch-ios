@@ -5,6 +5,9 @@
 
 import SwiftUI
 import KetchSDK
+#if canImport(AppTrackingTransparency)
+import AppTrackingTransparency
+#endif
 
 struct ContentView: View {
     @StateObject var ketchUI: KetchUI
@@ -48,6 +51,7 @@ struct ContentView: View {
     @State private var idValue = ""
     @State private var identities = [Ketch.Identity]()
     @State private var age = ""
+    @State private var attStatus = "N/A"
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -148,6 +152,25 @@ struct ContentView: View {
             }
             .padding(.bottom, 16)
             
+            Text("App Tracking Transparency")
+                .font(.title2)
+            
+            Text("Separate from headless — reload WebView after answering the system prompt")
+                .font(.footnote)
+                .foregroundStyle(Color.gray)
+            
+            HStack {
+                Text("ATT: \(attStatus)")
+                    .font(.subheadline)
+                
+                Spacer()
+                
+                Button("Request ATT") {
+                    requestATT()
+                }
+            }
+            .padding(.bottom, 16)
+            
             Text("Actions")
                 .font(.title2)
             
@@ -191,6 +214,26 @@ struct ContentView: View {
         .padding()
         .background(.white)
         .ketchView(model: $ketchUI.webPresentationItem)
+        .onAppear {
+            refreshATTStatus()
+        }
+    }
+    
+    private func refreshATTStatus() {
+        if #available(iOS 14, *) {
+            attStatus = KetchSDK.trackingAuthorizationStatusString()
+        }
+    }
+    
+    private func requestATT() {
+        if #available(iOS 14, *) {
+            ATTrackingManager.requestTrackingAuthorization { _ in
+                DispatchQueue.main.async {
+                    refreshATTStatus()
+                    ketchUI.reload(with: makeParameters)
+                }
+            }
+        }
     }
     
     private var makeParameters: [KetchUI.ExperienceOption] {

@@ -75,7 +75,7 @@ private func setupKetch(advertisingIdentifier: UUID) {
 
 ### Headless API (web/v3, pre-WebView)
 
-Use native HTTP for ATT-critical flows **before** loading the WebView—location, config, and consent with `protocols` from the CDN. Contract: [mobile-headless-api.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-headless-api.md) in ketch-tag.
+Use native HTTP for cold-start flows **before** loading the WebView—location, config, and consent with `protocols` from the CDN. Contract: [mobile-headless-api.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-headless-api.md) in ketch-tag.
 
 ```swift
 let ketch = KetchSDK.create(
@@ -86,7 +86,7 @@ let ketch = KetchSDK.create(
     dataCenter: .us  // .us | .eu | .uat
 )
 
-// Recommended order for cold start / ATT
+// Recommended cold-start order
 ketch.fetchLocation { result in /* jurisdiction hint */ }
 ketch.fetchBootstrapConfiguration { result in /* boot.json */ }
 ketch.fetchFullConfiguration(
@@ -106,11 +106,6 @@ ketch.fetchConsent(consentConfig: config) { result in
 
 ketch.setConsent(consentUpdate: update) { result in
     // Server-computed protocols in response
-}
-
-// iOS 14+: read ATT before headless + WebView
-if #available(iOS 14, *) {
-    let att = KetchSDK.trackingAuthorizationStatusString()
 }
 
 // Rights, profile, subscriptions (preferences tab flows)
@@ -133,6 +128,23 @@ ketch.webReport(channel: "mychannel", request: reportRequest) { _ in }
 ```
 
 Static equivalents (default `dataCenter: .us`): `KetchSDK.fetchLocation()`, `KetchSDK.fetchConsent(config:)`, `KetchSDK.invokeRight(request:)`, etc.
+
+Testing: [mobile-headless-api-testing.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-headless-api-testing.md) (headless) — separate from ATT below.
+
+### iOS ATT (`ketch_att`, WebView only)
+
+App Tracking Transparency is **separate from headless**. The SDK reads ATT status and passes it to the WebView as the `ketch_att` query param on each reload. The SDK does **not** show the system ATT prompt — your app must call `ATTrackingManager.requestTrackingAuthorization`.
+
+Docs: [mobile-att-webview.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-att-webview.md) · Testing: [mobile-att-testing.md](https://github.com/ketch-com/ketch-tag/blob/main/docs/design/mobile-att-testing.md)
+
+```swift
+if #available(iOS 14, *) {
+    let att = KetchSDK.trackingAuthorizationStatusString()
+    // Reload WebView after user answers ATT prompt so ketch_att updates
+}
+```
+
+Add `NSUserTrackingUsageDescription` to `Info.plist`. Headless HTTP does **not** send `ketch_att`.
 
 ### Step 2. Instantiate the KetchUI object:
 

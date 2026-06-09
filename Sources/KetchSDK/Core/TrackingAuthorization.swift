@@ -8,7 +8,7 @@ import Foundation
 
 extension KetchSDK {
     /// Current App Tracking Transparency authorization status (iOS 14+).
-    /// Use before headless consent flows; pass to WebView via `ketch_att` when showing the experience.
+    /// Pass to WebView via `ketch_att` on load/reload (not sent on headless HTTP).
     @available(iOS 14, *)
     public static func trackingAuthorizationStatus() -> ATTrackingManager.AuthorizationStatus {
         ATTrackingManager.trackingAuthorizationStatus

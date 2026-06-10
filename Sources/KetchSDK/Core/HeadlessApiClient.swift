@@ -79,7 +79,11 @@ final class HeadlessApiClient {
         fetchConsent(config: config)
             .map { response in
                 guard let protocols = response.protocols, !protocols.isEmpty else {
-                    return ConsentStatus(purposes: nil, vendors: nil, protocols: nil)
+                    return ConsentStatus(
+                        purposes: response.purposes,
+                        vendors: response.vendors,
+                        protocols: nil
+                    )
                 }
                 return ConsentStatus(
                     purposes: response.purposes,
@@ -310,9 +314,7 @@ final class HeadlessApiClient {
         config: ConsentConfig
     ) -> AnyPublisher<ConsentStatus, KetchError> {
         guard let url = buildURL(path: path) else {
-            return Just(Self.emptyConsentStatus(for: config))
-                .setFailureType(to: KetchError.self)
-                .eraseToAnyPublisher()
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
@@ -330,13 +332,12 @@ final class HeadlessApiClient {
                     return Self.emptyConsentStatus(for: config)
                 }
                 if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
-                   decoded.purposes != nil || decoded.protocols != nil {
+                   Self.hasUsableConsentFields(decoded) {
                     return decoded
                 }
                 return Self.emptyConsentStatus(for: config)
             }
-            .catch { _ in Just(Self.emptyConsentStatus(for: config)) }
-            .setFailureType(to: KetchError.self)
+            .mapError(KetchError.init)
             .eraseToAnyPublisher()
     }
 
@@ -346,9 +347,7 @@ final class HeadlessApiClient {
         fallback: ConsentUpdate
     ) -> AnyPublisher<ConsentStatus, KetchError> {
         guard let url = buildURL(path: path) else {
-            return Just(Self.consentStatus(from: fallback))
-                .setFailureType(to: KetchError.self)
-                .eraseToAnyPublisher()
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
@@ -363,14 +362,12 @@ final class HeadlessApiClient {
                     throw URLError(.badServerResponse)
                 }
                 if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
-                   let purposes = decoded.purposes,
-                   !purposes.isEmpty {
+                   Self.hasUsableConsentFields(decoded) {
                     return decoded
                 }
                 return Self.consentStatus(from: fallback)
             }
-            .catch { _ in Just(Self.consentStatus(from: fallback)) }
-            .setFailureType(to: KetchError.self)
+            .mapError(KetchError.init)
             .eraseToAnyPublisher()
     }
 
@@ -396,6 +393,12 @@ final class HeadlessApiClient {
             ApiRequest.HeaderValue.contentTypeJson,
             forHTTPHeaderField: ApiRequest.HeaderField.contentType
         )
+    }
+
+    private static func hasUsableConsentFields(_ status: ConsentStatus) -> Bool {
+        if let purposes = status.purposes, !purposes.isEmpty { return true }
+        if let protocols = status.protocols, !protocols.isEmpty { return true }
+        return false
     }
 
     private static func emptyConsentStatus(for config: ConsentConfig) -> ConsentStatus {

@@ -155,10 +155,6 @@ struct ContentView: View {
             Text("App Tracking Transparency")
                 .font(.title2)
             
-            Text("Separate from headless — reload WebView after answering the system prompt")
-                .font(.footnote)
-                .foregroundStyle(Color.gray)
-            
             HStack {
                 Text("ATT: \(attStatus)")
                     .font(.subheadline)

@@ -48,6 +48,7 @@ extension KetchUI {
         
         // Protocol prefixes to delete on every load
         private static let prefixesToRemove = ["IABTCF", "IABGPP", "IABUS"]
+        private static let attLastStatusKey = "ketch_att_last"
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
@@ -87,9 +88,13 @@ extension KetchUI {
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
-            // Pass ATT status
+            // Pass ATT status and previous status (native storage replaces unreliable WebView cookie)
+            let prevStatus = userDefaults.string(forKey: Self.attLastStatusKey) ?? "notDetermined"
+            config.params["ketch_att_prev"] = prevStatus
+
             let status = ATTrackingManager.trackingAuthorizationStatus
             config.params["ketch_att"] = status.asString
+            userDefaults.set(status.asString, forKey: Self.attLastStatusKey)
             KetchLogger.log.debug("Params: \(config.params)")
 
             webView?.configuration.userContentController.removeAllScriptMessageHandlers()

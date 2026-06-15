@@ -204,11 +204,18 @@ struct ContentView: View {
         }
     }
 
-    func refreshATTStatus() {
+    func refreshATTStatus(logEvent: Bool = false) {
         if #available(iOS 14, *) {
             let status = KetchSDK.trackingAuthorizationStatusString()
+            let prev = SampleLogging.storedAttPrev()
             dashboard.attStatus = status
             dashboard.ketchAtt = status
+            dashboard.ketchAttPrev = prev
+            if logEvent {
+                let message = SampleLogging.formatAttState(current: status, previous: prev)
+                dashboard.appendLog("ATT: \(message)")
+                print("[KetchSample] ATT: \(message)")
+            }
         }
     }
 
@@ -216,8 +223,8 @@ struct ContentView: View {
         if #available(iOS 14, *) {
             ATTrackingManager.requestTrackingAuthorization { _ in
                 DispatchQueue.main.async {
-                    refreshATTStatus()
-                    ketchUI.reload(with: makeParameters)
+                    self.refreshATTStatus(logEvent: true)
+                    self.ketchUI.reload(with: self.makeParameters)
                 }
             }
         }

@@ -32,6 +32,7 @@ extension ContentView {
             #if canImport(AppTrackingTransparency)
             if #available(iOS 14, *) {
                 dashboardRow("ketch_att", dashboard.ketchAtt)
+                dashboardRow("ketch_att_prev", dashboard.ketchAttPrev)
             }
             #endif
         }
@@ -43,7 +44,7 @@ extension ContentView {
                 HStack {
                     Button("Request ATT") { requestATT() }
                     Button("Reload WebView") {
-                        refreshATTStatus()
+                        refreshATTStatus(logEvent: true)
                         ketchUI.reload(with: makeParameters)
                     }
                 }

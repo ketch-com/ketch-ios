@@ -77,8 +77,10 @@ final class SampleEventListener: KetchEventListener {
 
     func onConsentUpdated(consent: KetchSDK.ConsentStatus) {
         Task { @MainActor in
-            dashboard?.consent = String(describing: consent)
-            dashboard?.appendLog("onConsentUpdated")
+            let summary = SampleLogging.formatConsent(consent)
+            dashboard?.consent = summary
+            dashboard?.appendLog("onConsentUpdated: \(summary)")
+            print("[KetchSample] onConsentUpdated: \(summary)")
         }
     }
 

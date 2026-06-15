@@ -24,6 +24,7 @@
 		FCD5B15D2D5C8992006127A1 /* SampleDashboardState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD5B15E2D5C8992006127A1 /* SampleDashboardState.swift */; };
 		FCD5B15F2D5C8993006127A1 /* ContentView+Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD5B1602D5C8993006127A1 /* ContentView+Dashboard.swift */; };
 		FCD5B1612D5C8994006127A1 /* DevUrlOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD5B1622D5C8994006127A1 /* DevUrlOverrides.swift */; };
+		FCD5B1632D5C8995006127A1 /* SampleLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD5B1642D5C8995006127A1 /* SampleLogging.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		FCD5B15E2D5C8992006127A1 /* SampleDashboardState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDashboardState.swift; sourceTree = "<group>"; };
 		FCD5B1602D5C8993006127A1 /* ContentView+Dashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+Dashboard.swift"; sourceTree = "<group>"; };
 		FCD5B1622D5C8994006127A1 /* DevUrlOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevUrlOverrides.swift; sourceTree = "<group>"; };
+		FCD5B1642D5C8995006127A1 /* SampleLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleLogging.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 				FCD5B1602D5C8993006127A1 /* ContentView+Dashboard.swift */,
 				FCD5B15E2D5C8992006127A1 /* SampleDashboardState.swift */,
 				FCD5B15B2D5C897F006127A1 /* SampleEventListener.swift */,
+				FCD5B1642D5C8995006127A1 /* SampleLogging.swift */,
 				FCD5B1622D5C8994006127A1 /* DevUrlOverrides.swift */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
@@ -259,6 +262,7 @@
 				FCD5B15D2D5C8992006127A1 /* SampleDashboardState.swift in Sources */,
 				FCD5B15F2D5C8993006127A1 /* ContentView+Dashboard.swift in Sources */,
 				FCD5B1612D5C8994006127A1 /* DevUrlOverrides.swift in Sources */,
+				FCD5B1632D5C8995006127A1 /* SampleLogging.swift in Sources */,
 				20DFDA302B514C9C00FB233A /* ContentView.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 			);

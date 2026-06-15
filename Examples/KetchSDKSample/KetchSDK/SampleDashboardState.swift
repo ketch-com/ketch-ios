@@ -25,6 +25,7 @@ final class SampleDashboardState: ObservableObject {
 
     @Published var attStatus = "N/A"
     @Published var ketchAtt = "—"
+    @Published var ketchAttPrev = "—"
 
     @Published var headlessLocationResult = "—"
     @Published var headlessBootstrapResult = "—"

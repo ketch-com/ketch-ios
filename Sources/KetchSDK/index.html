@@ -80,6 +80,21 @@
             }
         }
 
+        function triggerOutsideTapDismiss() {
+            var selectors = [
+                '#lanyard_root button[aria-label="close banner"]',
+                '#lanyard_root button[aria-label="close modal"]'
+            ];
+            for (var i = 0; i < selectors.length; i++) {
+                var btn = document.querySelector(selectors[i]);
+                if (btn) {
+                    btn.click();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // Get query parameters
         let params = (new URL(document.location)).searchParams;
 
@@ -118,7 +133,9 @@
     // Trigger taps outside of the dialog
     document.body.addEventListener("touchstart", function(e) {
         if (e.target === document.body) {
-            emitEvent("tapOutside", [getDialogSize()]);
+            if (!triggerOutsideTapDismiss()) {
+                emitEvent("tapOutside", [getDialogSize()]);
+            }
         }
     });
 </script>

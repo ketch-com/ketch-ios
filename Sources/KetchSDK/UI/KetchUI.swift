@@ -32,6 +32,9 @@ public final class KetchUI: ObservableObject {
     private var isConfigLoaded = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
     private var preloadedPresentationItem: WebPresentationItem?
+    private var tapOutsideFallbackWorkItem: DispatchWorkItem?
+
+    private static let tapOutsideFallbackSeconds: TimeInterval = 2
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -91,7 +94,8 @@ public final class KetchUI: ObservableObject {
             eventListener?.onHasShownExperience()
             
         case .tapOutside:
-            didCloseExperience(status: KetchSDK.HideExperienceStatus.None)
+            KetchLogger.log.debug("onDismiss source=tapOutside delegating to web")
+            handleTapOutside()
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
@@ -133,9 +137,32 @@ public final class KetchUI: ObservableObject {
         }
     }
     
-    private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
+    private func didCloseExperience(status: KetchSDK.HideExperienceStatus, source: String = "hideExperience") {
+        tapOutsideFallbackWorkItem?.cancel()
+        tapOutsideFallbackWorkItem = nil
+        KetchLogger.log.debug("onDismiss source=\(source) status=\(status.rawValue)")
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
+    }
+
+    private func handleTapOutside() {
+        tapOutsideFallbackWorkItem?.cancel()
+        guard let presentationItem = webPresentationItem ?? preloadedPresentationItem else {
+            didCloseExperience(status: .Close, source: "tapOutsideNoWebView")
+            return
+        }
+        presentationItem.requestWebDismiss { [weak self] _ in
+            self?.scheduleTapOutsideFallback()
+        }
+    }
+
+    private func scheduleTapOutsideFallback() {
+        tapOutsideFallbackWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.didCloseExperience(status: .Close, source: "tapOutsideTimeout")
+        }
+        tapOutsideFallbackWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.tapOutsideFallbackSeconds, execute: work)
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {
@@ -188,7 +215,7 @@ extension KetchUI {
     }
     
     public func closeExperience() {
-        webPresentationItem = nil
+        didCloseExperience(status: .Close, source: "closeExperience")
     }
 }
 
@@ -234,6 +261,9 @@ extension KetchUI {
         
         /// Inject CSS into the Ketch UI
         case css(String)
+
+        /// Exact-match WebView resource URL replacements (e.g. UAT tag scripts → local dev server).
+        case webResourceUrlOverrides([String: String])
 
         /// Exact age for age band legal basis resolution
         case age(UInt)
@@ -282,6 +312,8 @@ extension KetchUI {
                 return true
             case (.ageUpper(_), .ageUpper(_)):
                 return true
+            case (.webResourceUrlOverrides(let a), .webResourceUrlOverrides(let b)):
+                return a == b
             default:
                 return false
             }

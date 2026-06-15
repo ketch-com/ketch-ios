@@ -270,6 +270,7 @@ extension KetchSDK {
         case Close = "close"
         case CloseWithoutSettingConsent = "closeWithoutSettingConsent"
         case WillNotShow = "willNotShow"
+        case SetSubscriptions = "setSubscriptions"
         case None = "none"
     }
     

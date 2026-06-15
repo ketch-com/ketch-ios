@@ -27,6 +27,16 @@ bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh local
 
 The script boots a simulator when none is running, builds `KetchSDK-Example`, installs, streams unified logs for subsystem `com.ketch.sdk` (when the linked SDK supports it), and launches with `--console-pty`. Stop with `Ctrl-C`.
 
+## Manual testing basics
+
+**Needs:** macOS, Xcode, iOS Simulator (script boots one if none is running), network for CDN/headless steps.
+
+**Launch:** `bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh local` from the `ketch-ios` repo root. The sample app opens on the simulator.
+
+**In the app:** Scroll to **SDK Health Dashboard** at the top. Sample defaults use org `ethansch061226`, property `website_smart_tag`, environment `production` (fields are editable). Watch the dashboard panels and event log — you should not need Xcode console for a smoke pass.
+
+**Smoke flow:** **Load** → privacy/connection rows update → **Consent** or **Preferences** → WebView/Experience rows change → (iOS) **Request ATT** / **Reload WebView** if testing ATT → **Fetch Bootstrap** under Headless for CDN reachability. Failures appear inline on the dashboard or in the event log.
+
 ## Remote overrides
 
 ```bash
@@ -48,6 +58,19 @@ DEVICE_ID="<uuid>" bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-a
 bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh --build-only
 bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh --full-system-logs
 ```
+
+## Manual QA checklist (SDK Health Dashboard)
+
+After launch, verify on-screen panels in `KetchSDKSample` (no console required):
+
+1. **Connection** — Status shows initialized; org/property/env match editable fields (e.g. `ethansch061226` / `website_smart_tag` / `production`).
+2. **Load** — Tap **Load** (Actions) → Load row shows `loading` then `loaded`; environment/consent fields may update.
+3. **WebView / Experience** — Tap **Consent** → Visibility shows showing/dismissed; dismiss reason on dismiss.
+4. **ATT (iOS)** — **Request ATT** updates Native ATT; **Reload WebView** updates `ketch_att`.
+5. **Headless** — **Fetch Bootstrap** shows green `OK: N purpose(s)` or red `Error: …` inline.
+6. **Event log** — Callbacks append timestamped lines (capped at ~50).
+
+Optional: org with `plugins.att` for full lanyard ATT banner (not required for dashboard smoke).
 
 ## Notes
 

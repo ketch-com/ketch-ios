@@ -177,6 +177,11 @@ extension KetchUI {
                 // Parse status from event body
                 let statusString = body as? String ?? ""
                 let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None
+                if status == .None && !statusString.isEmpty {
+                    KetchLogger.log.warning("onDismiss source=hideExperience parseFallback rawStatus=\(statusString)")
+                } else {
+                    KetchLogger.log.debug("onDismiss source=hideExperience status=\(status.rawValue)")
+                }
                     
                 onEvent?(.onClose(status))
                 return
@@ -321,6 +326,32 @@ extension KetchUI.WebPresentationItem {
     public func showConsent() {
         webView?.evaluateJavaScript("ketch('showConsent')")
     }
+
+    func requestWebDismiss(completion: @escaping (Bool) -> Void) {
+        let script = """
+        (function(){
+            if (typeof triggerOutsideTapDismiss === 'function') {
+                return triggerOutsideTapDismiss();
+            }
+            return false;
+        })()
+        """
+        webView?.evaluateJavaScript(script) { result, error in
+            if error != nil {
+                completion(false)
+                return
+            }
+            if let boolResult = result as? Bool {
+                completion(boolResult)
+                return
+            }
+            if let stringResult = result as? String {
+                completion(stringResult.lowercased() == "true")
+                return
+            }
+            completion(false)
+        }
+    }
 }
 
 extension KetchUI.ExperienceOption {
@@ -364,6 +395,11 @@ extension KetchUI.ExperienceOption {
             
         case .css(let string):
             return (key: "ketch_css_inject", value: string)
+
+        case .webResourceUrlOverrides(let overrides):
+            let data = (try? JSONSerialization.data(withJSONObject: overrides)) ?? Data()
+            let json = String(data: data, encoding: .utf8) ?? "{}"
+            return (key: "ketch_web_resource_overrides", value: json)
 
         case .age(let value):
             return (key: "ketch_age", value: String(value))

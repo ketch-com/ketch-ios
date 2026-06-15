@@ -22,6 +22,7 @@ extension KetchUI {
             case onTCFUpdated(String?)
             case onGPPUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
+            case nativeStoragePut(key: String, value: String)
             case error(description: String)
             case tapOutside
             case environment(String?)
@@ -40,6 +41,7 @@ extension KetchUI {
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
         private let userDefaults: UserDefaults = .standard
+        private let nativeStorage = NativeStorage()
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
@@ -48,7 +50,6 @@ extension KetchUI {
         
         // Protocol prefixes to delete on every load
         private static let prefixesToRemove = ["IABTCF", "IABGPP", "IABUS"]
-        private static let attLastStatusKey = "ketch_att_last"
         
         init(item: WebExperienceItem, onEvent: ((Event) -> Void)?) {
             self.item = item
@@ -89,12 +90,13 @@ extension KetchUI {
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
             // Pass ATT status and previous status (native storage replaces unreliable WebView cookie)
-            let prevStatus = userDefaults.string(forKey: Self.attLastStatusKey) ?? "notDetermined"
-            config.params["ketch_att_prev"] = prevStatus
+            config.params["ketch_att_prev"] = nativeStorage.read(
+                key: NativeStorage.ketchAttLastKey,
+                defaultValue: "notDetermined"
+            )
 
             let status = ATTrackingManager.trackingAuthorizationStatus
             config.params["ketch_att"] = status.asString
-            userDefaults.set(status.asString, forKey: Self.attLastStatusKey)
             KetchLogger.log.debug("Params: \(config.params)")
 
             webView?.configuration.userContentController.removeAllScriptMessageHandlers()
@@ -286,6 +288,14 @@ extension KetchUI {
                         UIApplication.shared.open(settingsURL)
                     }
                 }
+            case .nativeStoragePut:
+                guard let payload: NativeStoragePutPayload = payload(with: body) else {
+                    KetchLogger.log.error("Failed to parse nativeStoragePut payload")
+                    return
+                }
+                KetchLogger.log.debug("nativeStoragePut: \(payload.key)=\(payload.value)")
+                nativeStorage.write(key: payload.key, value: payload.value)
+                onEvent?(.nativeStoragePut(key: payload.key, value: payload.value))
             default:
                 break;
             }
@@ -433,6 +443,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case tapOutside
         case geoip
         case openAppSettings
+        case nativeStoragePut = "nativeStoragePut"
 
     }
     
@@ -450,6 +461,11 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         
         onEvent?(event, message.body)
     }
+}
+
+private struct NativeStoragePutPayload: Decodable {
+    let key: String
+    let value: String
 }
 
 private struct ConsentModel: Codable {

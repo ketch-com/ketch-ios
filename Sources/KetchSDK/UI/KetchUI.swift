@@ -120,6 +120,9 @@ public final class KetchUI: ObservableObject {
             
         case .onConsentUpdated(let consent):
             eventListener?.onConsentUpdated(consent: consent)
+
+        case .nativeStoragePut(let key, let value):
+            eventListener?.onNativeStoragePut(key: key, value: value)
             
         case .error(let description):
             eventListener?.onError(description: description)
@@ -352,4 +355,8 @@ public protocol KetchEventListener: AnyObject {
     func onCCPAUpdated(ccpaString: String?)
     func onTCFUpdated(tcfString: String?)
     func onGPPUpdated(gppString: String?)
+}
+
+public extension KetchEventListener {
+    func onNativeStoragePut(key: String, value: String) {}
 }

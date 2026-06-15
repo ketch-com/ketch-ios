@@ -112,4 +112,19 @@ final class SampleEventListener: KetchEventListener {
             dashboard?.appendLog("onGPPUpdated")
         }
     }
+
+    func onNativeStoragePut(key: String, value: String) {
+        Task { @MainActor in
+            if key == SampleLogging.attLastStatusKey {
+                let message = SampleLogging.formatAttState(
+                    current: dashboard?.ketchAtt ?? value,
+                    previous: value
+                )
+                dashboard?.appendLog("onNativeStoragePut: \(key)=\(value)")
+                print("[KetchSample] onNativeStoragePut (ATT): \(message)")
+            } else {
+                dashboard?.appendLog("onNativeStoragePut: \(key)=\(value)")
+            }
+        }
+    }
 }

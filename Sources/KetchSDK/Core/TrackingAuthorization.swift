@@ -19,4 +19,7 @@ extension KetchSDK {
     public static func trackingAuthorizationStatusString() -> String {
         ATTrackingManager.trackingAuthorizationStatus.asString
     }
+
+    /// UserDefaults key for the last ATT status persisted via `nativeStoragePut` from ketch-tag.
+    static let attLastStorageKey = "ketch_att_last"
 }

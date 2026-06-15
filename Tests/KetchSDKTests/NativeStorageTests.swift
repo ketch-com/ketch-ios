@@ -32,7 +32,7 @@ final class NativeStorageTests: XCTestCase {
 
     func testWriteAndReadRoundTrip() {
         let storage = NativeStorage(userDefaults: userDefaults)
-        storage.write(key: NativeStorage.ketchAttLastKey, value: "denied")
-        XCTAssertEqual(storage.read(key: NativeStorage.ketchAttLastKey, defaultValue: "notDetermined"), "denied")
+        storage.write(key: "sample_key", value: "sample_value")
+        XCTAssertEqual(storage.read(key: "sample_key", defaultValue: ""), "sample_value")
     }
 }

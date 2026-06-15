@@ -91,7 +91,7 @@ extension KetchUI {
             
             // Pass ATT status and previous status (native storage replaces unreliable WebView cookie)
             config.params["ketch_att_prev"] = nativeStorage.read(
-                key: NativeStorage.ketchAttLastKey,
+                key: KetchSDK.attLastStorageKey,
                 defaultValue: "notDetermined"
             )
 

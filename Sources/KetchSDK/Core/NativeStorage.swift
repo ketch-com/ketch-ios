@@ -7,8 +7,6 @@ import Foundation
 
 /// String key/value persistence backed by UserDefaults, written via the `nativeStoragePut` bridge event.
 struct NativeStorage {
-    static let ketchAttLastKey = "ketch_att_last"
-
     private let userDefaults: UserDefaults
 
     init(userDefaults: UserDefaults = .standard) {

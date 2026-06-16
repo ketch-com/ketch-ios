@@ -6,7 +6,7 @@
 import Foundation
 import Combine
 
-/// Request processor for available platform API
+/// Request processor for Ketch headless (web/v3) API.
 class KetchApiRequest {
     typealias KetchError = KetchSDK.KetchError
     typealias Configuration = KetchSDK.Configuration
@@ -17,13 +17,15 @@ class KetchApiRequest {
     typealias Vendors = KetchSDK.Vendors
     typealias LocalizedStrings = KetchSDK.LocalizedStrings
 
+    private let headless: HeadlessApiClient
     private let apiClient: ApiClient
 
-    init(apiClient: ApiClient = DefaultApiClient()) {
+    init(dataCenter: KetchDataCenter = .us, apiClient: ApiClient = DefaultApiClient()) {
         self.apiClient = apiClient
+        self.headless = HeadlessApiClient(dataCenter: dataCenter, apiClient: apiClient)
     }
-    
-    func fetchLocalizedStrings(languageCode:String = String(Locale.preferredLanguages[0].prefix(2))) -> AnyPublisher<LocalizedStrings, KetchError> {
+
+    func fetchLocalizedStrings(languageCode: String = String(Locale.preferredLanguages[0].prefix(2))) -> AnyPublisher<LocalizedStrings, KetchError> {
         apiClient.execute(
             request: ApiRequest(
                 endPoint: .localizedStrings(languageCode: languageCode)
@@ -34,15 +36,20 @@ class KetchApiRequest {
         .eraseToAnyPublisher()
     }
 
+    func fetchLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
+        headless.fetchLocation()
+    }
+
+    func fetchBootstrapConfiguration(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
+        headless.fetchBootstrapConfiguration(organization: organization, property: property)
+    }
+
+    func fetchFullConfiguration(request: KetchSDK.FullConfigurationRequest) -> AnyPublisher<Configuration, KetchError> {
+        headless.fetchFullConfiguration(request: request)
+    }
+
     func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .config(organization: organization, property: property)
-            )
-        )
-        .decode(type: Configuration.self, decoder: JSONDecoder())
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+        headless.fetchConfig(organization: organization, property: property)
     }
 
     func fetchConfig(
@@ -53,72 +60,78 @@ class KetchApiRequest {
         jurisdiction: String,
         language: String
     ) -> AnyPublisher<Configuration, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .fullConfig(
-                    organization: organization,
-                    property: property,
-                    environment: environment,
-                    hash: hash,
-                    jurisdiction: jurisdiction,
-                    language: language
-                )
-            )
+        headless.fetchConfig(
+            organization: organization,
+            property: property,
+            environment: environment,
+            hash: String(hash),
+            jurisdiction: jurisdiction,
+            language: language
         )
-        .decode(type: Configuration.self, decoder: JSONDecoder())
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+    }
+
+    func fetchConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        headless.fetchConsent(config: config)
+    }
+
+    func fetchProtocols(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
+        headless.fetchProtocols(config: config)
     }
 
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .getConsent(organization: config.organizationCode),
-                method: .post,
-                body: try? JSONEncoder().encode(config)
-            )
-        )
-        .decode(type: ConsentStatus.self, decoder: JSONDecoder())
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+        headless.getConsent(config: config)
     }
 
-    func updateConsent(update: ConsentUpdate) -> AnyPublisher<Void, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .updateConsent(organization: update.organizationCode),
-                method: .post,
-                body: try? JSONEncoder().encode(update)
-            )
-        )
-        .map { _ in }
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+    func setConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
+        headless.setConsent(update: update)
+    }
+
+    func updateConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
+        headless.updateConsent(update: update)
     }
 
     func invokeRights(organization: String, config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .invokeRights(organization: organization),
-                method: .post,
-                body: try? JSONEncoder().encode(config)
-            )
-        )
-        .map { _ in }
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+        headless.invokeRights(organization: organization, config: config)
+    }
+
+    func invokeRight(request: KetchSDK.InvokeRightRequest) -> AnyPublisher<Void, KetchError> {
+        headless.invokeRight(request: request)
+    }
+
+    func getProfile(request: KetchSDK.GetProfileRequest) -> AnyPublisher<KetchSDK.GetProfileResponse, KetchError> {
+        headless.getProfile(request: request)
+    }
+
+    func putProfile(request: KetchSDK.PutProfileRequest) -> AnyPublisher<Void, KetchError> {
+        headless.putProfile(request: request)
+    }
+
+    func getSubscriptions(
+        request: KetchSDK.SubscriptionsRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionsResponse, KetchError> {
+        headless.getSubscriptions(request: request)
+    }
+
+    func setSubscriptions(request: KetchSDK.SubscriptionsRequest) -> AnyPublisher<Void, KetchError> {
+        headless.setSubscriptions(request: request)
+    }
+
+    func fetchSubscriptionsConfiguration(
+        request: KetchSDK.SubscriptionConfigurationRequest
+    ) -> AnyPublisher<KetchSDK.SubscriptionConfiguration, KetchError> {
+        headless.fetchSubscriptionsConfiguration(request: request)
+    }
+
+    func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        headless.preferenceQRUrl(request: request)
+    }
+
+    func webReport(channel: String, request: KetchSDK.WebReportRequest) -> AnyPublisher<Void, KetchError> {
+        headless.webReport(channel: channel, request: request)
     }
 
     func getVendors() -> AnyPublisher<Vendors, KetchError> {
-        apiClient.execute(
-            request: ApiRequest(
-                endPoint: .getVendors(),
-                method: .get
-            )
-        )
-        .decode(type: Vendors.self, decoder: JSONDecoder())
-        .mapError(KetchError.init)
-        .eraseToAnyPublisher()
+        headless.getVendors()
     }
 }
 

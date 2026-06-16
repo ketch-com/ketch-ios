@@ -22,6 +22,7 @@ extension KetchUI {
             case onTCFUpdated(String?)
             case onGPPUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
+            case nativeStoragePut(key: String, value: String)
             case error(description: String)
             case tapOutside
             case environment(String?)
@@ -40,6 +41,7 @@ extension KetchUI {
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
         private let userDefaults: UserDefaults = .standard
+        private let nativeStorage = NativeStorage()
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
@@ -87,7 +89,12 @@ extension KetchUI {
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
-            // Pass ATT status
+            // Pass ATT status and previous status (native storage replaces unreliable WebView cookie)
+            config.params["ketch_att_prev"] = nativeStorage.read(
+                key: KetchSDK.attLastStorageKey,
+                defaultValue: "notDetermined"
+            )
+
             let status = ATTrackingManager.trackingAuthorizationStatus
             config.params["ketch_att"] = status.asString
             KetchLogger.log.debug("Params: \(config.params)")
@@ -172,6 +179,11 @@ extension KetchUI {
                 // Parse status from event body
                 let statusString = body as? String ?? ""
                 let status = KetchSDK.HideExperienceStatus(rawValue: statusString) ?? KetchSDK.HideExperienceStatus.None
+                if status == .None && !statusString.isEmpty {
+                    KetchLogger.log.warning("onDismiss source=hideExperience parseFallback rawStatus=\(statusString)")
+                } else {
+                    KetchLogger.log.debug("onDismiss source=hideExperience status=\(status.rawValue)")
+                }
                     
                 onEvent?(.onClose(status))
                 return
@@ -269,6 +281,21 @@ extension KetchUI {
             case .identities:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.identities(body as? String))
+            case .openAppSettings:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
+                DispatchQueue.main.async {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                }
+            case .nativeStoragePut:
+                guard let payload: NativeStoragePutPayload = payload(with: body) else {
+                    KetchLogger.log.error("Failed to parse nativeStoragePut payload")
+                    return
+                }
+                KetchLogger.log.debug("nativeStoragePut: \(payload.key)=\(payload.value)")
+                nativeStorage.write(key: payload.key, value: payload.value)
+                onEvent?(.nativeStoragePut(key: payload.key, value: payload.value))
             default:
                 break;
             }
@@ -308,6 +335,32 @@ extension KetchUI.WebPresentationItem {
     
     public func showConsent() {
         webView?.evaluateJavaScript("ketch('showConsent')")
+    }
+
+    func requestWebDismiss(completion: @escaping (Bool) -> Void) {
+        let script = """
+        (function(){
+            if (typeof triggerOutsideTapDismiss === 'function') {
+                return triggerOutsideTapDismiss();
+            }
+            return false;
+        })()
+        """
+        webView?.evaluateJavaScript(script) { result, error in
+            if error != nil {
+                completion(false)
+                return
+            }
+            if let boolResult = result as? Bool {
+                completion(boolResult)
+                return
+            }
+            if let stringResult = result as? String {
+                completion(stringResult.lowercased() == "true")
+                return
+            }
+            completion(false)
+        }
     }
 }
 
@@ -353,6 +406,11 @@ extension KetchUI.ExperienceOption {
         case .css(let string):
             return (key: "ketch_css_inject", value: string)
 
+        case .webResourceUrlOverrides(let overrides):
+            let data = (try? JSONSerialization.data(withJSONObject: overrides)) ?? Data()
+            let json = String(data: data, encoding: .utf8) ?? "{}"
+            return (key: "ketch_web_resource_overrides", value: json)
+
         case .age(let value):
             return (key: "ketch_age", value: String(value))
 
@@ -384,6 +442,8 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case error
         case tapOutside
         case geoip
+        case openAppSettings
+        case nativeStoragePut = "nativeStoragePut"
 
     }
     
@@ -401,6 +461,11 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         
         onEvent?(event, message.body)
     }
+}
+
+private struct NativeStoragePutPayload: Decodable {
+    let key: String
+    let value: String
 }
 
 private struct ConsentModel: Codable {

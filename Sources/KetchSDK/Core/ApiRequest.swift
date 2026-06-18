@@ -8,98 +8,23 @@ import Combine
 
 struct EndPoint {
     private static let defaultScheme = "https"
-    private static let ketchHost = "global.ketchcdn.com"
-    private static let ketchApi = "/web"
-    private static let ketchApiVersion = "v2"
     private static let ketchStaticHost = "cdn.ketchjs.com"
     private static let KetchStaticApi = "/lanyard/static"
 
-    let scheme: String
-    let host: String
-    let path: String
-    let queryItems: [URLQueryItem]
-    
+    let url: URL
+
+    /// Pre-built absolute URL (headless web/v3).
+    init(url: URL) {
+        self.url = url
+    }
+
     static func localizedStrings(languageCode: String) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchStaticHost,
-            path: [KetchStaticApi, "locales", "\(languageCode).json"].joined(separator: "/"),
-            queryItems: [])
-    }
-
-    static func config(organization: String, property: String) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "config", organization, property, "config.json"].joined(separator: "/"),
-            queryItems: [URLQueryItem(name:"language", value:Locale.preferredLanguages[0])]
-        )
-    }
-
-    static func fullConfig(
-        organization: String,
-        property: String,
-        environment: String,
-        hash: Int,
-        jurisdiction: String,
-        language: String
-    ) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [
-                ketchApi, ketchApiVersion,
-                "config", organization, property, environment, String(hash), jurisdiction, language,
-                "config.json"
-            ].joined(separator: "/"),
-            queryItems: []
-        )
-    }
-
-    static func getConsent(organization: String) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "consent", organization, "get"].joined(separator: "/"),
-            queryItems: []
-        )
-    }
-
-    static func updateConsent(organization: String) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "consent", organization, "update"].joined(separator: "/"),
-            queryItems: []
-        )
-    }
-
-    static func invokeRights(organization: String) -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "rights", organization, "invoke"].joined(separator: "/"),
-            queryItems: []
-        )
-    }
-
-    static func getVendors() -> EndPoint {
-        EndPoint(
-            scheme: defaultScheme,
-            host: ketchHost,
-            path: [ketchApi, ketchApiVersion, "gvl", "vendor-list.json"].joined(separator: "/"),
-            queryItems: []
-        )
-    }
-
-    var url: URL? {
+        let path = [KetchStaticApi, "locales", "\(languageCode).json"].joined(separator: "/")
         var components = URLComponents()
-        components.scheme = scheme
-        components.host = host
+        components.scheme = defaultScheme
+        components.host = ketchStaticHost
         components.path = path
-        components.queryItems = queryItems
-
-        return components.url
+        return EndPoint(url: components.url!)
     }
 }
 
@@ -168,7 +93,7 @@ class DefaultApiClient: ApiClient {
     }
 
     private static func urlRequest(with request: ApiRequest) -> URLRequest? {
-        guard let url = request.endPoint.url else { return nil }
+        let url = request.endPoint.url
         
         var urlRequest = URLRequest(url: url)
 
@@ -181,10 +106,12 @@ class DefaultApiClient: ApiClient {
             forHTTPHeaderField: ApiRequest.HeaderField.accept
         )
 
-        urlRequest.setValue(
-            ApiRequest.HeaderValue.applicationJson,
-            forHTTPHeaderField: ApiRequest.HeaderField.contentType
-        )
+        if request.body != nil {
+            urlRequest.setValue(
+                ApiRequest.HeaderValue.contentTypeJson,
+                forHTTPHeaderField: ApiRequest.HeaderField.contentType
+            )
+        }
 
         return urlRequest
     }

@@ -5,52 +5,50 @@
 
 import SwiftUI
 import KetchSDK
+import Combine
+#if canImport(AppTrackingTransparency)
+import AppTrackingTransparency
+#endif
 
 struct ContentView: View {
+    @StateObject var dashboard = SampleDashboardState()
     @StateObject var ketchUI: KetchUI
-    
-    // Define listener as a property of ContentView
-    private let listener = SampleEventListener()
-    
+    @State private var listener = SampleEventListener()
+    @State var headlessCancellables = Set<AnyCancellable>()
+
     init() {
-        // Create the KetchSDK object
         let ketch = KetchSDK.create(
-            // Replace below with your Ketch organization code
-            organizationCode: "bearcat",
-            // Repalce below with your Ketch property code
-            propertyCode: "mobile",
+            organizationCode: "ethansch061226",
+            propertyCode: "website_smart_tag",
             environmentCode: "production",
             identities: [
-                // Replace below with your Ketch identifier name and value
-                Ketch.Identity(key: "email", value: "justin-test-apr-29-2026-14")
+                Ketch.Identity(key: "email", value: "sample-test@integration.ketch.test")
             ]
         )
-        
-        // Create the KetchUI object
+
         let ketchUI = KetchUI(ketch: ketch, experienceOptions: [.logLevel(.trace)])
-        
-        // Add our listener to the ketchUI class
-        ketchUI.eventListener = listener
-        
         _ketchUI = StateObject(wrappedValue: ketchUI)
     }
-    
+
     @State private var selectedTabs: Set<KetchUI.ExperienceOption.PreferencesTab> = Set([.overviewTab, .consentsTab, .subscriptionsTab, .rightsTab])
     @State private var selectedTab = KetchUI.ExperienceOption.PreferencesTab.overviewTab
-    @State private var apiRegion = APIRegion.us
-    @State private var org = ""
-    @State private var property = ""
-    @State private var env = ""
-    @State private var lang = ""
+    @State var apiRegion = APIRegion.uat
+    @State var org = "ethansch061226"
+    @State var property = "website_smart_tag"
+    @State var env = "production"
+    @State private var lang = "en"
     @State private var jurisdiction = ""
     @State private var region = ""
     @State private var idName = ""
     @State private var idValue = ""
     @State private var identities = [Ketch.Identity]()
     @State private var age = ""
-    
+
     var body: some View {
+        ScrollView {
         VStack(alignment: .leading) {
+            healthDashboard
+
             Text("Global options")
                 .font(.title2)
             Text("Options that apply to both experiences")
@@ -156,6 +154,14 @@ struct ContentView: View {
                 .foregroundStyle(Color.gray)
             
             HStack {
+                Button("Load") {
+                    dashboard.loadState = "loading"
+                    dashboard.setStatus("Load called")
+                    ketchUI.reload(with: makeParameters)
+                }
+
+                Spacer()
+
                 Button("Reload") {
                     ketchUI.reload(with: makeParameters)
                 }
@@ -186,14 +192,45 @@ struct ContentView: View {
             }
             .padding(.vertical)
             
-            Spacer()
         }
         .padding()
+        }
         .background(.white)
         .ketchView(model: $ketchUI.webPresentationItem)
+        .onAppear {
+            listener.dashboard = dashboard
+            ketchUI.eventListener = listener
+            refreshATTStatus()
+        }
+    }
+
+    func refreshATTStatus(logEvent: Bool = false) {
+        if #available(iOS 14, *) {
+            let status = KetchSDK.trackingAuthorizationStatusString()
+            let prev = SampleLogging.storedAttPrev()
+            dashboard.attStatus = status
+            dashboard.ketchAtt = status
+            dashboard.ketchAttPrev = prev
+            if logEvent {
+                let message = SampleLogging.formatAttState(current: status, previous: prev)
+                dashboard.appendLog("ATT: \(message)")
+                print("[KetchSample] ATT: \(message)")
+            }
+        }
+    }
+
+    func requestATT() {
+        if #available(iOS 14, *) {
+            ATTrackingManager.requestTrackingAuthorization { _ in
+                DispatchQueue.main.async {
+                    self.refreshATTStatus(logEvent: true)
+                    self.ketchUI.reload(with: self.makeParameters)
+                }
+            }
+        }
     }
     
-    private var makeParameters: [KetchUI.ExperienceOption] {
+    var makeParameters: [KetchUI.ExperienceOption] {
         var parameters = [KetchUI.ExperienceOption]()
         if !org.isEmpty {
             parameters.append(.organizationCode(org))
@@ -227,6 +264,10 @@ struct ContentView: View {
         
         if let ageValue = UInt(age) {
             parameters.append(.age(ageValue))
+        }
+
+        if DevUrlOverrides.enabled {
+            parameters.append(.webResourceUrlOverrides(DevUrlOverrides.forSimulator))
         }
         
         return parameters
@@ -282,11 +323,15 @@ struct ContentView: View {
                      "IABGPP_GppSID",
                      "IABGPP_tcfeuv2_GppSID"]
         
-        print("\n* ----- Begin privacy strings ---- *")
+        var summary = [String]()
         (keys + keys2 + keys3).forEach {
-            print("\($0): \(UserDefaults.standard.value(forKey: $0) ?? "")")
+            let value = UserDefaults.standard.value(forKey: $0) ?? ""
+            summary.append("\($0): \(value)")
         }
-        print("* ----- End privacy strings ---- *\n")
+        dashboard.tcf = UserDefaults.standard.string(forKey: "IABTCF_TCString") ?? dashboard.tcf
+        dashboard.ccpa = UserDefaults.standard.string(forKey: "IABUSPrivacy_String") ?? dashboard.ccpa
+        dashboard.gpp = UserDefaults.standard.string(forKey: "IABGPP_HDR_GppString") ?? dashboard.gpp
+        dashboard.setStatus("Privacy strings read (\(summary.count) keys)")
     }
     
     private func applyCSS() {

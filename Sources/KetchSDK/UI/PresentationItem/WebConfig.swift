@@ -82,6 +82,8 @@ struct WebConfig {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1.lowercased())
             } else if $0 == "ketch_css_inject" {
                 // ignore this parameter
+            } else if $0 == "ketch_web_resource_overrides" {
+                // ignore this parameter
             } else {
                 defaultQuery[$0] = URLQueryItem(name: $0, value: $1)
             }
@@ -115,12 +117,73 @@ struct WebConfig {
                 let wrappedCSS = "<style>\n\(css)\n</style>"
                 htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
             }
+
+            if let overridesJson = params["ketch_web_resource_overrides"],
+               let script = Self.webResourceOverridesInjectScript(overridesJson: overridesJson) {
+                htmlString = htmlString.replacingOccurrences(of: "<head>", with: "<head>\n\(script)")
+            }
             
             // Query params (e.g. ketch_att) must be on the document base URL — index.html reads `document.location.searchParams`.
             webView.loadHTMLString(htmlString, baseURL: documentBaseURL)
         }
 
         return webView
+    }
+
+    private static func webResourceOverridesInjectScript(overridesJson: String) -> String? {
+        guard overridesJson != "{}", !overridesJson.isEmpty else { return nil }
+        return """
+        <script>
+        (function () {
+          var overrides = \(overridesJson);
+          if (!overrides || !Object.keys(overrides).length) return;
+          function resolveUrl(url) {
+            if (!url) return url;
+            if (overrides[url]) return overrides[url];
+            var base = url.split('?')[0].split('#')[0];
+            if (base !== url && overrides[base]) return overrides[base];
+            for (var key in overrides) {
+              if (!Object.prototype.hasOwnProperty.call(overrides, key)) continue;
+              if (key === url || key === base) continue;
+              if (key.charAt(0) === '/' && base.indexOf(key) !== -1) return overrides[key];
+              if (key.indexOf('://') !== -1) continue;
+              if (base.endsWith(key) || base.indexOf('/' + key) !== -1) return overrides[key];
+            }
+            return url;
+          }
+          var srcDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+          if (srcDesc && srcDesc.set) {
+            var nativeSrcSet = srcDesc.set;
+            var nativeSrcGet = srcDesc.get;
+            Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+              set: function (value) { nativeSrcSet.call(this, resolveUrl(value)); },
+              get: nativeSrcGet,
+              configurable: true,
+            });
+          }
+          var origSetAttribute = Element.prototype.setAttribute;
+          Element.prototype.setAttribute = function (name, value) {
+            if (name === 'src' && this.tagName === 'SCRIPT') {
+              return origSetAttribute.call(this, name, resolveUrl(value));
+            }
+            return origSetAttribute.call(this, name, value);
+          };
+          if (window.fetch) {
+            var origFetch = window.fetch.bind(window);
+            window.fetch = function (input, init) {
+              if (typeof input === 'string') {
+                var mapped = resolveUrl(input);
+                if (mapped !== input) input = mapped;
+              } else if (input && input.url) {
+                var mappedUrl = resolveUrl(input.url);
+                if (mappedUrl !== input.url) input = new Request(mappedUrl, input);
+              }
+              return origFetch(input, init);
+            };
+          }
+        })();
+        </script>
+        """
     }
 }
 

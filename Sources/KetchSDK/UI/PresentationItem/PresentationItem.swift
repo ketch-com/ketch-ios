@@ -367,6 +367,11 @@ extension KetchUI.ExperienceOption {
         case .css(let string):
             return (key: "ketch_css_inject", value: string)
 
+        case .webResourceUrlOverrides(let overrides):
+            let data = (try? JSONSerialization.data(withJSONObject: overrides)) ?? Data()
+            let json = String(data: data, encoding: .utf8) ?? "{}"
+            return (key: "ketch_web_resource_overrides", value: json)
+
         case .age(let value):
             return (key: "ketch_age", value: String(value))
 

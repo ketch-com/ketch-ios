@@ -66,3 +66,34 @@ Before merging SDK changes:
 ## Simulator automation
 
 For CLI-driven taps, screenshots, and unified log capture without XCTest, see `.cursor/rules/ios-simulator-control.mdc`.
+
+## SDK Health Dashboard (manual QA)
+
+`Examples/KetchSDKSample` includes an on-screen **SDK Health Dashboard** so callbacks, ATT, WebView state, and headless CDN results are visible without reading the console.
+
+| Section | What to verify |
+| --- | --- |
+| **Connection** | Init state, status text, org/property/env (editable fields), API region |
+| **WebView / Experience** | Load state, visibility, dismiss reason, WebView visibility, `ketch_att` (iOS) |
+| **ATT (iOS)** | Native ATT status; **Request ATT** then **Reload WebView** updates `ketch_att` |
+| **Privacy / Consent** | Environment, jurisdiction, region, consent summary, US Privacy / TCF / GPP (truncated) |
+| **Headless** | **Fetch Location**, **Fetch Bootstrap**, **Cold Start** show inline OK/Error per step |
+| **Event log** | Timestamped callback trace (max ~50 lines) |
+
+Launch: `bash .cursor/skills/ketch-ios-run-sample/scripts/run-sample-app.sh local`
+
+Example org/property: `ethansch061226` / `website_smart_tag`. See `ketch-ios-run-sample` skill for prerequisites, launch, and smoke flow.
+
+Manual golden path: **Load** → structured fields populate → **Show Consent** → experience panel updates → (iOS) **Request ATT** → **Reload WebView** → headless **Fetch Bootstrap** shows success or error on-screen.
+
+## Local tag URL overrides (non-prod scripts)
+
+Use `.webResourceUrlOverrides([String: String])` on `KetchUI.ExperienceOption` to redirect exact CDN URLs to local dev servers. Separate from `ketchURL` / data center (boot.json path).
+
+```swift
+parameters.append(.webResourceUrlOverrides([
+    "https://cdn.uat.ketchjs.com/ketchtag/stable/v2.12/ketch-sdk.js": "http://localhost:9000/ketch-sdk.js",
+]))
+```
+
+WKWebView has no public subresource intercept; overrides are injected as an early `<script>` in index HTML. Sample: `DevUrlOverrides.enabled = true` in `DevUrlOverrides.swift`.

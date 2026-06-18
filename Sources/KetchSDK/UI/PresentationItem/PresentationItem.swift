@@ -88,7 +88,12 @@ extension KetchUI {
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
-            // Pass ATT status
+            // Pass ATT status and previous status (native storage replaces unreliable WebView cookie)
+            config.params["ketch_att_prev"] = nativeStorage.read(
+                key: KetchSDK.attLastStorageKey,
+                defaultValue: "notDetermined"
+            )
+
             let status = ATTrackingManager.trackingAuthorizationStatus
             config.params["ketch_att"] = status.asString
             KetchLogger.log.debug("Params: \(config.params)")
@@ -263,6 +268,13 @@ extension KetchUI {
             case .identities:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.identities(body as? String))
+            case .openAppSettings:
+                KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
+                DispatchQueue.main.async {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                }
             case .nativeStoragePut:
                 guard let payload: NativeStoragePutPayload = payload(with: body) else {
                     KetchLogger.log.error("Failed to parse nativeStoragePut payload")
@@ -386,6 +398,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case error
         case tapOutside
         case geoip
+        case openAppSettings
         case nativeStoragePut = "nativeStoragePut"
 
     }

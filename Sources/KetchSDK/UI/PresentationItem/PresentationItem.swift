@@ -40,7 +40,6 @@ extension KetchUI {
         let item: WebExperienceItem
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
-        private let userDefaults: UserDefaults = .standard
         private let nativeStorage = NativeStorage()
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
@@ -135,15 +134,8 @@ extension KetchUI {
         
         // Utility function to clear keys with specified prefixes
         private func clearKeysWithPrefixes() {
-            let keysToRemove = userDefaults.dictionaryRepresentation().keys.filter { key in
-                WebPresentationItem.prefixesToRemove.contains { prefix in key.hasPrefix(prefix) }
-            }
-            
-            keysToRemove.forEach { key in
-                userDefaults.removeObject(forKey: key)
-            }
-            
-            KetchLogger.log.debug("Cleared \(keysToRemove.count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
+            let count = nativeStorage.removeValues(withPrefixes: WebPresentationItem.prefixesToRemove)
+            KetchLogger.log.debug("Cleared \(count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
         }
         
         private func webExperience(orgCode: String,
@@ -302,7 +294,7 @@ extension KetchUI {
 
             // Save privacy strings to UserDefaults
             privacyStrings.forEach { pair in
-                userDefaults.set(pair.value, forKey: pair.key)
+                nativeStorage.set(pair.value, forKey: pair.key)
             }
 
             // Log the number of keys saved and the privacy type

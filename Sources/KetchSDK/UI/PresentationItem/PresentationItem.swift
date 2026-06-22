@@ -22,6 +22,7 @@ extension KetchUI {
             case onTCFUpdated(String?)
             case onGPPUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
+            case nativeStoragePut(key: String, value: String)
             case error(description: String)
             case tapOutside
             case environment(String?)
@@ -39,7 +40,7 @@ extension KetchUI {
         let item: WebExperienceItem
         let config: WebConfig
         let onEvent: ((Event) -> Void)?
-        private let userDefaults: UserDefaults = .standard
+        private let nativeStorage = NativeStorage()
         private var configuration: KetchSDK.Configuration?
         private let webNavigationHandler = WebNavigationHandler()
         
@@ -133,15 +134,8 @@ extension KetchUI {
         
         // Utility function to clear keys with specified prefixes
         private func clearKeysWithPrefixes() {
-            let keysToRemove = userDefaults.dictionaryRepresentation().keys.filter { key in
-                WebPresentationItem.prefixesToRemove.contains { prefix in key.hasPrefix(prefix) }
-            }
-            
-            keysToRemove.forEach { key in
-                userDefaults.removeObject(forKey: key)
-            }
-            
-            KetchLogger.log.debug("Cleared \(keysToRemove.count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
+            let count = nativeStorage.removeValues(withPrefixes: WebPresentationItem.prefixesToRemove)
+            KetchLogger.log.debug("Cleared \(count) keys with prefixes \(WebPresentationItem.prefixesToRemove)")
         }
         
         private func webExperience(orgCode: String,
@@ -269,6 +263,14 @@ extension KetchUI {
             case .identities:
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "unknown")")
                 onEvent?(.identities(body as? String))
+            case .nativeStoragePut:
+                guard let payload: NativeStoragePutPayload = payload(with: body) else {
+                    KetchLogger.log.error("Failed to parse nativeStoragePut payload")
+                    return
+                }
+                KetchLogger.log.debug("nativeStoragePut: \(payload.key)=\(payload.value)")
+                nativeStorage.write(key: payload.key, value: payload.value)
+                onEvent?(.nativeStoragePut(key: payload.key, value: payload.value))
             default:
                 break;
             }
@@ -292,7 +294,7 @@ extension KetchUI {
 
             // Save privacy strings to UserDefaults
             privacyStrings.forEach { pair in
-                userDefaults.set(pair.value, forKey: pair.key)
+                nativeStorage.set(pair.value, forKey: pair.key)
             }
 
             // Log the number of keys saved and the privacy type
@@ -384,6 +386,7 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case error
         case tapOutside
         case geoip
+        case nativeStoragePut = "nativeStoragePut"
 
     }
     
@@ -401,6 +404,11 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         
         onEvent?(event, message.body)
     }
+}
+
+private struct NativeStoragePutPayload: Decodable {
+    let key: String
+    let value: String
 }
 
 private struct ConsentModel: Codable {

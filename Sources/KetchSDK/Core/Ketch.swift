@@ -34,6 +34,7 @@ public final class Ketch: ObservableObject {
     public let dataCenter: KetchDataCenter
     private let apiRequest: KetchApiRequest
     private let userDefaults: UserDefaults
+    private let nativeStorage: NativeStorage
     private var plugins = Set<PolicyPlugin>()
 
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
@@ -63,6 +64,7 @@ public final class Ketch: ObservableObject {
         self.dataCenter = dataCenter
         self.apiRequest = KetchApiRequest(dataCenter: dataCenter)
         self.userDefaults = userDefaults
+        self.nativeStorage = NativeStorage(userDefaults: userDefaults)
 
         configurationSubject
             .replaceError(with: nil)
@@ -540,18 +542,18 @@ private let PREFERENCE_VERSION = "preference_version"
 // MARK: - Internal interface for storage usage
 extension Ketch {
     func updateConsentVersion(version: Int?) {
-        userDefaults.set(version, forKey: CONSENT_VERSION)
+        nativeStorage.set(version, forKey: CONSENT_VERSION)
     }
 
     func getConsentVersion() -> Int? {
-        userDefaults.value(forKey: CONSENT_VERSION) as? Int
+        nativeStorage.value(forKey: CONSENT_VERSION) as? Int
     }
 
     func updatePreferenceVersion(version: Int?) {
-        userDefaults.set(version, forKey: PREFERENCE_VERSION)
+        nativeStorage.set(version, forKey: PREFERENCE_VERSION)
     }
 
     func getPreferenceVersion() -> Int? {
-        userDefaults.value(forKey: PREFERENCE_VERSION) as? Int
+        nativeStorage.value(forKey: PREFERENCE_VERSION) as? Int
     }
 }

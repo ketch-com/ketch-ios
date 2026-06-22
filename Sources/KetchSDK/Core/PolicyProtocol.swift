@@ -61,17 +61,19 @@ open class PolicyPlugin: PolicyProtocol {
     var configuration: KetchSDK.Configuration?
 
     let userDefaults: UserDefaults
+    private let nativeStorage: NativeStorage
 
     public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
+        self.nativeStorage = NativeStorage(userDefaults: userDefaults)
     }
 
     func save(_ value: Any?, forKey key: String) {
-        userDefaults.set(value, forKey: key)
+        nativeStorage.set(value, forKey: key)
     }
 
     func getValue(withKey key: String) -> Any? {
-        userDefaults.value(forKey: key)
+        nativeStorage.value(forKey: key)
     }
 
     // MARK: - PolicyProtocol

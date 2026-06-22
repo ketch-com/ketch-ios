@@ -121,6 +121,88 @@ final class HeadlessConsentTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
     }
 
+    func testSetConsentFallsBackToCallerProtocolsWhenResponseOmitsThem() throws {
+        let session = makeStubSession()
+        let client = HeadlessApiClient(dataCenter: .us, session: session)
+        let body = """
+        {"purposes":{"analytics":true}}
+        """
+        StubURLProtocol.handler = { _ in
+            let response = HTTPURLResponse(
+                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/update")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data(body.utf8))
+        }
+
+        var update = sampleConsentUpdate()
+        update = .init(
+            organizationCode: update.organizationCode,
+            propertyCode: update.propertyCode,
+            environmentCode: update.environmentCode,
+            identities: update.identities,
+            jurisdictionCode: update.jurisdictionCode,
+            migrationOption: update.migrationOption,
+            purposes: update.purposes,
+            vendors: update.vendors,
+            protocols: ["gpp": "DBABLA~BVQqAAAAAAJY.QA"]
+        )
+
+        let expectation = expectation(description: "setConsent caller protocols")
+        client.setConsent(update: update)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("setConsent failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { status in
+                    XCTAssertEqual(status.purposes?["analytics"], true)
+                    XCTAssertEqual(status.protocols?["gpp"], "DBABLA~BVQqAAAAAAJY.QA")
+                }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testFetchConsentAcceptsVendorsOnlyResponse() throws {
+        let session = makeStubSession()
+        let client = HeadlessApiClient(dataCenter: .us, session: session)
+        let body = """
+        {"vendors":["google","meta"]}
+        """
+        StubURLProtocol.handler = { _ in
+            let response = HTTPURLResponse(
+                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/get")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data(body.utf8))
+        }
+
+        let expectation = expectation(description: "fetchConsent vendors")
+        client.fetchConsent(config: sampleConsentConfig())
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("fetchConsent failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { status in
+                    XCTAssertNil(status.purposes)
+                    XCTAssertEqual(status.vendors, ["google", "meta"])
+                    XCTAssertNil(status.protocols)
+                }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+    }
+
     func testFetchProtocolsPreservesPurposesWhenProtocolsMissing() throws {
         let session = makeStubSession()
         let client = HeadlessApiClient(dataCenter: .us, session: session)

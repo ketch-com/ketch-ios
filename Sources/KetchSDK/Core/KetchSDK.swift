@@ -94,7 +94,7 @@ extension KetchSDK {
             migrationOption: update.migrationOption,
             purposes: update.purposes,
             vendors: update.vendors,
-            protocols: nil
+            protocols: update.protocols
         )
     }
 

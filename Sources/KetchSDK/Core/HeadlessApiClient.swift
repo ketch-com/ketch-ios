@@ -51,6 +51,9 @@ final class HeadlessApiClient {
         request: KetchSDK.FullConfigurationRequest
     ) -> AnyPublisher<Configuration, KetchError> {
         var path = "/config/\(request.organizationCode)/\(request.propertyCode)"
+        let languageInPath = request.environmentCode != nil
+            && request.jurisdictionCode != nil
+            && request.languageCode != nil
         if let env = request.environmentCode,
            let jurisdiction = request.jurisdictionCode,
            let language = request.languageCode {
@@ -60,6 +63,9 @@ final class HeadlessApiClient {
         var query: [URLQueryItem] = []
         if let hash = request.hash {
             query.append(URLQueryItem(name: "hash", value: hash))
+        }
+        if !languageInPath, let language = request.languageCode {
+            query.append(URLQueryItem(name: "language", value: language))
         }
         return get(path: path, queryItems: query)
             .decode(type: Configuration.self, decoder: JSONDecoder())
@@ -107,7 +113,11 @@ final class HeadlessApiClient {
 
     func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
         fetchFullConfiguration(
-            request: .init(organizationCode: organization, propertyCode: property)
+            request: .init(
+                organizationCode: organization,
+                propertyCode: property,
+                languageCode: Locale.preferredLanguages[0]
+            )
         )
     }
 
@@ -363,7 +373,7 @@ final class HeadlessApiClient {
                 }
                 if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
                    Self.hasUsableConsentFields(decoded) {
-                    return decoded
+                    return Self.mergingProtocols(from: decoded, fallback: fallback)
                 }
                 return Self.consentStatus(from: fallback)
             }
@@ -397,6 +407,7 @@ final class HeadlessApiClient {
 
     private static func hasUsableConsentFields(_ status: ConsentStatus) -> Bool {
         if let purposes = status.purposes, !purposes.isEmpty { return true }
+        if let vendors = status.vendors, !vendors.isEmpty { return true }
         if let protocols = status.protocols, !protocols.isEmpty { return true }
         return false
     }
@@ -412,7 +423,22 @@ final class HeadlessApiClient {
         return ConsentStatus(
             purposes: purposes,
             vendors: update.vendors,
-            protocols: nil
+            protocols: update.protocols
+        )
+    }
+
+    /// Keeps server-computed protocols when present; otherwise preserves caller-supplied strings (e.g. GPP).
+    private static func mergingProtocols(from status: ConsentStatus, fallback: ConsentUpdate) -> ConsentStatus {
+        guard let callerProtocols = fallback.protocols, !callerProtocols.isEmpty else {
+            return status
+        }
+        if let responseProtocols = status.protocols, !responseProtocols.isEmpty {
+            return status
+        }
+        return ConsentStatus(
+            purposes: status.purposes,
+            vendors: status.vendors,
+            protocols: callerProtocols
         )
     }
 }

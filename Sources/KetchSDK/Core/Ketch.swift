@@ -279,7 +279,7 @@ public final class Ketch: ObservableObject {
                     migrationOption: .migrateDefault,
                     purposes: purposes ?? [:],
                     vendors: vendors,
-                    protocols: nil
+                    protocols: protocols
                 )
             )
             .sink { result in

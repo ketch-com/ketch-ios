@@ -1,8 +1,10 @@
+import Combine
 import XCTest
 @testable import KetchSDK
 
 final class HeadlessApiClientTests: XCTestCase {
     private var client: HeadlessApiClient!
+    private var cancellables = Set<AnyCancellable>()
 
     override func setUp() {
         super.setUp()
@@ -19,6 +21,39 @@ final class HeadlessApiClientTests: XCTestCase {
         XCTAssertEqual(
             url?.absoluteString,
             "https://global.ketchcdn.com/web/v3/config/acme/prop/boot.json"
+        )
+    }
+
+    func testFetchConfig_includesPreferredLanguageQueryParam() throws {
+        let preferredLanguage = Locale.preferredLanguages[0]
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "fetchConfig language query")
+        client.fetchConfig(organization: "acme", property: "prop")
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("fetchConfig failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { _ in }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/config.json")
+        XCTAssertEqual(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            [URLQueryItem(name: "language", value: preferredLanguage)]
         )
     }
 
@@ -80,5 +115,19 @@ final class HeadlessApiClientTests: XCTestCase {
         XCTAssertEqual(KetchDataCenter.us.baseURL.absoluteString, "https://global.ketchcdn.com/web/v3")
         XCTAssertEqual(KetchDataCenter.eu.baseURL.absoluteString, "https://eu.ketchcdn.com/web/v3")
         XCTAssertEqual(KetchDataCenter.uat.baseURL.absoluteString, "https://dev.ketchcdn.com/web/v3")
+    }
+}
+
+// MARK: - Test doubles
+
+private final class CapturingApiClient: ApiClient {
+    private let handler: (ApiRequest) -> AnyPublisher<Data, ApiClientError>
+
+    init(handler: @escaping (ApiRequest) -> AnyPublisher<Data, ApiClientError>) {
+        self.handler = handler
+    }
+
+    func execute(request: ApiRequest) -> AnyPublisher<Data, ApiClientError> {
+        handler(request)
     }
 }

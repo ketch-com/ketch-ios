@@ -42,7 +42,7 @@ struct ContentView: View {
     @State var org = ""
     @State var property = ""
     @State var env = ""
-    @State private var lang = ""
+    @State private var lang = "en"
     @State private var jurisdiction = ""
     @State private var region = ""
     @State private var idName = ""

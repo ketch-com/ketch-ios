@@ -8,7 +8,8 @@ import KetchSDK
 
 struct ContentView: View {
     @StateObject var ketchUI: KetchUI
-    
+    @StateObject var dashboard = SampleDashboardState()
+
     // Define listener as a property of ContentView
     private let listener = SampleEventListener()
     
@@ -16,13 +17,13 @@ struct ContentView: View {
         // Create the KetchSDK object
         let ketch = KetchSDK.create(
             // Replace below with your Ketch organization code
-            organizationCode: "bearcat",
+            organizationCode: "ethansch061226",
             // Repalce below with your Ketch property code
-            propertyCode: "mobile",
+            propertyCode: "website_smart_tag",
             environmentCode: "production",
             identities: [
                 // Replace below with your Ketch identifier name and value
-                Ketch.Identity(key: "email", value: "justin-test-apr-29-2026-14")
+                Ketch.Identity(key: "email", value: "ethantest")
             ]
         )
         
@@ -37,10 +38,10 @@ struct ContentView: View {
     
     @State private var selectedTabs: Set<KetchUI.ExperienceOption.PreferencesTab> = Set([.overviewTab, .consentsTab, .subscriptionsTab, .rightsTab])
     @State private var selectedTab = KetchUI.ExperienceOption.PreferencesTab.overviewTab
-    @State private var apiRegion = APIRegion.us
-    @State private var org = ""
-    @State private var property = ""
-    @State private var env = ""
+    @State var apiRegion = APIRegion.uat
+    @State var org = ""
+    @State var property = ""
+    @State var env = ""
     @State private var lang = ""
     @State private var jurisdiction = ""
     @State private var region = ""
@@ -50,7 +51,10 @@ struct ContentView: View {
     @State private var age = ""
     
     var body: some View {
+        ScrollView {
         VStack(alignment: .leading) {
+            healthDashboard
+
             Text("Global options")
                 .font(.title2)
             Text("Options that apply to both experiences")
@@ -190,10 +194,17 @@ struct ContentView: View {
         }
         .padding()
         .background(.white)
+        }
+        .background(.white)
         .ketchView(model: $ketchUI.webPresentationItem)
+        .onAppear {
+            listener.dashboard = dashboard
+            ketchUI.eventListener = listener
+            refreshATTStatus()
+        }
     }
-    
-    private var makeParameters: [KetchUI.ExperienceOption] {
+
+    var makeParameters: [KetchUI.ExperienceOption] {
         var parameters = [KetchUI.ExperienceOption]()
         if !org.isEmpty {
             parameters.append(.organizationCode(org))
@@ -393,7 +404,7 @@ fileprivate extension ContentView {
 
 enum APIRegion {
     case us, eu, uat
-    
+
     var name: String {
         switch self {
         case .us:
@@ -404,7 +415,7 @@ enum APIRegion {
             return "UAT"
         }
     }
-    
+
     var urlString: String {
         switch self {
         case .us:

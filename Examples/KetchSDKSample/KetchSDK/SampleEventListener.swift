@@ -6,61 +6,126 @@
 import Foundation
 import KetchSDK
 
-class SampleEventListener: KetchEventListener {
-    
+final class SampleEventListener: KetchEventListener {
+    weak var dashboard: SampleDashboardState?
+
     func onWillShowExperience(type: KetchSDK.WillShowExperienceType) {
-        print("willShowExperience")
+        Task { @MainActor in
+            dashboard?.experienceVisibility = "will show: \(type)"
+            dashboard?.appendLog("onWillShowExperience: \(type)")
+        }
     }
-    
+
     func onHasShownExperience() {
-        print("hasShownExperience")
+        Task { @MainActor in
+            dashboard?.experienceVisibility = "shown"
+            dashboard?.webViewVisible = "visible"
+            dashboard?.appendLog("onHasShownExperience")
+        }
     }
-    
+
     func onLoad() {
-        print("UI Loaded")
+        Task { @MainActor in
+            dashboard?.loadState = "loaded"
+            dashboard?.setStatus("WebView loaded")
+        }
     }
 
     func onShow() {
-        print("UI Shown")
+        Task { @MainActor in
+            dashboard?.experienceVisibility = "showing"
+            dashboard?.webViewVisible = "visible"
+            dashboard?.appendLog("onShow")
+        }
     }
 
     func onDismiss(status: KetchSDK.HideExperienceStatus) {
-        print("UI Dismissed, Status: \(status)")
+        Task { @MainActor in
+            dashboard?.experienceVisibility = "dismissed"
+            dashboard?.dismissReason = "\(status)"
+            dashboard?.webViewVisible = "hidden"
+            dashboard?.appendLog("onDismiss: \(status)")
+        }
     }
 
     func onEnvironmentUpdated(environment: String?) {
-        print("Environment Updated: \(String(describing: environment))")
+        Task { @MainActor in
+            dashboard?.environment = environment ?? "Not set"
+            dashboard?.appendLog("onEnvironmentUpdated: \(environment ?? "nil")")
+        }
     }
 
     func onRegionInfoUpdated(regionInfo: String?) {
-        print("Region Info Updated: \(String(describing: regionInfo))")
+        Task { @MainActor in
+            dashboard?.region = regionInfo ?? "Not set"
+            dashboard?.appendLog("onRegionInfoUpdated: \(regionInfo ?? "nil")")
+        }
     }
 
     func onJurisdictionUpdated(jurisdiction: String?) {
-        print("Jurisdiction Updated: \(String(describing: jurisdiction))")
+        Task { @MainActor in
+            dashboard?.jurisdiction = jurisdiction ?? "Not set"
+            dashboard?.appendLog("onJurisdictionUpdated: \(jurisdiction ?? "nil")")
+        }
     }
 
     func onIdentitiesUpdated(identities: String?) {
-        print("Identities Updated: \(String(describing: identities))")
+        Task { @MainActor in
+            dashboard?.appendLog("onIdentitiesUpdated: \(identities ?? "nil")")
+        }
     }
 
     func onConsentUpdated(consent: KetchSDK.ConsentStatus) {
-        print("Consent Updated: \(consent)")
+        Task { @MainActor in
+            let summary = SampleLogging.formatConsent(consent)
+            dashboard?.consent = summary
+            dashboard?.appendLog("onConsentUpdated: \(summary)")
+            print("[KetchSample] onConsentUpdated: \(summary)")
+        }
     }
 
     func onError(description: String) {
-        print("Error: \(description)")
+        Task { @MainActor in
+            dashboard?.loadState = "error"
+            dashboard?.initState = "Error"
+            dashboard?.setStatus("Error: \(description)")
+        }
     }
 
     func onCCPAUpdated(ccpaString: String?) {
-        print("CCPA String Updated: \(String(describing: ccpaString))")
+        Task { @MainActor in
+            dashboard?.ccpa = ccpaString ?? "Not set"
+            dashboard?.appendLog("onCCPAUpdated")
+        }
     }
 
     func onTCFUpdated(tcfString: String?) {
-        print("TCF String Updated: \(String(describing: tcfString))")
+        Task { @MainActor in
+            dashboard?.tcf = tcfString ?? "Not set"
+            dashboard?.appendLog("onTCFUpdated")
+        }
     }
 
     func onGPPUpdated(gppString: String?) {
-        print("GPP String Updated: \(String(describing: gppString))")
+        Task { @MainActor in
+            dashboard?.gpp = gppString ?? "Not set"
+            dashboard?.appendLog("onGPPUpdated")
+        }
+    }
+
+    func onNativeStoragePut(key: String, value: String) {
+        Task { @MainActor in
+            if key == SampleLogging.attLastStatusKey {
+                dashboard?.ketchAttPrev = value
+                let message = SampleLogging.formatAttState(
+                    current: dashboard?.ketchAtt ?? value,
+                    previous: value
+                )
+                dashboard?.appendLog("onNativeStoragePut: \(key)=\(value)")
+                print("[KetchSample] onNativeStoragePut (ATT): \(message)")
+            } else {
+                dashboard?.appendLog("onNativeStoragePut: \(key)=\(value)")
+            }
+        }
     }
 }

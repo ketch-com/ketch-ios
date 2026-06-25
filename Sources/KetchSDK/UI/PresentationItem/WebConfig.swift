@@ -47,15 +47,19 @@ struct WebConfig {
         return config
     }
 
-    private var fileUrl: URL? {
+    private var bundleHTMLURL: URL? {
         // Handle bundling differences with swift packages vs cocoa pods when fetching static assests (index.html)
         #if SWIFT_PACKAGE
             // SWIFT_PACKAGE is a variable we define in Package.swift
-            let url = Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")!
+            return Bundle.ketchUI!.url(forResource: htmlFileName, withExtension: "html")
         #else
-            let url = Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")!
+            return Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")
         #endif
-        var urlComponents = URLComponents(string: url.absoluteString)
+    }
+    /// Document base URL for `loadHTMLString`. Includes query params read by `index.html` via `document.location`.
+    private var documentBaseURL: URL? {
+        guard let bundleHTMLURL else { return nil }
+        var urlComponents = URLComponents(string: bundleHTMLURL.absoluteString)
         urlComponents?.queryItems = queryItems
         return urlComponents?.url
     }
@@ -105,14 +109,15 @@ struct WebConfig {
         webView.scrollView.bounces = false
         if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
-        if let fileUrl = fileUrl, var htmlString = try? String(contentsOf: fileUrl) {
+        if let bundleHTMLURL, let documentBaseURL, var htmlString = try? String(contentsOf: bundleHTMLURL) {
             // inject css if needed
             if let css = params["ketch_css_inject"] {
                 let wrappedCSS = "<style>\n\(css)\n</style>"
                 htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
             }
             
-            webView.loadHTMLString(htmlString, baseURL: fileUrl.deletingLastPathComponent())
+            // Query params (e.g. ketch_att) must be on the document base URL — index.html reads `document.location.searchParams`.
+            webView.loadHTMLString(htmlString, baseURL: documentBaseURL)
         }
 
         return webView

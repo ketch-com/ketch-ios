@@ -288,8 +288,8 @@ extension KetchUI {
                 return true
             case (.ageUpper(_), .ageUpper(_)):
                 return true
-            case (.webResourceUrlOverrides(let a), .webResourceUrlOverrides(let b)):
-                return a == b
+            case (.webResourceUrlOverrides(_), .webResourceUrlOverrides(_)):
+                return true
             default:
                 return false
             }

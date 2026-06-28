@@ -8,12 +8,16 @@ import KetchSDK
 
 struct ContentView: View {
     @StateObject var ketchUI: KetchUI
-    @StateObject var dashboard = SampleDashboardState()
+    @StateObject var dashboard: SampleDashboardState
 
     // Define listener as a property of ContentView
     private let listener = SampleEventListener()
     
     init() {
+        let dashboard = SampleDashboardState()
+        listener.dashboard = dashboard
+        _dashboard = StateObject(wrappedValue: dashboard)
+
         // Create the KetchSDK object
         let ketch = KetchSDK.create(
             // Replace below with your Ketch organization code
@@ -198,8 +202,6 @@ struct ContentView: View {
         .background(.white)
         .ketchView(model: $ketchUI.webPresentationItem)
         .onAppear {
-            listener.dashboard = dashboard
-            ketchUI.eventListener = listener
             refreshATTStatus()
         }
     }

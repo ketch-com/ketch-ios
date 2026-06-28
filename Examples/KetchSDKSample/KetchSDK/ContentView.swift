@@ -239,7 +239,11 @@ struct ContentView: View {
         if let ageValue = UInt(age) {
             parameters.append(.age(ageValue))
         }
-        
+
+        if DevUrlOverrides.enabled {
+            parameters.append(.webResourceUrlOverrides(DevUrlOverrides.forSimulator))
+        }
+
         return parameters
     }
     

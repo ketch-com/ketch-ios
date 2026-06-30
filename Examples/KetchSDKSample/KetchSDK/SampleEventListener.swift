@@ -6,61 +6,69 @@
 import Foundation
 import KetchSDK
 
-class SampleEventListener: KetchEventListener {
-    
+final class SampleEventListener: KetchEventListener {
+    /// Backs the live Info panel fields. Jurisdiction/region callbacks push into this.
+    weak var info: SampleInfoState?
+
     func onWillShowExperience(type: KetchSDK.WillShowExperienceType) {
-        print("willShowExperience")
+        print("[KetchSample] onWillShowExperience: \(type)")
     }
-    
+
     func onHasShownExperience() {
-        print("hasShownExperience")
-    }
-    
-    func onLoad() {
-        print("UI Loaded")
+        print("[KetchSample] onHasShownExperience")
     }
 
     func onShow() {
-        print("UI Shown")
+        print("[KetchSample] onShow")
     }
 
     func onDismiss(status: KetchSDK.HideExperienceStatus) {
-        print("UI Dismissed, Status: \(status)")
+        print("[KetchSample] onDismiss: \(status)")
     }
 
     func onEnvironmentUpdated(environment: String?) {
-        print("Environment Updated: \(String(describing: environment))")
+        print("[KetchSample] onEnvironmentUpdated: \(environment ?? "nil")")
     }
 
     func onRegionInfoUpdated(regionInfo: String?) {
-        print("Region Info Updated: \(String(describing: regionInfo))")
+        print("[KetchSample] onRegionInfoUpdated: \(regionInfo ?? "nil")")
+        Task { @MainActor in
+            info?.region = regionInfo ?? ""
+        }
     }
 
     func onJurisdictionUpdated(jurisdiction: String?) {
-        print("Jurisdiction Updated: \(String(describing: jurisdiction))")
+        print("[KetchSample] onJurisdictionUpdated: \(jurisdiction ?? "nil")")
+        Task { @MainActor in
+            info?.jurisdiction = jurisdiction ?? ""
+        }
     }
 
     func onIdentitiesUpdated(identities: String?) {
-        print("Identities Updated: \(String(describing: identities))")
+        print("[KetchSample] onIdentitiesUpdated: \(identities ?? "nil")")
     }
 
     func onConsentUpdated(consent: KetchSDK.ConsentStatus) {
-        print("Consent Updated: \(consent)")
+        print("[KetchSample] onConsentUpdated: \(SampleLogging.formatConsent(consent))")
     }
 
     func onError(description: String) {
-        print("Error: \(description)")
+        print("[KetchSample] onError: \(description)")
     }
 
     func onCCPAUpdated(ccpaString: String?) {
-        print("CCPA String Updated: \(String(describing: ccpaString))")
+        print("[KetchSample] onCCPAUpdated: \(ccpaString ?? "nil")")
     }
 
     func onTCFUpdated(tcfString: String?) {
-        print("TCF String Updated: \(String(describing: tcfString))")
+        print("[KetchSample] onTCFUpdated: \(tcfString ?? "nil")")
     }
 
     func onGPPUpdated(gppString: String?) {
-        print("GPP String Updated: \(String(describing: gppString))")
+        print("[KetchSample] onGPPUpdated: \(gppString ?? "nil")")
+    }
+
+    func onNativeStoragePut(key: String, value: String) {
+        print("[KetchSample] onNativeStoragePut: \(key)=\(value)")
     }
 }

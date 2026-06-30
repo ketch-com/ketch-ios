@@ -247,6 +247,9 @@ extension KetchUI {
         /// Inject CSS into the Ketch UI
         case css(String)
 
+        /// Exact-match WebView resource URL replacements (e.g. UAT tag scripts → local dev server).
+        case webResourceUrlOverrides([String: String])
+
         /// Exact age for age band legal basis resolution
         case age(UInt)
 
@@ -293,6 +296,8 @@ extension KetchUI {
             case (.ageLower(_), .ageLower(_)):
                 return true
             case (.ageUpper(_), .ageUpper(_)):
+                return true
+            case (.webResourceUrlOverrides(_), .webResourceUrlOverrides(_)):
                 return true
             default:
                 return false

@@ -22,16 +22,16 @@ struct SampleConfig {
     let apiRegion: APIRegion
 
     static let `default` = SampleConfig(
-        organizationCode: "ethansch061226",
-        propertyCode: "website_smart_tag",
+        organizationCode: "ketch_samples",
+        propertyCode: "ios",
         environmentCode: "production",
         language: "en",
         jurisdiction: "",
         region: "",
         identities: [
-            Ketch.Identity(key: "email", value: "ethantest")
+            Ketch.Identity(key: "email", value: "test@example.com")
         ],
-        apiRegion: .uat
+        apiRegion: .us
     )
 }
 

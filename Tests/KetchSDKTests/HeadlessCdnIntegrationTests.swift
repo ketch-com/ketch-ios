@@ -26,12 +26,12 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
     }
 
     func testFetchLocationReturnsGeoIP() {
-        let expectation = expectation(description: "fetchLocation")
-        client.fetchLocation()
+        let expectation = expectation(description: "getLocation")
+        client.getLocation()
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        XCTFail("fetchLocation failed: \(error)")
+                        XCTFail("getLocation failed: \(error)")
                     }
                     expectation.fulfill()
                 },
@@ -44,15 +44,15 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
     }
 
     func testFetchBootstrapConfiguration() {
-        let expectation = expectation(description: "fetchBootstrapConfiguration")
-        client.fetchBootstrapConfiguration(
+        let expectation = expectation(description: "getBootstrapConfiguration")
+        client.getBootstrapConfiguration(
             organization: HeadlessIntegrationSupport.orgCode,
             property: HeadlessIntegrationSupport.propertyCode
         )
         .sink(
             receiveCompletion: { completion in
                 if case .failure(let error) = completion {
-                    XCTFail("fetchBootstrapConfiguration failed: \(error)")
+                    XCTFail("getBootstrapConfiguration failed: \(error)")
                 }
                 expectation.fulfill()
             },
@@ -71,12 +71,12 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
         let identities = HeadlessIntegrationSupport.uniqueEmailIdentity()
         let expectation = expectation(description: "coldStart")
 
-        client.fetchBootstrapConfiguration(
+        client.getBootstrapConfiguration(
             organization: HeadlessIntegrationSupport.orgCode,
             property: HeadlessIntegrationSupport.propertyCode
         )
         .flatMap { _ in
-            self.client.fetchFullConfiguration(
+            self.client.getFullConfiguration(
                 request: .init(
                     organizationCode: HeadlessIntegrationSupport.orgCode,
                     propertyCode: HeadlessIntegrationSupport.propertyCode
@@ -90,7 +90,7 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
             )
         }
         .flatMap { config in
-            self.client.fetchConsent(config: config)
+            self.client.getConsent(config: config)
         }
         .sink(
             receiveCompletion: { completion in

@@ -36,16 +36,16 @@ class KetchApiRequest {
         .eraseToAnyPublisher()
     }
 
-    func fetchLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
-        headless.fetchLocation()
+    func getLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
+        headless.getLocation()
     }
 
-    func fetchBootstrapConfiguration(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
-        headless.fetchBootstrapConfiguration(organization: organization, property: property)
+    func getBootstrapConfiguration(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
+        headless.getBootstrapConfiguration(organization: organization, property: property)
     }
 
-    func fetchFullConfiguration(request: KetchSDK.FullConfigurationRequest) -> AnyPublisher<Configuration, KetchError> {
-        headless.fetchFullConfiguration(request: request)
+    func getFullConfiguration(request: KetchSDK.FullConfigurationRequest) -> AnyPublisher<Configuration, KetchError> {
+        headless.getFullConfiguration(request: request)
     }
 
     func fetchConfig(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
@@ -70,14 +70,6 @@ class KetchApiRequest {
         )
     }
 
-    func fetchConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
-        headless.fetchConsent(config: config)
-    }
-
-    func fetchProtocols(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
-        headless.fetchProtocols(config: config)
-    }
-
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
         headless.getConsent(config: config)
     }
@@ -98,14 +90,6 @@ class KetchApiRequest {
         headless.invokeRight(request: request)
     }
 
-    func getProfile(request: KetchSDK.GetProfileRequest) -> AnyPublisher<KetchSDK.GetProfileResponse, KetchError> {
-        headless.getProfile(request: request)
-    }
-
-    func putProfile(request: KetchSDK.PutProfileRequest) -> AnyPublisher<Void, KetchError> {
-        headless.putProfile(request: request)
-    }
-
     func getSubscriptions(
         request: KetchSDK.SubscriptionsRequest
     ) -> AnyPublisher<KetchSDK.SubscriptionsResponse, KetchError> {
@@ -116,18 +100,8 @@ class KetchApiRequest {
         headless.setSubscriptions(request: request)
     }
 
-    func fetchSubscriptionsConfiguration(
-        request: KetchSDK.SubscriptionConfigurationRequest
-    ) -> AnyPublisher<KetchSDK.SubscriptionConfiguration, KetchError> {
-        headless.fetchSubscriptionsConfiguration(request: request)
-    }
-
     func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
         headless.preferenceQRUrl(request: request)
-    }
-
-    func webReport(channel: String, request: KetchSDK.WebReportRequest) -> AnyPublisher<Void, KetchError> {
-        headless.webReport(channel: channel, request: request)
     }
 
     func getVendors() -> AnyPublisher<Vendors, KetchError> {

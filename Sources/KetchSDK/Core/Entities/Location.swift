@@ -21,7 +21,7 @@ extension KetchSDK {
         public let timezone: String?
     }
 
-    /// Response from headless `fetchLocation()`.
+    /// Response from headless `getLocation()`.
     public struct LocationResponse: Codable, Sendable {
         public let location: IPInfo?
 

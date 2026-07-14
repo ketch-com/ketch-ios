@@ -36,44 +36,36 @@ public enum KetchSDK {
 
 extension KetchSDK {
     /// GeoIP / jurisdiction hint (`GET /ip`).
-    public static func fetchLocation(
+    public static func getLocation(
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<LocationResponse, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).fetchLocation()
+        KetchApiRequest(dataCenter: dataCenter).getLocation()
     }
 
     /// Minimal config (`GET .../boot.json`).
-    public static func fetchBootstrapConfiguration(
+    public static func getBootstrapConfiguration(
         organization: String,
         property: String,
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest(dataCenter: dataCenter)
-            .fetchBootstrapConfiguration(organization: organization, property: property)
+            .getBootstrapConfiguration(organization: organization, property: property)
     }
 
     /// Full config with optional env / jurisdiction / language and hash query param.
-    public static func fetchFullConfiguration(
+    public static func getFullConfiguration(
         request: FullConfigurationRequest,
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<Configuration, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).fetchFullConfiguration(request: request)
+        KetchApiRequest(dataCenter: dataCenter).getFullConfiguration(request: request)
     }
 
     /// Server consent including `protocols` (`POST .../consent/{org}/get`).
-    public static func fetchConsent(
+    public static func getConsent(
         config: ConsentConfig,
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<ConsentStatus, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).fetchConsent(config: config)
-    }
-
-    /// Protocol strings only (same endpoint as fetchConsent).
-    public static func fetchProtocols(
-        config: ConsentConfig,
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<ConsentStatus, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).fetchProtocols(config: config)
+        KetchApiRequest(dataCenter: dataCenter).getConsent(config: config)
     }
 
     /// Updates consent; returns server response with computed `protocols`. Does not send `protocols` in the request body.
@@ -106,22 +98,6 @@ extension KetchSDK {
         KetchApiRequest(dataCenter: dataCenter).invokeRight(request: request)
     }
 
-    /// Gets profile preferences (`POST .../profile/{org}/get`).
-    public static func getProfile(
-        request: GetProfileRequest,
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<GetProfileResponse, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).getProfile(request: request)
-    }
-
-    /// Updates profile preferences (`POST .../profile/{org}/put`).
-    public static func putProfile(
-        request: PutProfileRequest,
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<Void, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).putProfile(request: request)
-    }
-
     /// Gets subscription topics/controls (`POST .../subscriptions/{org}/get`).
     public static func getSubscriptions(
         request: SubscriptionsRequest,
@@ -138,26 +114,11 @@ extension KetchSDK {
         KetchApiRequest(dataCenter: dataCenter).setSubscriptions(request: request)
     }
 
-    public static func fetchSubscriptionsConfiguration(
-        request: SubscriptionConfigurationRequest,
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<SubscriptionConfiguration, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).fetchSubscriptionsConfiguration(request: request)
-    }
-
     public static func preferenceQRUrl(
         request: PreferenceQRRequest,
         dataCenter: KetchDataCenter = .us
     ) -> URL? {
         HeadlessApiClient(dataCenter: dataCenter).preferenceQRUrl(request: request)
-    }
-
-    public static func webReport(
-        channel: String,
-        request: WebReportRequest,
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<Void, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).webReport(channel: channel, request: request)
     }
 }
 
@@ -184,7 +145,7 @@ extension KetchSDK {
         purposes: [String: ConsentConfig.PurposeLegalBasis],
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<ConsentStatus, KetchError> {
-        fetchConsent(
+        getConsent(
             config: ConsentConfig(
                 organizationCode: organizationCode,
                 propertyCode: propertyCode,

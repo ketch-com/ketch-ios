@@ -246,7 +246,7 @@ public final class Ketch: ObservableObject {
     /// Fetches consent from the CDN without requiring WebView-loaded configuration.
     public func loadConsent(consentConfig: KetchSDK.ConsentConfig) {
         apiRequest
-            .fetchConsent(config: consentConfig)
+            .getConsent(config: consentConfig)
             .sink { result in
                 if case .failure(let error) = result {
                     self.consentSubject.send(completion: .failure(error))
@@ -295,49 +295,39 @@ public final class Ketch: ObservableObject {
 
 // MARK: - Headless API (web/v3, pre-WebView)
 extension Ketch {
-    public func fetchLocation(
+    public func getLocation(
         completion: @escaping (Result<KetchSDK.LocationResponse, KetchSDK.KetchError>) -> Void
     ) {
-        apiRequest.fetchLocation()
+        apiRequest.getLocation()
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
             .store(in: &subscriptions)
     }
 
-    public func fetchBootstrapConfiguration(
+    public func getBootstrapConfiguration(
         completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>) -> Void
     ) {
-        apiRequest.fetchBootstrapConfiguration(organization: organizationCode, property: propertyCode)
+        apiRequest.getBootstrapConfiguration(organization: organizationCode, property: propertyCode)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
             .store(in: &subscriptions)
     }
 
-    public func fetchFullConfiguration(
+    public func getFullConfiguration(
         request: KetchSDK.FullConfigurationRequest,
         completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>) -> Void
     ) {
-        apiRequest.fetchFullConfiguration(request: request)
+        apiRequest.getFullConfiguration(request: request)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
             .store(in: &subscriptions)
     }
 
-    public func fetchConsent(
+    public func getConsent(
         consentConfig: KetchSDK.ConsentConfig,
         completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
     ) {
-        apiRequest.fetchConsent(config: consentConfig)
-            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success($0)) }
-            .store(in: &subscriptions)
-    }
-
-    public func fetchProtocols(
-        consentConfig: KetchSDK.ConsentConfig,
-        completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
-    ) {
-        apiRequest.fetchProtocols(config: consentConfig)
+        apiRequest.getConsent(config: consentConfig)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
             .store(in: &subscriptions)
@@ -363,26 +353,6 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
-    public func getProfile(
-        request: KetchSDK.GetProfileRequest,
-        completion: @escaping (Result<KetchSDK.GetProfileResponse, KetchSDK.KetchError>) -> Void
-    ) {
-        apiRequest.getProfile(request: request)
-            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success($0)) }
-            .store(in: &subscriptions)
-    }
-
-    public func putProfile(
-        request: KetchSDK.PutProfileRequest,
-        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
-    ) {
-        apiRequest.putProfile(request: request)
-            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success(())) }
-            .store(in: &subscriptions)
-    }
-
     public func getSubscriptions(
         request: KetchSDK.SubscriptionsRequest,
         completion: @escaping (Result<KetchSDK.SubscriptionsResponse, KetchSDK.KetchError>) -> Void
@@ -403,29 +373,8 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
-    public func fetchSubscriptionsConfiguration(
-        request: KetchSDK.SubscriptionConfigurationRequest,
-        completion: @escaping (Result<KetchSDK.SubscriptionConfiguration, KetchSDK.KetchError>) -> Void
-    ) {
-        apiRequest.fetchSubscriptionsConfiguration(request: request)
-            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success($0)) }
-            .store(in: &subscriptions)
-    }
-
     public func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
         apiRequest.preferenceQRUrl(request: request)
-    }
-
-    public func webReport(
-        channel: String,
-        request: KetchSDK.WebReportRequest,
-        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
-    ) {
-        apiRequest.webReport(channel: channel, request: request)
-            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success(())) }
-            .store(in: &subscriptions)
     }
 }
 
@@ -465,7 +414,7 @@ extension Ketch {
         consentConfig: KetchSDK.ConsentConfig,
         completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
     ) {
-        fetchConsent(consentConfig: consentConfig, completion: completion)
+        getConsent(consentConfig: consentConfig, completion: completion)
     }
 
     public func fetchSetConsent(

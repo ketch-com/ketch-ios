@@ -44,14 +44,14 @@ final class HeadlessConsentTests: XCTestCase {
             return (response, Data())
         }
 
-        let expectation = expectation(description: "fetchConsent failure")
-        client.fetchConsent(config: sampleConsentConfig())
+        let expectation = expectation(description: "getConsent failure")
+        client.getConsent(config: sampleConsentConfig())
             .sink(
                 receiveCompletion: { completion in
                     if case .failure = completion {
                         expectation.fulfill()
                     } else {
-                        XCTFail("Expected fetchConsent to fail on HTTP 500")
+                        XCTFail("Expected getConsent to fail on HTTP 500")
                     }
                 },
                 receiveValue: { _ in
@@ -184,12 +184,12 @@ final class HeadlessConsentTests: XCTestCase {
             return (response, Data(body.utf8))
         }
 
-        let expectation = expectation(description: "fetchConsent vendors")
-        client.fetchConsent(config: sampleConsentConfig())
+        let expectation = expectation(description: "getConsent vendors")
+        client.getConsent(config: sampleConsentConfig())
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        XCTFail("fetchConsent failed: \(error)")
+                        XCTFail("getConsent failed: \(error)")
                     }
                     expectation.fulfill()
                 },
@@ -197,41 +197,6 @@ final class HeadlessConsentTests: XCTestCase {
                     XCTAssertNil(status.purposes)
                     XCTAssertEqual(status.vendors, ["google", "meta"])
                     XCTAssertNil(status.protocols)
-                }
-            )
-            .store(in: &cancellables)
-        wait(for: [expectation], timeout: 5)
-    }
-
-    func testFetchProtocolsPreservesPurposesWhenProtocolsMissing() throws {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
-        let body = """
-        {"purposes":{"analytics":true,"marketing":false}}
-        """
-        StubURLProtocol.handler = { _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/get")!,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-            return (response, Data(body.utf8))
-        }
-
-        let expectation = expectation(description: "fetchProtocols purposes")
-        client.fetchProtocols(config: sampleConsentConfig())
-            .sink(
-                receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
-                        XCTFail("fetchProtocols failed: \(error)")
-                    }
-                    expectation.fulfill()
-                },
-                receiveValue: { status in
-                    XCTAssertNil(status.protocols)
-                    XCTAssertEqual(status.purposes?["analytics"], true)
-                    XCTAssertEqual(status.purposes?["marketing"], false)
                 }
             )
             .store(in: &cancellables)

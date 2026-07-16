@@ -148,8 +148,8 @@ final class HeadlessApiClientTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://eu.ketchcdn.com/web/v3/ip")
     }
 
-    func testPreferenceQRUrl_matchesContractFixture() {
-        let url = client.preferenceQRUrl(
+    func testGetPreferenceQRUrl_matchesContractFixture() {
+        let url = client.getPreferenceQRUrl(
             request: .init(
                 organizationCode: "switchbitcorp",
                 propertyCode: "switchbit",

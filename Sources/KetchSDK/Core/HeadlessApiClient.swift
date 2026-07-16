@@ -155,7 +155,7 @@ final class HeadlessApiClient {
         invokeRight(request: .init(organizationCode: organization, config: config))
     }
 
-    func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+    func getPreferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
         var pairs: [(String, String)] = []
         if let environmentCode = request.environmentCode {
             pairs.append(("env", environmentCode))

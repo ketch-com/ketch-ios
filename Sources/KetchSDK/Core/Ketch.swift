@@ -459,8 +459,8 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
-    public func preferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
-        apiRequest.preferenceQRUrl(request: request)
+    public func getPreferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        apiRequest.getPreferenceQRUrl(request: request)
     }
 }
 

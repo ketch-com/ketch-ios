@@ -114,11 +114,11 @@ extension KetchSDK {
         KetchApiRequest(dataCenter: dataCenter).setSubscriptions(request: request)
     }
 
-    public static func preferenceQRUrl(
+    public static func getPreferenceQRUrl(
         request: PreferenceQRRequest,
         dataCenter: KetchDataCenter = .us
     ) -> URL? {
-        HeadlessApiClient(dataCenter: dataCenter).preferenceQRUrl(request: request)
+        HeadlessApiClient(dataCenter: dataCenter).getPreferenceQRUrl(request: request)
     }
 }
 

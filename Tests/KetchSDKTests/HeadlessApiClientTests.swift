@@ -57,6 +57,80 @@ final class HeadlessApiClientTests: XCTestCase {
         )
     }
 
+    func testGetFullConfiguration_blankEnvironment_omittedFromPath() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration blank env")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "", // blank — must be treated as absent, not embedded as an empty path segment
+                jurisdictionCode: "us-ca",
+                languageCode: "en-US"
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        // A blank environmentCode must not produce a malformed path like ".../prop//us-ca/en-US/config.json".
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/config.json")
+    }
+
+    func testGetFullConfiguration_blankHash_omittedFromQuery() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration blank hash")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "production",
+                jurisdictionCode: "us-ca",
+                languageCode: "en-US",
+                hash: ""
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertNil(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems, "A blank hash must not appear as a query param")
+    }
+
     func testBuildURL_fullConfigurationWithHash() {
         let url = client.buildURL(
             path: "/config/acme/prop/prod/us-ca/en-US/config.json",

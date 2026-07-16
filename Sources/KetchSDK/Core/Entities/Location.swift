@@ -43,3 +43,15 @@ extension KetchSDK {
         }
     }
 }
+
+extension KetchSDK.IPInfo {
+    /// Combined ISO region code, e.g. "US-CA", or the country alone when no subdivision is known.
+    func toRegionCode() -> String? {
+        guard let country = countryCode, !country.isEmpty else {
+            guard let region = regionCode, !region.isEmpty else { return nil }
+            return region
+        }
+        guard let region = regionCode, !region.isEmpty else { return country }
+        return "\(country)-\(region)"
+    }
+}

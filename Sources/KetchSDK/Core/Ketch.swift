@@ -37,6 +37,15 @@ public final class Ketch: ObservableObject {
     private let nativeStorage: NativeStorage
     private var plugins = Set<PolicyPlugin>()
 
+    // Headless getFullConfiguration() cache — avoids re-fetching when the config URL path is unchanged
+    private var cachedConfig: KetchSDK.Configuration?
+    private var cachedConfigKey: String?
+
+    // Headless getLocation() cache — GET /ip takes no path params, so it never needs invalidation
+    private var cachedLocation: KetchSDK.LocationResponse?
+
+    private let cacheLock = NSLock()
+
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
     private var localizedStringsSubject = CurrentValueSubject<KetchSDK.LocalizedStrings?, KetchSDK.KetchError>(nil)
     private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
@@ -55,14 +64,15 @@ public final class Ketch: ObservableObject {
         environmentCode: String,
         identities: [Identity],
         dataCenter: KetchDataCenter = .us,
-        userDefaults: UserDefaults = .standard
+        userDefaults: UserDefaults = .standard,
+        apiClient: ApiClient = DefaultApiClient()
     ) {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
         self.identities = identities
         self.dataCenter = dataCenter
-        self.apiRequest = KetchApiRequest(dataCenter: dataCenter)
+        self.apiRequest = KetchApiRequest(dataCenter: dataCenter, apiClient: apiClient)
         self.userDefaults = userDefaults
         self.nativeStorage = NativeStorage(userDefaults: userDefaults)
 
@@ -295,13 +305,37 @@ public final class Ketch: ObservableObject {
 
 // MARK: - Headless API (web/v3, pre-WebView)
 extension Ketch {
+    /// GeoIP location (`GET /ip`). Cached on this instance — `/ip` takes no path params, so the
+    /// cache never invalidates.
     public func getLocation(
         completion: @escaping (Result<KetchSDK.LocationResponse, KetchSDK.KetchError>) -> Void
     ) {
+        cacheLock.lock()
+        if let cachedLocation {
+            cacheLock.unlock()
+            completion(.success(cachedLocation))
+            return
+        }
+        cacheLock.unlock()
+
         apiRequest.getLocation()
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success($0)) }
+            receiveValue: { location in
+                self.cacheLock.lock()
+                self.cachedLocation = location
+                self.cacheLock.unlock()
+                completion(.success(location))
+            }
             .store(in: &subscriptions)
+    }
+
+    /// Combined ISO region code (e.g. "US-CA") from GeoIP. Backed by the same cache as [getLocation].
+    public func getRegion(
+        completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
+    ) {
+        getLocation { result in
+            completion(result.map { $0.location?.toRegionCode() })
+        }
     }
 
     public func getBootstrapConfiguration(
@@ -313,14 +347,66 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
+    /// Full config with optional env/jurisdiction/language and hash query param.
+    ///
+    /// Cached on this instance, keyed on the request's URL-path-affecting fields. A cache hit
+    /// skips the network call entirely.
     public func getFullConfiguration(
         request: KetchSDK.FullConfigurationRequest,
         completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>) -> Void
     ) {
+        let key = Self.buildConfigCacheKey(for: request)
+        cacheLock.lock()
+        if cachedConfigKey == key, let cachedConfig {
+            cacheLock.unlock()
+            completion(.success(cachedConfig))
+            return
+        }
+        cacheLock.unlock()
+
         apiRequest.getFullConfiguration(request: request)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
-            receiveValue: { completion(.success($0)) }
+            receiveValue: { configuration in
+                self.cacheLock.lock()
+                self.cachedConfig = configuration
+                self.cachedConfigKey = key
+                self.cacheLock.unlock()
+                completion(.success(configuration))
+            }
             .store(in: &subscriptions)
+    }
+
+    /// Resolved jurisdiction code for this instance's current org/property/environment, e.g. from
+    /// a `jurisdiction` `ExperienceOption`. Backed by the same cache as [getFullConfiguration].
+    public func getJurisdiction(
+        completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
+    ) {
+        getFullConfiguration(request: buildJurisdictionConfigRequest()) { result in
+            completion(result.map { $0.jurisdiction?.code ?? $0.jurisdiction?.defaultJurisdictionCode })
+        }
+    }
+
+    private func buildJurisdictionConfigRequest() -> KetchSDK.FullConfigurationRequest {
+        .init(
+            organizationCode: organizationCode,
+            propertyCode: propertyCode,
+            environmentCode: environmentCode
+        )
+    }
+
+    // Cache key for getFullConfiguration() — mirrors HeadlessApiClient's path-building exactly
+    // (blank treated as absent) via configPathSegment()/normalizedHash(), so requests that hit the
+    // same URL always share a key and requests that hit different URLs never collide.
+    private static func buildConfigCacheKey(for request: KetchSDK.FullConfigurationRequest) -> String {
+        let segment = request.configPathSegment()
+        return [
+            request.organizationCode,
+            request.propertyCode,
+            segment?.env ?? "",
+            segment?.jurisdiction ?? "",
+            segment?.language ?? "",
+            request.normalizedHash() ?? ""
+        ].joined(separator: "|")
     }
 
     public func getConsent(

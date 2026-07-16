@@ -51,20 +51,16 @@ final class HeadlessApiClient {
         request: KetchSDK.FullConfigurationRequest
     ) -> AnyPublisher<Configuration, KetchError> {
         var path = "/config/\(request.organizationCode)/\(request.propertyCode)"
-        let languageInPath = request.environmentCode != nil
-            && request.jurisdictionCode != nil
-            && request.languageCode != nil
-        if let env = request.environmentCode,
-           let jurisdiction = request.jurisdictionCode,
-           let language = request.languageCode {
-            path += "/\(env)/\(jurisdiction)/\(language)"
+        let segment = request.configPathSegment()
+        if let segment {
+            path += "/\(segment.env)/\(segment.jurisdiction)/\(segment.language)"
         }
         path += "/config.json"
         var query: [URLQueryItem] = []
-        if let hash = request.hash {
+        if let hash = request.normalizedHash() {
             query.append(URLQueryItem(name: "hash", value: hash))
         }
-        if !languageInPath, let language = request.languageCode {
+        if segment == nil, let language = request.languageCode, !language.isEmpty {
             query.append(URLQueryItem(name: "language", value: language))
         }
         return get(path: path, queryItems: query)

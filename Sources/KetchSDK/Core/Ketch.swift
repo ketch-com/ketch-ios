@@ -307,7 +307,7 @@ public final class Ketch: ObservableObject {
 extension Ketch {
     /// GeoIP location (`GET /ip`). Cached on this instance — `/ip` takes no path params, so the
     /// cache never invalidates.
-    public func getLocation(
+    private func getLocation(
         completion: @escaping (Result<KetchSDK.LocationResponse, KetchSDK.KetchError>) -> Void
     ) {
         cacheLock.lock()

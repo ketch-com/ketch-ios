@@ -382,7 +382,7 @@ extension Ketch {
         completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
     ) {
         getFullConfiguration(request: buildJurisdictionConfigRequest()) { result in
-            completion(result.map { $0.jurisdiction?.code ?? $0.jurisdiction?.defaultJurisdictionCode })
+            completion(result.map { $0.jurisdictionCode() })
         }
     }
 

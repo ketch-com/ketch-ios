@@ -35,11 +35,13 @@ public enum KetchSDK {
 // MARK: - Headless API (static, web/v3)
 
 extension KetchSDK {
-    /// GeoIP / jurisdiction hint (`GET /ip`).
-    public static func getLocation(
+    /// Combined ISO region code (e.g. "US-CA") from GeoIP (`GET /ip`).
+    public static func getRegion(
         dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<LocationResponse, KetchError> {
+    ) -> AnyPublisher<String?, KetchError> {
         KetchApiRequest(dataCenter: dataCenter).getLocation()
+            .map { $0.location?.toRegionCode() }
+            .eraseToAnyPublisher()
     }
 
     /// Minimal config (`GET .../boot.json`).
@@ -58,6 +60,16 @@ extension KetchSDK {
         dataCenter: KetchDataCenter = .us
     ) -> AnyPublisher<Configuration, KetchError> {
         KetchApiRequest(dataCenter: dataCenter).getFullConfiguration(request: request)
+    }
+
+    /// Resolved jurisdiction code from full config (`GET .../config.json`).
+    public static func getJurisdiction(
+        request: FullConfigurationRequest,
+        dataCenter: KetchDataCenter = .us
+    ) -> AnyPublisher<String?, KetchError> {
+        KetchApiRequest(dataCenter: dataCenter).getFullConfiguration(request: request)
+            .map { $0.jurisdictionCode() }
+            .eraseToAnyPublisher()
     }
 
     /// Server consent including `protocols` (`POST .../consent/{org}/get`).

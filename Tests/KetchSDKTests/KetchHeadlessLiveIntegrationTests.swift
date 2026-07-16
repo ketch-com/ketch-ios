@@ -81,6 +81,37 @@ final class KetchHeadlessLiveIntegrationTests: XCTestCase {
         wait(for: [expectation], timeout: 45)
     }
 
+    func testStaticGetRegion_liveCDN_returnsRealValue() {
+        let expectation = expectation(description: "static getRegion")
+        KetchSDK.getRegion()
+            .sink { completion in
+                if case .failure(let error) = completion { XCTFail("static getRegion failed: \(error)") }
+            } receiveValue: { region in
+                XCTAssertFalse(region?.isEmpty ?? true, "Expected a non-empty region code from live GeoIP")
+            }
+            .store(in: &cancellables)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { expectation.fulfill() }
+        wait(for: [expectation], timeout: 45)
+    }
+
+    func testStaticGetJurisdiction_liveCDN_returnsRealValue() {
+        let expectation = expectation(description: "static getJurisdiction")
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: HeadlessIntegrationSupport.orgCode,
+            propertyCode: HeadlessIntegrationSupport.propertyCode,
+            environmentCode: HeadlessIntegrationSupport.environmentCode
+        )
+        KetchSDK.getJurisdiction(request: request)
+            .sink { completion in
+                if case .failure(let error) = completion { XCTFail("static getJurisdiction failed: \(error)") }
+            } receiveValue: { jurisdiction in
+                XCTAssertFalse(jurisdiction?.isEmpty ?? true, "Expected a non-empty jurisdiction code from live config")
+            }
+            .store(in: &cancellables)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { expectation.fulfill() }
+        wait(for: [expectation], timeout: 45)
+    }
+
     /// Drives a real WKWebView against the live CDN. Confirms the cold path (called before config
     /// loads, deferred) and the warm path (called after config loads, fires immediately) both
     /// return `true` and neither crashes nor throws at the Swift/JS bridge. This does not assert an

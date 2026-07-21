@@ -394,19 +394,19 @@ extension Ketch {
         )
     }
 
-    // Cache key for getFullConfiguration() — mirrors HeadlessApiClient's path-building exactly
-    // (blank treated as absent) via configPathSegment()/normalizedHash(), so requests that hit the
-    // same URL always share a key and requests that hit different URLs never collide.
+    // Cache key for getFullConfiguration() — mirrors HeadlessApiClient's path- and query-building
+    // exactly via configPathSegment()/configQueryItems(), so requests that hit the same URL
+    // always share a key and requests that hit different URLs never collide.
     private static func buildConfigCacheKey(for request: KetchSDK.FullConfigurationRequest) -> String {
         let segment = request.configPathSegment()
-        return [
+        let query = request.configQueryItems().map { "\($0.name)=\($0.value ?? "")" }
+        return ([
             request.organizationCode,
             request.propertyCode,
             segment?.env ?? "",
             segment?.jurisdiction ?? "",
-            segment?.language ?? "",
-            request.normalizedHash() ?? ""
-        ].joined(separator: "|")
+            segment?.language ?? ""
+        ] + query).joined(separator: "|")
     }
 
     public func getConsent(

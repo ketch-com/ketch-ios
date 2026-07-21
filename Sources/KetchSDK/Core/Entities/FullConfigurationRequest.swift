@@ -14,6 +14,7 @@ extension KetchSDK {
         public let jurisdictionCode: String?
         public let languageCode: String?
         public let hash: String?
+        public let regionCode: String?
 
         public init(
             organizationCode: String,
@@ -21,7 +22,8 @@ extension KetchSDK {
             environmentCode: String? = nil,
             jurisdictionCode: String? = nil,
             languageCode: String? = nil,
-            hash: String? = nil
+            hash: String? = nil,
+            regionCode: String? = nil
         ) {
             self.organizationCode = organizationCode
             self.propertyCode = propertyCode
@@ -29,6 +31,7 @@ extension KetchSDK {
             self.jurisdictionCode = jurisdictionCode
             self.languageCode = languageCode
             self.hash = hash
+            self.regionCode = regionCode
         }
     }
 }
@@ -53,5 +56,39 @@ extension KetchSDK.FullConfigurationRequest {
     func normalizedHash() -> String? {
         guard let hash, !hash.isEmpty else { return nil }
         return hash
+    }
+
+    /// Matches ketch-tag's `formatLanguage` ("fr-CA"), tolerant of `Locale.preferredLanguages`' "fr_CA" form.
+    static func formatLanguageTag(_ raw: String) -> String {
+        guard !raw.isEmpty else { return "en" }
+        let parts = raw.split(whereSeparator: { $0 == "-" || $0 == "_" })
+        let root = parts[0].lowercased()
+        guard parts.count > 1, !parts[1].isEmpty else { return root }
+        return "\(root)-\(parts[1].uppercased())"
+    }
+
+    static func deviceLanguageTag() -> String {
+        formatLanguageTag(Locale.preferredLanguages.first ?? "en")
+    }
+
+    /// Query items for `getFullConfiguration`. On the short path (see `configPathSegment`), a
+    /// missing `languageCode` defaults to `deviceLanguage` rather than "en". Shared with
+    /// `Ketch.buildConfigCacheKey`.
+    func configQueryItems(deviceLanguage: () -> String = Self.deviceLanguageTag) -> [URLQueryItem] {
+        var items: [URLQueryItem] = []
+        if configPathSegment() == nil {
+            let language = languageCode?.isEmpty == false ? languageCode! : deviceLanguage()
+            items.append(URLQueryItem(name: "language", value: language))
+            if let jurisdictionCode, !jurisdictionCode.isEmpty {
+                items.append(URLQueryItem(name: "jurisdiction", value: jurisdictionCode))
+            }
+            if let regionCode, !regionCode.isEmpty {
+                items.append(URLQueryItem(name: "region", value: regionCode))
+            }
+        }
+        if let hash = normalizedHash() {
+            items.append(URLQueryItem(name: "hash", value: hash))
+        }
+        return items
     }
 }

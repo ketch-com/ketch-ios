@@ -82,4 +82,92 @@ final class FullConfigurationRequestTests: XCTestCase {
         )
         XCTAssertNil(request.normalizedHash())
     }
+
+    func testFormatLanguageTag_underscoreSeparator_becomesHyphenWithUppercaseDialect() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("fr_CA"), "fr-CA")
+    }
+
+    func testFormatLanguageTag_lowercaseDialect_isUppercased() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("fr-ca"), "fr-CA")
+    }
+
+    func testFormatLanguageTag_rootOnly_isLowercased() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("EN"), "en")
+    }
+
+    func testFormatLanguageTag_blank_fallsBackToEnglish() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag(""), "en")
+    }
+
+    func testConfigQueryItems_allPresent_onlyIncludesHash() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            jurisdictionCode: "us-ca",
+            languageCode: "en-US",
+            hash: "abc123"
+        )
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [URLQueryItem(name: "hash", value: "abc123")])
+    }
+
+    func testConfigQueryItems_allPresent_noHash_isEmpty() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            jurisdictionCode: "us-ca",
+            languageCode: "en-US"
+        )
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [])
+    }
+
+    func testConfigQueryItems_nothingSet_defaultsLanguageFromDevice() {
+        let request = KetchSDK.FullConfigurationRequest(organizationCode: "acme", propertyCode: "prop")
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [URLQueryItem(name: "language", value: "fr-CA")])
+    }
+
+    func testConfigQueryItems_explicitLanguage_winsOverDeviceLocale() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            languageCode: "de-DE"
+        )
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [URLQueryItem(name: "language", value: "de-DE")])
+    }
+
+    func testConfigQueryItems_jurisdictionOnly_includesJurisdictionAndDefaultedLanguage() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            jurisdictionCode: "us-ca"
+        )
+        XCTAssertEqual(
+            request.configQueryItems(deviceLanguage: { "fr-CA" }),
+            [URLQueryItem(name: "language", value: "fr-CA"), URLQueryItem(name: "jurisdiction", value: "us-ca")]
+        )
+    }
+
+    func testConfigQueryItems_regionOnly_includesRegionAndDefaultedLanguage() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            regionCode: "US-CA"
+        )
+        XCTAssertEqual(
+            request.configQueryItems(deviceLanguage: { "fr-CA" }),
+            [URLQueryItem(name: "language", value: "fr-CA"), URLQueryItem(name: "region", value: "US-CA")]
+        )
+    }
+
+    func testConfigQueryItems_blankFieldsTreatedAsAbsent() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            jurisdictionCode: "",
+            hash: "",
+            regionCode: ""
+        )
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [URLQueryItem(name: "language", value: "fr-CA")])
+    }
 }

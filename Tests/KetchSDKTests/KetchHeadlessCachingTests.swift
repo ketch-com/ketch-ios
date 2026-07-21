@@ -105,6 +105,33 @@ final class KetchHeadlessCachingTests: XCTestCase {
         XCTAssertEqual(apiClient.callCount, 2, "Requests that hit different config URLs must not share a cache entry")
     }
 
+    func testGetFullConfiguration_differentRegionOnShortPath_missesCache() {
+        let apiClient = CountingApiClient { _ in
+            Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let ketch = Ketch(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            identities: [],
+            apiClient: apiClient
+        )
+
+        let first = expectation(description: "first getFullConfiguration")
+        ketch.getFullConfiguration(
+            request: .init(organizationCode: "acme", propertyCode: "prop", regionCode: "US-CA")
+        ) { _ in first.fulfill() }
+        wait(for: [first], timeout: 5)
+
+        let second = expectation(description: "second getFullConfiguration, different region")
+        ketch.getFullConfiguration(
+            request: .init(organizationCode: "acme", propertyCode: "prop", regionCode: "US-NY")
+        ) { _ in second.fulfill() }
+        wait(for: [second], timeout: 5)
+
+        XCTAssertEqual(apiClient.callCount, 2, "A regionCode-only difference on the short path must not share a cache entry")
+    }
+
     func testGetJurisdiction_returnsCodeFromConfig() {
         let apiClient = CountingApiClient { _ in
             Just(Data("""

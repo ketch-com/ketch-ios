@@ -99,6 +99,7 @@ public final class KetchUI: ObservableObject {
 
         case .willShowExperience(let type):
             eventListener?.onWillShowExperience(type: type)
+            ketch.notifyWillShowExperience()
             // The only show signal guaranteed to fire for every experience path.
             presentExperience(type == .ConsentExperience ? .consent : .preference)
             
@@ -163,6 +164,7 @@ public final class KetchUI: ObservableObject {
     private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
+        ketch.notifyExperienceHidden(status: status)
     }
 
     private func presentExperience(_ content: WebPresentationItem.Event.Content) {

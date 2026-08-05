@@ -571,6 +571,22 @@ extension Ketch {
     }
 }
 
+// MARK: - Internal interface for plugin lifecycle events
+extension Ketch {
+    func notifyWillShowExperience() {
+        plugins.forEach { plugin in
+            plugin.willShowExperience()
+        }
+    }
+
+    func notifyExperienceHidden(status: KetchSDK.HideExperienceStatus) {
+        let reason = ExperienceHiddenReason(status: status)
+        plugins.forEach { plugin in
+            plugin.experienceHidden(reason: reason)
+        }
+    }
+}
+
 private let CONSENT_VERSION = "consent_version"
 private let PREFERENCE_VERSION = "preference_version"
 

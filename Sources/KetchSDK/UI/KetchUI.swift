@@ -29,14 +29,20 @@ public final class KetchUI: ObservableObject {
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
     private var options = [ExperienceOption]()
-    private var isConfigLoaded = false
+    // Whether the *currently loaded* page's tag has finished booting (emitted .configurationLoaded).
+    // Distinct from "an experience is pending" (experienceToShow) or "queued" (pendingTrigger) --
+    // those track what should happen once the tag boots, this tracks whether it has.
+    // internal, not private: exercised directly by TriggerValidationTests via @testable import,
+    // since there is no test seam for driving the WebPresentationItem bridge from outside.
+    var isTagBooted = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
     private var preloadedPresentationItem: WebPresentationItem?
 
-    // Deferred trigger() call, fired once a cold-booted WebView's tag finishes loading
-    private var pendingTrigger: PendingTrigger?
+    // Deferred trigger() call, fired once a cold-booted WebView's tag finishes loading.
+    // internal, not private: see isTagBooted's comment above.
+    var pendingTrigger: PendingTrigger?
 
-    private struct PendingTrigger {
+    struct PendingTrigger {
         let triggerName: TriggerName
         let functionName: String
         let optionsJson: String
@@ -76,8 +82,16 @@ public final class KetchUI: ObservableObject {
     }
     
     private func preloadWebExperience() {
+        resetBridgeState()
         preloadedPresentationItem = webExperience(onEvent: handle)
         preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(options))
+    }
+
+    // Single choke point for "a new page is about to load". Resets the state that describes the
+    // *current* page, but deliberately leaves pendingTrigger alone -- a trigger() queued before a
+    // reload should still fire once the new page's tag boots, not be discarded by the reload.
+    private func resetBridgeState() {
+        isTagBooted = false
     }
 
     private func experienceOptionsWithDataCenter(_ options: [ExperienceOption]) -> [ExperienceOption] {
@@ -89,7 +103,8 @@ public final class KetchUI: ObservableObject {
         return result
     }
     
-    private func handle(webPresentationEvent: WebPresentationItem.Event) {
+    // internal, not private: see isTagBooted's comment above.
+    func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
         case .onClose(let status):
             didCloseExperience(status: status)
@@ -112,7 +127,7 @@ public final class KetchUI: ObservableObject {
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
 
-            isConfigLoaded = true
+            isTagBooted = true
 
             if let pending = pendingTrigger {
                 pendingTrigger = nil
@@ -126,7 +141,6 @@ public final class KetchUI: ObservableObject {
             if experienceToShow != nil {
                 showExperience()
                 self.experienceToShow = nil
-                isConfigLoaded = false
                 eventListener?.onShow()
             }
 
@@ -168,7 +182,7 @@ public final class KetchUI: ObservableObject {
     }
 
     private func presentExperience(_ content: WebPresentationItem.Event.Content) {
-        if isConfigLoaded {
+        if isTagBooted {
             // .show and .willShowExperience both fire for the same experience on the warm path;
             // only the first to arrive should actually dispatch showExperience()/onShow().
             guard webPresentationItem == nil else { return }
@@ -198,9 +212,10 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
+        resetBridgeState()
         preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
         preloadedPresentationItem = webExperience(onEvent: handle)
-        
+
         // merge options, override existing if needed
         var newOptions = self.options
         options.forEach { option in
@@ -257,7 +272,7 @@ extension KetchUI {
 
         let optionsJson = Self.jsonString(from: options)
 
-        if isConfigLoaded {
+        if isTagBooted {
             pendingTrigger = nil
             preloadedPresentationItem?.trigger(triggerName: triggerName.rawValue, functionName: functionName, optionsJson: optionsJson)
         } else {

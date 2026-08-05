@@ -33,6 +33,15 @@ public final class KetchUI: ObservableObject {
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
     private var preloadedPresentationItem: WebPresentationItem?
 
+    // Deferred trigger() call, fired once a cold-booted WebView's tag finishes loading
+    private var pendingTrigger: PendingTrigger?
+
+    private struct PendingTrigger {
+        let triggerName: TriggerName
+        let functionName: String
+        let optionsJson: String
+    }
+
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
     /// - Parameter options: default options
@@ -102,9 +111,18 @@ public final class KetchUI: ObservableObject {
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
-            
+
             isConfigLoaded = true
-            
+
+            if let pending = pendingTrigger {
+                pendingTrigger = nil
+                preloadedPresentationItem?.trigger(
+                    triggerName: pending.triggerName.rawValue,
+                    functionName: pending.functionName,
+                    optionsJson: pending.optionsJson
+                )
+            }
+
             if experienceToShow != nil {
                 showExperience()
                 self.experienceToShow = nil
@@ -212,6 +230,55 @@ extension KetchUI {
     
     public func closeExperience() {
         webPresentationItem = nil
+    }
+
+    /// Fires a custom-function (`onFunction`) rule trigger. If a matching backend rule shows an
+    /// experience, it is displayed automatically.
+    ///
+    /// - Parameters:
+    ///   - triggerName: the trigger name; `.custom` is the only supported value today
+    ///   - functionName: the custom function name configured on the backend rule
+    ///   - options: optional key/value trigger arguments
+    /// - Returns: `false` if `functionName` is invalid, or an experience is already showing.
+    @discardableResult
+    public func trigger(
+        triggerName: TriggerName,
+        functionName: String,
+        options: [String: Any] = [:]
+    ) -> Bool {
+        guard Self.isValidTriggerFunctionName(functionName) else {
+            KetchLogger.log.debug("[Ketch] trigger rejected: functionName must be non-blank and contain only letters, digits, '_', '-', or '.'")
+            return false
+        }
+        guard webPresentationItem == nil else {
+            KetchLogger.log.debug("Not triggering '\(functionName)' as an experience is already being shown")
+            return false
+        }
+
+        let optionsJson = Self.jsonString(from: options)
+
+        if isConfigLoaded {
+            pendingTrigger = nil
+            preloadedPresentationItem?.trigger(triggerName: triggerName.rawValue, functionName: functionName, optionsJson: optionsJson)
+        } else {
+            pendingTrigger = PendingTrigger(triggerName: triggerName, functionName: functionName, optionsJson: optionsJson)
+        }
+        return true
+    }
+
+    /// Mirrors ketch-tag's function-name validation: non-blank, and only letters, digits, '_', '-', or '.'.
+    static func isValidTriggerFunctionName(_ functionName: String) -> Bool {
+        !functionName.isEmpty
+            && functionName.range(of: "^[A-Za-z0-9_.-]+$", options: .regularExpression) != nil
+    }
+
+    private static func jsonString(from options: [String: Any]) -> String {
+        guard let data = try? JSONSerialization.data(withJSONObject: options),
+              let json = String(data: data, encoding: .utf8)
+        else {
+            return "{}"
+        }
+        return json
     }
 }
 

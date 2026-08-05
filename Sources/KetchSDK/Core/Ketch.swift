@@ -44,6 +44,12 @@ public final class Ketch: ObservableObject {
     // Headless getLocation() cache — GET /ip takes no path params, so it never needs invalidation
     private var cachedLocation: KetchSDK.LocationResponse?
 
+    // Local overrides for getRegion()/getJurisdiction(), set via setRegion()/setJurisdiction().
+    // Take precedence over the server-resolved values; also fed into buildJurisdictionConfigRequest()
+    // so a jurisdiction override is reflected in the request path, not just the getter's return value.
+    private var region: String?
+    private var jurisdiction: String?
+
     private let cacheLock = NSLock()
 
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
@@ -329,13 +335,27 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
-    /// Combined ISO region code (e.g. "US-CA") from GeoIP. Backed by the same cache as [getLocation].
+    /// Combined ISO region code (e.g. "US-CA"). Returns the value from `setRegion` if one is set
+    /// on this instance; otherwise falls back to GeoIP (`GET /ip`), cached on this instance via
+    /// [getLocation].
     public func getRegion(
         completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
     ) {
+        if let region {
+            completion(.success(region))
+            return
+        }
         getLocation { result in
             completion(result.map { $0.location?.toRegionCode() })
         }
+    }
+
+    /// Overrides the value returned by `getRegion()`, bypassing the GeoIP round-trip. Also feeds
+    /// `getJurisdiction()`'s config request, so pass `nil` to clear the override and resume
+    /// resolving both from the server.
+    public func setRegion(_ region: String?) {
+        self.region = region
+        clearConfigCache()
     }
 
     public func getBootstrapConfiguration(
@@ -376,22 +396,44 @@ extension Ketch {
             .store(in: &subscriptions)
     }
 
-    /// Resolved jurisdiction code for this instance's current org/property/environment, e.g. from
-    /// a `jurisdiction` `ExperienceOption`. Backed by the same cache as [getFullConfiguration].
+    /// Resolved jurisdiction code for this instance's current org/property/environment. Returns
+    /// the value from `setJurisdiction` if one is set on this instance; otherwise falls back to
+    /// the server-resolved code from [getFullConfiguration], which the same cache backs.
     public func getJurisdiction(
         completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
     ) {
+        if let jurisdiction {
+            completion(.success(jurisdiction))
+            return
+        }
         getFullConfiguration(request: buildJurisdictionConfigRequest()) { result in
             completion(result.map { $0.jurisdictionCode() })
         }
+    }
+
+    /// Overrides the value returned by `getJurisdiction()`, bypassing the server round-trip and
+    /// invalidating the [getFullConfiguration] cache, since jurisdiction affects the config URL
+    /// path. Pass `nil` to clear the override and resume resolving from the server.
+    public func setJurisdiction(_ jurisdiction: String?) {
+        self.jurisdiction = jurisdiction
+        clearConfigCache()
     }
 
     private func buildJurisdictionConfigRequest() -> KetchSDK.FullConfigurationRequest {
         .init(
             organizationCode: organizationCode,
             propertyCode: propertyCode,
-            environmentCode: environmentCode
+            environmentCode: environmentCode,
+            jurisdictionCode: jurisdiction,
+            regionCode: region
         )
+    }
+
+    private func clearConfigCache() {
+        cacheLock.lock()
+        cachedConfig = nil
+        cachedConfigKey = nil
+        cacheLock.unlock()
     }
 
     // Cache key for getFullConfiguration() — mirrors HeadlessApiClient's path- and query-building

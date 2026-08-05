@@ -328,6 +328,7 @@ public protocol KetchEventListener: AnyObject {
     func onCCPAUpdated(ccpaString: String?)
     func onTCFUpdated(tcfString: String?)
     func onGPPUpdated(gppString: String?)
+    func onNativeStoragePut(key: String, value: String)
 }
 
 public extension KetchEventListener {

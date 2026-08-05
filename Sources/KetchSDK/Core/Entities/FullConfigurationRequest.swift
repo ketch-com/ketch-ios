@@ -44,11 +44,14 @@ extension KetchSDK.FullConfigurationRequest {
     /// means.
     func configPathSegment() -> (env: String, jurisdiction: String, language: String)? {
         guard let env = environmentCode, !env.isEmpty,
-              let jurisdiction = jurisdictionCode, !jurisdiction.isEmpty,
-              let language = languageCode, !language.isEmpty
+              let jurisdiction = jurisdictionCode, !jurisdiction.isEmpty
         else {
             return nil
         }
+        // A missing language must not silently drop env/jurisdiction to the short path —
+        // synthesize it from the device locale so the long path is always used once both
+        // env and jurisdiction are known.
+        let language = languageCode?.isEmpty == false ? languageCode! : Self.deviceLanguageTag()
         return (env, jurisdiction, language)
     }
 
@@ -59,12 +62,22 @@ extension KetchSDK.FullConfigurationRequest {
     }
 
     /// Matches ketch-tag's `formatLanguage` ("fr-CA"), tolerant of `Locale.preferredLanguages`' "fr_CA" form.
+    /// Preserves a script subtag (4 letters, e.g. "Hans") in title case and a region subtag
+    /// (2 letters or 3 digits, e.g. "CN"/"419") uppercased, so multi-part tags like "zh-Hans-CN"
+    /// survive intact instead of collapsing to "zh-HANS" with the region silently dropped.
     static func formatLanguageTag(_ raw: String) -> String {
         guard !raw.isEmpty else { return "en" }
-        let parts = raw.split(whereSeparator: { $0 == "-" || $0 == "_" })
-        let root = parts[0].lowercased()
-        guard parts.count > 1, !parts[1].isEmpty else { return root }
-        return "\(root)-\(parts[1].uppercased())"
+        let parts = raw.split(whereSeparator: { $0 == "-" || $0 == "_" }).map(String.init)
+        guard let first = parts.first, !first.isEmpty else { return "en" }
+        var result = [first.lowercased()]
+        for part in parts.dropFirst() {
+            if part.count == 4, part.allSatisfy(\.isLetter) {
+                result.append(part.prefix(1).uppercased() + part.dropFirst().lowercased())
+            } else if (part.count == 2 && part.allSatisfy(\.isLetter)) || (part.count == 3 && part.allSatisfy(\.isNumber)) {
+                result.append(part.uppercased())
+            }
+        }
+        return result.joined(separator: "-")
     }
 
     static func deviceLanguageTag() -> String {

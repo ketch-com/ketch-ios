@@ -85,7 +85,7 @@ final class HeadlessApiClient {
             request: .init(
                 organizationCode: organization,
                 propertyCode: property,
-                languageCode: Locale.preferredLanguages[0]
+                languageCode: KetchSDK.FullConfigurationRequest.deviceLanguageTag()
             )
         )
     }

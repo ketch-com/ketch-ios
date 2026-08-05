@@ -151,6 +151,9 @@ public final class KetchUI: ObservableObject {
 
     private func presentExperience(_ content: WebPresentationItem.Event.Content) {
         if isConfigLoaded {
+            // .show and .willShowExperience both fire for the same experience on the warm path;
+            // only the first to arrive should actually dispatch showExperience()/onShow().
+            guard webPresentationItem == nil else { return }
             showExperience()
             eventListener?.onShow()
         } else {

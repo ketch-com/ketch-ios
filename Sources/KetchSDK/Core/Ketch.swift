@@ -31,8 +31,20 @@ public final class Ketch: ObservableObject {
     let propertyCode: String
     let environmentCode: String
     let identities: [Identity]
+    public let dataCenter: KetchDataCenter
+    private let apiRequest: KetchApiRequest
+    private let userDefaults: UserDefaults
     private let nativeStorage: NativeStorage
     private var plugins = Set<PolicyPlugin>()
+
+    // Headless getFullConfiguration() cache — avoids re-fetching when the config URL path is unchanged
+    private var cachedConfig: KetchSDK.Configuration?
+    private var cachedConfigKey: String?
+
+    // Headless getLocation() cache — GET /ip takes no path params, so it never needs invalidation
+    private var cachedLocation: KetchSDK.LocationResponse?
+
+    private let cacheLock = NSLock()
 
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
     private var localizedStringsSubject = CurrentValueSubject<KetchSDK.LocalizedStrings?, KetchSDK.KetchError>(nil)
@@ -51,12 +63,17 @@ public final class Ketch: ObservableObject {
         propertyCode: String,
         environmentCode: String,
         identities: [Identity],
-        userDefaults: UserDefaults = .standard
+        dataCenter: KetchDataCenter = .us,
+        userDefaults: UserDefaults = .standard,
+        apiClient: ApiClient = DefaultApiClient()
     ) {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
         self.identities = identities
+        self.dataCenter = dataCenter
+        self.apiRequest = KetchApiRequest(dataCenter: dataCenter, apiClient: apiClient)
+        self.userDefaults = userDefaults
         self.nativeStorage = NativeStorage(userDefaults: userDefaults)
 
         configurationSubject
@@ -99,7 +116,7 @@ public final class Ketch: ObservableObject {
     }
 
     public func loadConfiguration() {
-        KetchApiRequest()
+        apiRequest
             .fetchConfig(organization: organizationCode, property: propertyCode)
             .sink { result in
                 if case .failure(let error) = result {
@@ -109,7 +126,7 @@ public final class Ketch: ObservableObject {
                 self.configurationSubject.send(configuration)
             }
             .store(in: &subscriptions)
-        KetchApiRequest()
+        apiRequest
             .fetchLocalizedStrings()
             .sink { result in
                 if case .failure(let error) = result {
@@ -124,7 +141,7 @@ public final class Ketch: ObservableObject {
     public func loadConfiguration(
         jurisdiction: String
     ) {
-        KetchApiRequest()
+        apiRequest
             .fetchConfig(
                 organization: organizationCode,
                 property: propertyCode,
@@ -141,7 +158,7 @@ public final class Ketch: ObservableObject {
                 self.configurationSubject.send(configuration)
             }
             .store(in: &subscriptions)
-        KetchApiRequest()
+        apiRequest
             .fetchLocalizedStrings(languageCode:String(Locale.preferredLanguages[0].prefix(2)))
             .sink { result in
                 if case .failure(let error) = result {
@@ -164,7 +181,7 @@ public final class Ketch: ObservableObject {
             uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
         )
 
-        return KetchApiRequest()
+        return apiRequest
             .invokeRights(
                 organization: organizationCode,
                 config: .init(
@@ -224,21 +241,22 @@ public final class Ketch: ObservableObject {
                 })
         else { return }
 
-        let identities = [String: String](
-            uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
-        )
-
-        KetchApiRequest()
-            .getConsent(
-                config: .init(
-                    organizationCode: organizationCode,
-                    propertyCode: propertyCode,
-                    environmentCode: environmentCode,
-                    jurisdictionCode: jurisdictionCode,
-                    identities: identities,
-                    purposes: purposes
-                )
+        loadConsent(
+            consentConfig: .init(
+                organizationCode: organizationCode,
+                propertyCode: propertyCode,
+                environmentCode: environmentCode,
+                jurisdictionCode: jurisdictionCode,
+                identities: identityMap(),
+                purposes: purposes
             )
+        )
+    }
+
+    /// Fetches consent from the CDN without requiring WebView-loaded configuration.
+    public func loadConsent(consentConfig: KetchSDK.ConsentConfig) {
+        apiRequest
+            .getConsent(config: consentConfig)
             .sink { result in
                 if case .failure(let error) = result {
                     self.consentSubject.send(completion: .failure(error))
@@ -249,6 +267,10 @@ public final class Ketch: ObservableObject {
             .store(in: &subscriptions)
     }
 
+    private func identityMap() -> [String: String] {
+        [String: String](uniqueKeysWithValues: identities.map { ($0.key, $0.value) })
+    }
+
     public func updateConsent(
         purposes: [String: KetchSDK.ConsentUpdate.PurposeAllowedLegalBasis]?,
         vendors: [String]?,
@@ -256,17 +278,13 @@ public final class Ketch: ObservableObject {
     ) {
         guard let jurisdictionCode = configurationSubject.value?.jurisdiction?.code else { return }
 
-        let identities = [String: String](
-            uniqueKeysWithValues: identities.map { ($0.key, $0.value) }
-        )
-        
-        return KetchApiRequest()
-            .updateConsent(
+        return apiRequest
+            .setConsent(
                 update: .init(
                     organizationCode: organizationCode,
                     propertyCode: propertyCode,
                     environmentCode: environmentCode,
-                    identities: identities,
+                    identities: identityMap(),
                     jurisdictionCode: jurisdictionCode,
                     migrationOption: .migrateDefault,
                     purposes: purposes ?? [:],
@@ -278,19 +296,171 @@ public final class Ketch: ObservableObject {
                 if case .failure(let error) = result {
                     print(error)
                 }
-            } receiveValue: {
-                let purposesUpdate = purposes?.reduce(into: [String: Bool](), { result, purpose in
-                    result[purpose.key] = purpose.value.allowed
-                })
-                let consentUpdate = KetchSDK.ConsentStatus(
-                    purposes: purposesUpdate ?? [:],
-                    vendors: vendors,
-                    protocols: protocols
-                )
-
-                self.consentSubject.send(consentUpdate)
+            } receiveValue: { consentStatus in
+                self.consentSubject.send(consentStatus)
             }
             .store(in: &subscriptions)
+    }
+}
+
+// MARK: - Headless API (web/v3, pre-WebView)
+extension Ketch {
+    /// GeoIP location (`GET /ip`). Cached on this instance — `/ip` takes no path params, so the
+    /// cache never invalidates.
+    private func getLocation(
+        completion: @escaping (Result<KetchSDK.LocationResponse, KetchSDK.KetchError>) -> Void
+    ) {
+        cacheLock.lock()
+        if let cachedLocation {
+            cacheLock.unlock()
+            completion(.success(cachedLocation))
+            return
+        }
+        cacheLock.unlock()
+
+        apiRequest.getLocation()
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { location in
+                self.cacheLock.lock()
+                self.cachedLocation = location
+                self.cacheLock.unlock()
+                completion(.success(location))
+            }
+            .store(in: &subscriptions)
+    }
+
+    /// Combined ISO region code (e.g. "US-CA") from GeoIP. Backed by the same cache as [getLocation].
+    public func getRegion(
+        completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
+    ) {
+        getLocation { result in
+            completion(result.map { $0.location?.toRegionCode() })
+        }
+    }
+
+    public func getBootstrapConfiguration(
+        completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.getBootstrapConfiguration(organization: organizationCode, property: propertyCode)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    /// Full config with optional env/jurisdiction/language and hash query param.
+    ///
+    /// Cached on this instance, keyed on the request's URL-path-affecting fields. A cache hit
+    /// skips the network call entirely.
+    public func getFullConfiguration(
+        request: KetchSDK.FullConfigurationRequest,
+        completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>) -> Void
+    ) {
+        let key = Self.buildConfigCacheKey(for: request)
+        cacheLock.lock()
+        if cachedConfigKey == key, let cachedConfig {
+            cacheLock.unlock()
+            completion(.success(cachedConfig))
+            return
+        }
+        cacheLock.unlock()
+
+        apiRequest.getFullConfiguration(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { configuration in
+                self.cacheLock.lock()
+                self.cachedConfig = configuration
+                self.cachedConfigKey = key
+                self.cacheLock.unlock()
+                completion(.success(configuration))
+            }
+            .store(in: &subscriptions)
+    }
+
+    /// Resolved jurisdiction code for this instance's current org/property/environment, e.g. from
+    /// a `jurisdiction` `ExperienceOption`. Backed by the same cache as [getFullConfiguration].
+    public func getJurisdiction(
+        completion: @escaping (Result<String?, KetchSDK.KetchError>) -> Void
+    ) {
+        getFullConfiguration(request: buildJurisdictionConfigRequest()) { result in
+            completion(result.map { $0.jurisdictionCode() })
+        }
+    }
+
+    private func buildJurisdictionConfigRequest() -> KetchSDK.FullConfigurationRequest {
+        .init(
+            organizationCode: organizationCode,
+            propertyCode: propertyCode,
+            environmentCode: environmentCode
+        )
+    }
+
+    // Cache key for getFullConfiguration() — mirrors HeadlessApiClient's path- and query-building
+    // exactly via configPathSegment()/configQueryItems(), so requests that hit the same URL
+    // always share a key and requests that hit different URLs never collide.
+    private static func buildConfigCacheKey(for request: KetchSDK.FullConfigurationRequest) -> String {
+        let segment = request.configPathSegment()
+        let query = request.configQueryItems().map { "\($0.name)=\($0.value ?? "")" }
+        return ([
+            request.organizationCode,
+            request.propertyCode,
+            segment?.env ?? "",
+            segment?.jurisdiction ?? "",
+            segment?.language ?? ""
+        ] + query).joined(separator: "|")
+    }
+
+    public func getConsent(
+        consentConfig: KetchSDK.ConsentConfig,
+        completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.getConsent(config: consentConfig)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func setConsent(
+        consentUpdate: KetchSDK.ConsentUpdate,
+        completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.setConsent(update: consentUpdate)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func invokeRight(
+        request: KetchSDK.InvokeRightRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.invokeRight(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
+
+    public func getSubscriptions(
+        request: KetchSDK.SubscriptionsRequest,
+        completion: @escaping (Result<KetchSDK.SubscriptionsResponse, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.getSubscriptions(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success($0)) }
+            .store(in: &subscriptions)
+    }
+
+    public func setSubscriptions(
+        request: KetchSDK.SubscriptionsRequest,
+        completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
+    ) {
+        apiRequest.setSubscriptions(request: request)
+            .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
+            receiveValue: { completion(.success(())) }
+            .store(in: &subscriptions)
+    }
+
+    public func getPreferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
+        apiRequest.getPreferenceQRUrl(request: request)
     }
 }
 
@@ -314,8 +484,8 @@ extension Ketch {
         property: String,
         completion: @escaping (Result<KetchSDK.Configuration, KetchSDK.KetchError>
     ) -> Void) {
-        KetchApiRequest()
-            .fetchConfig(organization: organization, property: organization)
+        apiRequest
+            .fetchConfig(organization: organization, property: property)
             .sink { result in
                 if case .failure(let error) = result {
                     completion(.failure(error))
@@ -330,32 +500,19 @@ extension Ketch {
         consentConfig: KetchSDK.ConsentConfig,
         completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
     ) {
-        KetchApiRequest()
-            .getConsent(config: consentConfig)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: { consentStatus in
-                completion(.success(consentStatus))
-            }
-            .store(in: &subscriptions)
+        getConsent(consentConfig: consentConfig, completion: completion)
     }
 
     public func fetchSetConsent(
         consentUpdate: KetchSDK.ConsentUpdate,
         completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
     ) {
-        KetchApiRequest()
-            .updateConsent(update: consentUpdate)
-            .sink { result in
-                if case .failure(let error) = result {
-                    completion(.failure(error))
-                }
-            } receiveValue: {
-                completion(.success(()))
+        setConsent(consentUpdate: consentUpdate) { result in
+            switch result {
+            case .success: completion(.success(()))
+            case .failure(let error): completion(.failure(error))
             }
-            .store(in: &subscriptions)
+        }
     }
 
     public func fetchInvokeRights(
@@ -363,7 +520,7 @@ extension Ketch {
         config: KetchSDK.InvokeRightConfig,
         completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
     ) {
-        KetchApiRequest()
+        apiRequest
             .invokeRights(
                 organization: organization,
                 config: config

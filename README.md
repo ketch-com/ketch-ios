@@ -67,11 +67,16 @@ private func setupKetch(advertisingIdentifier: UUID) {
           Ketch.Identity(key: "aaid", value: "00000000-0000-0000-0000-000000000000"),
           Ketch.Identity(key: "email", value: "user@mywebsite.com"),
           Ketch.Identity(key: "account_id", value: "1234")
-      ]
+      ],
+      dataCenter: .us
    )
    self.ketch = ketch
 }
 ```
+
+`dataCenter` selects the server, and therefore which build of the Ketch tag is
+used: `.us` and `.eu` are production, `.uat` is the UAT environment. Defaults to
+`.us`.
 
 ### Step 2. Instantiate the KetchUI object:
 
@@ -189,6 +194,9 @@ extension KetchUI {
         /// Upper bound of age range for age band legal basis resolution
         case ageUpper(UInt)
 
+        /// Serve specific tag resources from another host
+        case webResourceUrlOverrides([String: String])
+
         public enum ExperienceToShow: String {
             case consent, preferences
         }
@@ -225,7 +233,9 @@ ketchUI.reload(with: params)
 ```swift
 public protocol KetchEventListener: AnyObject {
     func onShow()
-    func onDismiss()
+    func onWillShowExperience(type: KetchSDK.WillShowExperienceType)
+    func onHasShownExperience()
+    func onDismiss(status: KetchSDK.HideExperienceStatus)
     func onEnvironmentUpdated(environment: String?)
     func onRegionInfoUpdated(regionInfo: String?)
     func onJurisdictionUpdated(jurisdiction: String?)
@@ -235,6 +245,7 @@ public protocol KetchEventListener: AnyObject {
     func onCCPAUpdated(ccpaString: String?)
     func onTCFUpdated(tcfString: String?)
     func onGPPUpdated(gppString: String?)
+    func onNativeStoragePut(key: String, value: String)
 }
 ```
 
@@ -243,6 +254,44 @@ public protocol KetchEventListener: AnyObject {
 ```swift
 ketchUI.eventListener = #{myEventListener}#
 ```
+
+### Rule Triggers
+
+Fire an `onFunction` rule. If a matching backend rule shows an experience, it is
+presented automatically.
+
+```swift
+ketchUI.trigger(triggerName: .custom, functionName: "managePrivacy")
+```
+
+Returns `false` if the function name is invalid or an experience is already
+showing. Calls made before the tag finishes loading are queued and fired once it
+is ready.
+
+### Reading Values
+
+Resolved region and jurisdiction, preferring anything you set explicitly over a
+network lookup:
+
+```swift
+ketch.getRegion { result in /* String? */ }
+ketch.getJurisdiction { result in /* String? */ }
+```
+
+IAB privacy strings, as written to native storage by the tag:
+
+```swift
+ketch.getTCFTCString()
+ketch.getUSPrivacyString()
+ketch.getGPPHDRGppString()
+ketch.getSavedString(key: Ketch.PrivacyStringKey.tcfTCString)
+```
+
+`Ketch` and `KetchSDK` also expose headless HTTP methods —
+`getBootstrapConfiguration`, `getFullConfiguration`, `getConsent`, `setConsent`,
+`invokeRight`, `getSubscriptions`, `setSubscriptions`, `getPreferenceQRUrl` —
+for consent operations that need no WebView. Instance methods take completion
+handlers; the `KetchSDK` statics return Combine publishers.
 
 ### Sample app
 

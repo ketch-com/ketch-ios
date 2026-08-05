@@ -110,10 +110,6 @@ final class HeadlessApiClient {
         )
     }
 
-    func updateConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
-        setConsent(update: update)
-    }
-
     func invokeRight(request: KetchSDK.InvokeRightRequest) -> AnyPublisher<Void, KetchError> {
         let path = "/rights/\(request.organizationCode)/invoke"
         guard let body = try? JSONEncoder().encode(request) else {

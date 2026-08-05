@@ -78,10 +78,6 @@ class KetchApiRequest {
         headless.setConsent(update: update)
     }
 
-    func updateConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
-        headless.updateConsent(update: update)
-    }
-
     func invokeRights(organization: String, config: InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
         headless.invokeRights(organization: organization, config: config)
     }

@@ -592,3 +592,35 @@ extension Ketch {
         nativeStorage.value(forKey: PREFERENCE_VERSION) as? Int
     }
 }
+
+// MARK: - Privacy strings
+
+extension Ketch {
+    /// Storage keys the ketch tag writes IAB privacy strings to. Names match the IAB
+    /// specifications and the keys used by the Android and Flutter SDKs.
+    public enum PrivacyStringKey {
+        public static let tcfTCString = "IABTCF_TCString"
+        public static let usPrivacyString = "IABUSPrivacy_String"
+        public static let gppHDRGppString = "IABGPP_HDR_GppString"
+    }
+
+    /// Read a value the tag wrote to native storage.
+    public func getSavedString(key: String) -> String {
+        nativeStorage.read(key: key)
+    }
+
+    /// Retrieve the IABTCF_TCString value written by the tag.
+    public func getTCFTCString() -> String {
+        getSavedString(key: PrivacyStringKey.tcfTCString)
+    }
+
+    /// Retrieve the IABUSPrivacy_String value written by the tag.
+    public func getUSPrivacyString() -> String {
+        getSavedString(key: PrivacyStringKey.usPrivacyString)
+    }
+
+    /// Retrieve the IABGPP_HDR_GppString value written by the tag.
+    public func getGPPHDRGppString() -> String {
+        getSavedString(key: PrivacyStringKey.gppHDRGppString)
+    }
+}

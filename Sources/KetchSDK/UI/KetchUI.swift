@@ -86,15 +86,13 @@ public final class KetchUI: ObservableObject {
             didCloseExperience(status: status)
             
         case .show(let content):
-            if isConfigLoaded {
-                self.showExperience()
-                eventListener?.onShow()
-            } else {
-                experienceToShow = content
-            }
-            
+            presentExperience(content)
+
         case .willShowExperience(let type):
             eventListener?.onWillShowExperience(type: type)
+            ketch.notifyWillShowExperience()
+            // The only show signal guaranteed to fire for every experience path.
+            presentExperience(type == .ConsentExperience ? .consent : .preference)
             
         case .hasShownExperience:
             eventListener?.onHasShownExperience()
@@ -148,6 +146,16 @@ public final class KetchUI: ObservableObject {
     private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
+        ketch.notifyExperienceHidden(status: status)
+    }
+
+    private func presentExperience(_ content: WebPresentationItem.Event.Content) {
+        if isConfigLoaded {
+            showExperience()
+            eventListener?.onShow()
+        } else {
+            experienceToShow = content
+        }
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {

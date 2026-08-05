@@ -101,3 +101,7 @@ Framework/.DS_Store
 # Python (Cursor skills / tooling)
 __pycache__/
 *.pyc
+
+# SourceKit-LSP build server (xcode-build-server) — machine-specific paths
+buildServer.json
+.compile

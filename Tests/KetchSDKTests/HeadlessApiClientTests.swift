@@ -98,6 +98,39 @@ final class HeadlessApiClientTests: XCTestCase {
         )
     }
 
+    func testGetFullConfiguration_environmentAndJurisdictionSet_languageMissing_takesLongPath() throws {
+        // Environment/jurisdiction must not be silently dropped to the short path just because
+        // the caller didn't also supply an explicit language.
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration language missing")
+        client.getFullConfiguration(
+            request: .init(organizationCode: "acme", propertyCode: "prop", environmentCode: "production", jurisdictionCode: "us-ca")
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        let deviceLanguage = KetchSDK.FullConfigurationRequest.deviceLanguageTag()
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/production/us-ca/\(deviceLanguage)/config.json")
+    }
+
     func testGetFullConfiguration_nothingSet_shortPath_includesDeviceLanguage() throws {
         var capturedURL: URL?
         let apiClient = CapturingApiClient { request in

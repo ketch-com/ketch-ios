@@ -49,7 +49,7 @@ final class FullConfigurationRequestTests: XCTestCase {
         XCTAssertNil(request.configPathSegment())
     }
 
-    func testConfigPathSegment_blankLanguage_treatedAsAbsent() {
+    func testConfigPathSegment_blankLanguage_synthesizesDeviceLanguage() {
         let request = KetchSDK.FullConfigurationRequest(
             organizationCode: "acme",
             propertyCode: "prop",
@@ -57,7 +57,7 @@ final class FullConfigurationRequestTests: XCTestCase {
             jurisdictionCode: "us-ca",
             languageCode: ""
         )
-        XCTAssertNil(request.configPathSegment())
+        XCTAssertEqual(request.configPathSegment()?.language, KetchSDK.FullConfigurationRequest.deviceLanguageTag())
     }
 
     func testNormalizedHash_present_returnsHash() {
@@ -97,6 +97,34 @@ final class FullConfigurationRequestTests: XCTestCase {
 
     func testFormatLanguageTag_blank_fallsBackToEnglish() {
         XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag(""), "en")
+    }
+
+    func testFormatLanguageTag_scriptAndRegion_bothPreserved() {
+        // A naive split-on-first-separator collapses this to "zh-HANS", dropping the region.
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("zh-Hans-CN"), "zh-Hans-CN")
+    }
+
+    func testFormatLanguageTag_scriptOnly_titleCased() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("zh-hans"), "zh-Hans")
+    }
+
+    func testFormatLanguageTag_numericRegion_uppercasedNoOp() {
+        XCTAssertEqual(KetchSDK.FullConfigurationRequest.formatLanguageTag("es-419"), "es-419")
+    }
+
+    func testConfigPathSegment_environmentAndJurisdictionSet_languageMissing_synthesizesDeviceLanguage() {
+        // Environment/jurisdiction must not be silently dropped to the short path just because
+        // the caller didn't also supply an explicit language.
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            jurisdictionCode: "us-ca"
+        )
+        let segment = request.configPathSegment()
+        XCTAssertEqual(segment?.env, "production")
+        XCTAssertEqual(segment?.jurisdiction, "us-ca")
+        XCTAssertEqual(segment?.language, KetchSDK.FullConfigurationRequest.deviceLanguageTag())
     }
 
     func testConfigQueryItems_allPresent_onlyIncludesHash() {

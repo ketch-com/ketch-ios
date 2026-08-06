@@ -51,7 +51,7 @@ extension KetchSDK.FullConfigurationRequest {
         // A missing language must not silently drop env/jurisdiction to the short path —
         // synthesize it from the device locale so the long path is always used once both
         // env and jurisdiction are known.
-        let language = languageCode?.isEmpty == false ? languageCode! : Self.deviceLanguageTag()
+        let language = languageCode?.isEmpty == false ? Self.formatLanguageTag(languageCode!) : Self.deviceLanguageTag()
         return (env, jurisdiction, language)
     }
 
@@ -90,7 +90,7 @@ extension KetchSDK.FullConfigurationRequest {
     func configQueryItems(deviceLanguage: () -> String = Self.deviceLanguageTag) -> [URLQueryItem] {
         var items: [URLQueryItem] = []
         if configPathSegment() == nil {
-            let language = languageCode?.isEmpty == false ? languageCode! : deviceLanguage()
+            let language = languageCode?.isEmpty == false ? Self.formatLanguageTag(languageCode!) : deviceLanguage()
             items.append(URLQueryItem(name: "language", value: language))
             if let jurisdictionCode, !jurisdictionCode.isEmpty {
                 items.append(URLQueryItem(name: "jurisdiction", value: jurisdictionCode))

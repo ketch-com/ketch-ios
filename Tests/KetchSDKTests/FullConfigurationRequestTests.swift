@@ -164,6 +164,15 @@ final class FullConfigurationRequestTests: XCTestCase {
         XCTAssertEqual(request.configQueryItems(deviceLanguage: { "fr-CA" }), [URLQueryItem(name: "language", value: "de-DE")])
     }
 
+    func testConfigQueryItems_explicitLanguage_normalized() {
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            languageCode: "fr_ca"
+        )
+        XCTAssertEqual(request.configQueryItems(deviceLanguage: { "en" }), [URLQueryItem(name: "language", value: "fr-CA")])
+    }
+
     func testConfigQueryItems_jurisdictionOnly_includesJurisdictionAndDefaultedLanguage() {
         let request = KetchSDK.FullConfigurationRequest(
             organizationCode: "acme",

@@ -9,9 +9,9 @@ import XCTest
 final class KetchHeadlessLiveIntegrationTests: XCTestCase {
     private var cancellables: Set<AnyCancellable> = []
 
-    override func setUp() {
-        super.setUp()
-        try? XCTSkipUnless(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipUnless(
             ProcessInfo.processInfo.environment["KETCH_INTEGRATION_TESTS"] == "1",
             "Set KETCH_INTEGRATION_TESTS=1 to run live CDN tests"
         )
@@ -86,11 +86,11 @@ final class KetchHeadlessLiveIntegrationTests: XCTestCase {
         KetchSDK.getRegion()
             .sink { completion in
                 if case .failure(let error) = completion { XCTFail("static getRegion failed: \(error)") }
+                expectation.fulfill()
             } receiveValue: { region in
                 XCTAssertFalse(region?.isEmpty ?? true, "Expected a non-empty region code from live GeoIP")
             }
             .store(in: &cancellables)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { expectation.fulfill() }
         wait(for: [expectation], timeout: 45)
     }
 
@@ -104,11 +104,11 @@ final class KetchHeadlessLiveIntegrationTests: XCTestCase {
         KetchSDK.getJurisdiction(request: request)
             .sink { completion in
                 if case .failure(let error) = completion { XCTFail("static getJurisdiction failed: \(error)") }
+                expectation.fulfill()
             } receiveValue: { jurisdiction in
                 XCTAssertFalse(jurisdiction?.isEmpty ?? true, "Expected a non-empty jurisdiction code from live config")
             }
             .store(in: &cancellables)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { expectation.fulfill() }
         wait(for: [expectation], timeout: 45)
     }
 

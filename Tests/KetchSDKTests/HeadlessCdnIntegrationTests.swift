@@ -10,9 +10,9 @@ final class HeadlessCdnIntegrationTests: XCTestCase {
     private var client: HeadlessApiClient!
     private var cancellables: Set<AnyCancellable> = []
 
-    override func setUp() {
-        super.setUp()
-        try? XCTSkipUnless(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipUnless(
             ProcessInfo.processInfo.environment["KETCH_INTEGRATION_TESTS"] == "1",
             "Set KETCH_INTEGRATION_TESTS=1 to run live CDN tests"
         )

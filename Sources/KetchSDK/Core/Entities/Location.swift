@@ -30,10 +30,15 @@ extension KetchSDK {
         }
 
         public init(from decoder: Decoder) throws {
-            if let container = try? decoder.container(keyedBy: CodingKeys.self),
-               let nested = try? container.decode(IPInfo.self, forKey: .location) {
-                location = nested
-                return
+            if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+                if let nested = try? container.decode(IPInfo.self, forKey: .location) {
+                    location = nested
+                    return
+                }
+                if (try? container.decodeNil(forKey: .location)) == true {
+                    location = nil
+                    return
+                }
             }
             location = try IPInfo(from: decoder)
         }

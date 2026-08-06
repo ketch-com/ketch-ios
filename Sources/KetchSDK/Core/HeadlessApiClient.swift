@@ -18,16 +18,13 @@ final class HeadlessApiClient {
 
     private let baseURL: URL
     private let apiClient: ApiClient
-    private let session: URLSession
 
     init(
         dataCenter: KetchDataCenter = .us,
-        apiClient: ApiClient = DefaultApiClient(),
-        session: URLSession = .shared
+        apiClient: ApiClient = DefaultApiClient()
     ) {
         self.baseURL = dataCenter.baseURL
         self.apiClient = apiClient
-        self.session = session
     }
 
     func getLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
@@ -140,7 +137,10 @@ final class HeadlessApiClient {
     }
 
     func invokeRights(organization: String, config: KetchSDK.InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
-        invokeRight(request: .init(organizationCode: organization, config: config))
+        guard let rightCode = config.rightCode, !rightCode.isEmpty else {
+            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+        }
+        return invokeRight(request: .init(organizationCode: organization, config: config))
     }
 
     func getPreferenceQRUrl(request: KetchSDK.PreferenceQRRequest) -> URL? {
@@ -225,20 +225,10 @@ final class HeadlessApiClient {
         guard let url = buildURL(path: path) else {
             return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.httpBody = body
-        applyJSONHeaders(&urlRequest)
-
-        return session.dataTaskPublisher(for: urlRequest)
-            .tryMap { output -> Void in
-                if let http = output.response as? HTTPURLResponse,
-                   !(200..<300).contains(http.statusCode) {
-                    throw URLError(.badServerResponse)
-                }
-                return ()
-            }
-            .mapError(KetchError.init)
+        let request = ApiRequest(endPoint: EndPoint(url: url), method: .post, body: body)
+        return apiClient.execute(request: request)
+            .map { _ in () }
+            .mapError { KetchError(with: $0) }
             .eraseToAnyPublisher()
     }
 
@@ -250,18 +240,9 @@ final class HeadlessApiClient {
         guard let url = buildURL(path: path) else {
             return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.httpBody = body
-        applyJSONHeaders(&urlRequest)
-
-        return session.dataTaskPublisher(for: urlRequest)
-            .tryMap { output -> ConsentStatus in
-                let data = output.data
-                if let http = output.response as? HTTPURLResponse,
-                   !(200..<300).contains(http.statusCode) {
-                    throw URLError(.badServerResponse)
-                }
+        let request = ApiRequest(endPoint: EndPoint(url: url), method: .post, body: body)
+        return apiClient.execute(request: request)
+            .map { data -> ConsentStatus in
                 if data.isEmpty || String(data: data, encoding: .utf8) == "null" {
                     return Self.emptyConsentStatus(for: config)
                 }
@@ -271,7 +252,7 @@ final class HeadlessApiClient {
                 }
                 return Self.emptyConsentStatus(for: config)
             }
-            .mapError(KetchError.init)
+            .mapError { KetchError(with: $0) }
             .eraseToAnyPublisher()
     }
 
@@ -283,25 +264,16 @@ final class HeadlessApiClient {
         guard let url = buildURL(path: path) else {
             return Fail(error: KetchError.requestError).eraseToAnyPublisher()
         }
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.httpBody = body
-        applyJSONHeaders(&urlRequest)
-
-        return session.dataTaskPublisher(for: urlRequest)
-            .tryMap { output -> ConsentStatus in
-                let data = output.data
-                if let http = output.response as? HTTPURLResponse,
-                   !(200..<300).contains(http.statusCode) {
-                    throw URLError(.badServerResponse)
-                }
+        let request = ApiRequest(endPoint: EndPoint(url: url), method: .post, body: body)
+        return apiClient.execute(request: request)
+            .map { data -> ConsentStatus in
                 if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
                    Self.hasUsableConsentFields(decoded) {
                     return Self.mergingProtocols(from: decoded, fallback: fallback)
                 }
                 return Self.consentStatus(from: fallback)
             }
-            .mapError(KetchError.init)
+            .mapError { KetchError(with: $0) }
             .eraseToAnyPublisher()
     }
 
@@ -316,17 +288,6 @@ final class HeadlessApiClient {
             components.queryItems = queryItems
         }
         return components.url
-    }
-
-    private func applyJSONHeaders(_ request: inout URLRequest) {
-        request.setValue(
-            ApiRequest.HeaderValue.applicationJson,
-            forHTTPHeaderField: ApiRequest.HeaderField.accept
-        )
-        request.setValue(
-            ApiRequest.HeaderValue.contentTypeJson,
-            forHTTPHeaderField: ApiRequest.HeaderField.contentType
-        )
     }
 
     private static func hasUsableConsentFields(_ status: ConsentStatus) -> Bool {

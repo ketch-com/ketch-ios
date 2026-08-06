@@ -7,7 +7,6 @@ final class HeadlessConsentTests: XCTestCase {
 
     override func tearDown() {
         cancellables.removeAll()
-        StubURLProtocol.handler = nil
         super.tearDown()
     }
     func testSetConsentPayloadOmitsProtocols() throws {
@@ -32,17 +31,9 @@ final class HeadlessConsentTests: XCTestCase {
     }
 
     func testFetchConsentPropagatesHTTPFailure() {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
-        StubURLProtocol.handler = { _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/get")!,
-                statusCode: 500,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-            return (response, Data())
-        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Fail(error: .unknownError).eraseToAnyPublisher()
+        })
 
         let expectation = expectation(description: "getConsent failure")
         client.getConsent(config: sampleConsentConfig())
@@ -63,11 +54,9 @@ final class HeadlessConsentTests: XCTestCase {
     }
 
     func testSetConsentPropagatesNetworkFailure() {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
-        StubURLProtocol.handler = { _ in
-            throw URLError(.notConnectedToInternet)
-        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Fail(error: .unknownError).eraseToAnyPublisher()
+        })
 
         let expectation = expectation(description: "setConsent failure")
         client.setConsent(update: sampleConsentUpdate())
@@ -88,20 +77,12 @@ final class HeadlessConsentTests: XCTestCase {
     }
 
     func testSetConsentAcceptsProtocolsOnlyResponse() throws {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
         let body = """
         {"protocols":{"gpp":"DBABLA~BVQqAAAAAAJY.QA"}}
         """
-        StubURLProtocol.handler = { _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/update")!,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-            return (response, Data(body.utf8))
-        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data(body.utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        })
 
         let expectation = expectation(description: "setConsent protocols")
         client.setConsent(update: sampleConsentUpdate())
@@ -122,20 +103,12 @@ final class HeadlessConsentTests: XCTestCase {
     }
 
     func testSetConsentFallsBackToCallerProtocolsWhenResponseOmitsThem() throws {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
         let body = """
         {"purposes":{"analytics":true}}
         """
-        StubURLProtocol.handler = { _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/update")!,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-            return (response, Data(body.utf8))
-        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data(body.utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        })
 
         var update = sampleConsentUpdate()
         update = .init(
@@ -169,20 +142,12 @@ final class HeadlessConsentTests: XCTestCase {
     }
 
     func testFetchConsentAcceptsVendorsOnlyResponse() throws {
-        let session = makeStubSession()
-        let client = HeadlessApiClient(dataCenter: .us, session: session)
         let body = """
         {"vendors":["google","meta"]}
         """
-        StubURLProtocol.handler = { _ in
-            let response = HTTPURLResponse(
-                url: URL(string: "https://global.ketchcdn.com/web/v3/consent/org/get")!,
-                statusCode: 200,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-            return (response, Data(body.utf8))
-        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data(body.utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        })
 
         let expectation = expectation(description: "getConsent vendors")
         client.getConsent(config: sampleConsentConfig())
@@ -221,10 +186,16 @@ final class HeadlessConsentTests: XCTestCase {
 
 // MARK: - Consent HTTP stubs
 
-private func makeStubSession() -> URLSession {
-    let config = URLSessionConfiguration.ephemeral
-    config.protocolClasses = [StubURLProtocol.self]
-    return URLSession(configuration: config)
+private final class StubApiClient: ApiClient {
+    private let handler: (ApiRequest) -> AnyPublisher<Data, ApiClientError>
+
+    init(handler: @escaping (ApiRequest) -> AnyPublisher<Data, ApiClientError>) {
+        self.handler = handler
+    }
+
+    func execute(request: ApiRequest) -> AnyPublisher<Data, ApiClientError> {
+        handler(request)
+    }
 }
 
 private func sampleConsentConfig() -> KetchSDK.ConsentConfig {
@@ -250,31 +221,6 @@ private func sampleConsentUpdate() -> KetchSDK.ConsentUpdate {
         vendors: nil,
         protocols: nil
     )
-}
-
-private final class StubURLProtocol: URLProtocol {
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-    override func startLoading() {
-        guard let handler = Self.handler else {
-            client?.urlProtocol(self, didFailWithError: URLError(.unknown))
-            return
-        }
-        do {
-            let (response, data) = try handler(request)
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-            client?.urlProtocol(self, didLoad: data)
-            client?.urlProtocolDidFinishLoading(self)
-        } catch {
-            client?.urlProtocol(self, didFailWithError: error)
-        }
-    }
-
-    override func stopLoading() {}
 }
 
 /// Mirrors private `SetConsentPayload` in HeadlessApiClient for contract tests.

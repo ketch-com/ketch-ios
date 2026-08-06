@@ -187,6 +187,38 @@ final class HeadlessApiClientTests: XCTestCase {
         )
     }
 
+    func testGetFullConfiguration_explicitLanguage_normalizedOnLongPath() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration explicit unnormalized language")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "production",
+                jurisdictionCode: "us-ca",
+                languageCode: "fr_ca"
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion { XCTFail("getFullConfiguration failed: \(error)") }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/production/us-ca/fr-CA/config.json")
+    }
+
     func testGetFullConfiguration_blankHash_omittedFromQuery() throws {
         var capturedURL: URL?
         let apiClient = CapturingApiClient { request in

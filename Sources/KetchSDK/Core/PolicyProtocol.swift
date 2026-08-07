@@ -42,6 +42,21 @@ public enum ExperienceHiddenReason: String {
   case invokeRight
   case close
   case willNotShow
+  case closeWithoutSettingConsent
+  case setSubscriptions
+  case none
+
+  init(status: KetchSDK.HideExperienceStatus) {
+    switch status {
+    case .SetConsent: self = .setConsent
+    case .InvokeRight: self = .invokeRight
+    case .Close: self = .close
+    case .WillNotShow: self = .willNotShow
+    case .CloseWithoutSettingConsent: self = .closeWithoutSettingConsent
+    case .SetSubscriptions: self = .setSubscriptions
+    case .None: self = .none
+    }
+  }
 }
 
 public enum PolicyPluginError: Error {

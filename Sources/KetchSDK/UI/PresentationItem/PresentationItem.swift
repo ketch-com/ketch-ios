@@ -319,9 +319,14 @@ extension KetchUI.WebPresentationItem {
     public func showPreferences() {
         webView?.evaluateJavaScript("ketch('showPreferences')")
     }
-    
+
     public func showConsent() {
         webView?.evaluateJavaScript("ketch('showConsent')")
+    }
+
+    /// Fires a custom-function (`onFunction`) rule trigger on an already-booted page.
+    func trigger(triggerName: String, functionName: String, optionsJson: String) {
+        webView?.evaluateJavaScript("ketch('trigger', '\(triggerName)', '\(functionName)', \(optionsJson))")
     }
 }
 

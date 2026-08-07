@@ -29,9 +29,24 @@ public final class KetchUI: ObservableObject {
     private(set) public var ketch: Ketch
     private var subscriptions = Set<AnyCancellable>()
     private var options = [ExperienceOption]()
-    private var isConfigLoaded = false
+    // Whether the *currently loaded* page's tag has finished booting (emitted .configurationLoaded).
+    // Distinct from "an experience is pending" (experienceToShow) or "queued" (pendingTrigger) --
+    // those track what should happen once the tag boots, this tracks whether it has.
+    // internal, not private: exercised directly by TriggerValidationTests via @testable import,
+    // since there is no test seam for driving the WebPresentationItem bridge from outside.
+    var isTagBooted = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
     private var preloadedPresentationItem: WebPresentationItem?
+
+    // Deferred trigger() call, fired once a cold-booted WebView's tag finishes loading.
+    // internal, not private: see isTagBooted's comment above.
+    var pendingTrigger: PendingTrigger?
+
+    struct PendingTrigger {
+        let triggerName: TriggerName
+        let functionName: String
+        let optionsJson: String
+    }
 
     /// Instantiation of UI dialogs
     /// - Parameter ketch: Instance of Ketch that will provide request and storage services,
@@ -67,8 +82,16 @@ public final class KetchUI: ObservableObject {
     }
     
     private func preloadWebExperience() {
+        resetBridgeState()
         preloadedPresentationItem = webExperience(onEvent: handle)
         preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(options))
+    }
+
+    // Single choke point for "a new page is about to load". Resets the state that describes the
+    // *current* page, but deliberately leaves pendingTrigger alone -- a trigger() queued before a
+    // reload should still fire once the new page's tag boots, not be discarded by the reload.
+    private func resetBridgeState() {
+        isTagBooted = false
     }
 
     private func experienceOptionsWithDataCenter(_ options: [ExperienceOption]) -> [ExperienceOption] {
@@ -80,21 +103,20 @@ public final class KetchUI: ObservableObject {
         return result
     }
     
-    private func handle(webPresentationEvent: WebPresentationItem.Event) {
+    // internal, not private: see isTagBooted's comment above.
+    func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
         case .onClose(let status):
             didCloseExperience(status: status)
             
         case .show(let content):
-            if isConfigLoaded {
-                self.showExperience()
-                eventListener?.onShow()
-            } else {
-                experienceToShow = content
-            }
-            
+            presentExperience(content)
+
         case .willShowExperience(let type):
             eventListener?.onWillShowExperience(type: type)
+            ketch.notifyWillShowExperience()
+            // The only show signal guaranteed to fire for every experience path.
+            presentExperience(type == .ConsentExperience ? .consent : .preference)
             
         case .hasShownExperience:
             eventListener?.onHasShownExperience()
@@ -104,13 +126,21 @@ public final class KetchUI: ObservableObject {
             
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
-            
-            isConfigLoaded = true
-            
+
+            isTagBooted = true
+
+            if let pending = pendingTrigger {
+                pendingTrigger = nil
+                preloadedPresentationItem?.trigger(
+                    triggerName: pending.triggerName.rawValue,
+                    functionName: pending.functionName,
+                    optionsJson: pending.optionsJson
+                )
+            }
+
             if experienceToShow != nil {
                 showExperience()
                 self.experienceToShow = nil
-                isConfigLoaded = false
                 eventListener?.onShow()
             }
 
@@ -148,6 +178,19 @@ public final class KetchUI: ObservableObject {
     private func didCloseExperience(status: KetchSDK.HideExperienceStatus) {
         webPresentationItem = nil
         eventListener?.onDismiss(status: status)
+        ketch.notifyExperienceHidden(status: status)
+    }
+
+    private func presentExperience(_ content: WebPresentationItem.Event.Content) {
+        if isTagBooted {
+            // .show and .willShowExperience both fire for the same experience on the warm path;
+            // only the first to arrive should actually dispatch showExperience()/onShow().
+            guard webPresentationItem == nil else { return }
+            showExperience()
+            eventListener?.onShow()
+        } else {
+            experienceToShow = content
+        }
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {
@@ -169,9 +212,10 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
+        resetBridgeState()
         preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
         preloadedPresentationItem = webExperience(onEvent: handle)
-        
+
         // merge options, override existing if needed
         var newOptions = self.options
         options.forEach { option in
@@ -201,6 +245,55 @@ extension KetchUI {
     
     public func closeExperience() {
         webPresentationItem = nil
+    }
+
+    /// Fires a custom-function (`onFunction`) rule trigger. If a matching backend rule shows an
+    /// experience, it is displayed automatically.
+    ///
+    /// - Parameters:
+    ///   - triggerName: the trigger name; `.custom` is the only supported value today
+    ///   - functionName: the custom function name configured on the backend rule
+    ///   - options: optional key/value trigger arguments
+    /// - Returns: `false` if `functionName` is invalid, or an experience is already showing.
+    @discardableResult
+    public func trigger(
+        triggerName: TriggerName,
+        functionName: String,
+        options: [String: Any] = [:]
+    ) -> Bool {
+        guard Self.isValidTriggerFunctionName(functionName) else {
+            KetchLogger.log.debug("[Ketch] trigger rejected: functionName must be non-blank and contain only letters, digits, '_', '-', or '.'")
+            return false
+        }
+        guard webPresentationItem == nil else {
+            KetchLogger.log.debug("Not triggering '\(functionName)' as an experience is already being shown")
+            return false
+        }
+
+        let optionsJson = Self.jsonString(from: options)
+
+        if isTagBooted {
+            pendingTrigger = nil
+            preloadedPresentationItem?.trigger(triggerName: triggerName.rawValue, functionName: functionName, optionsJson: optionsJson)
+        } else {
+            pendingTrigger = PendingTrigger(triggerName: triggerName, functionName: functionName, optionsJson: optionsJson)
+        }
+        return true
+    }
+
+    /// Mirrors ketch-tag's function-name validation: non-blank, and only letters, digits, '_', '-', or '.'.
+    static func isValidTriggerFunctionName(_ functionName: String) -> Bool {
+        !functionName.isEmpty
+            && functionName.range(of: "^[A-Za-z0-9_.-]+$", options: .regularExpression) != nil
+    }
+
+    private static func jsonString(from options: [String: Any]) -> String {
+        guard let data = try? JSONSerialization.data(withJSONObject: options),
+              let json = String(data: data, encoding: .utf8)
+        else {
+            return "{}"
+        }
+        return json
     }
 }
 

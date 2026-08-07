@@ -1,0 +1,332 @@
+import Combine
+import XCTest
+@testable import KetchSDK
+
+final class HeadlessApiClientTests: XCTestCase {
+    private var client: HeadlessApiClient!
+    private var cancellables = Set<AnyCancellable>()
+
+    override func setUp() {
+        super.setUp()
+        client = HeadlessApiClient(dataCenter: .us)
+    }
+
+    func testBuildURL_ip() {
+        let url = client.buildURL(path: "/ip")
+        XCTAssertEqual(url?.absoluteString, "https://global.ketchcdn.com/web/v3/ip")
+    }
+
+    func testBuildURL_bootstrap() {
+        let url = client.buildURL(path: "/config/acme/prop/boot.json")
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/config/acme/prop/boot.json"
+        )
+    }
+
+    func testFetchConfig_includesPreferredLanguageQueryParam() throws {
+        let preferredLanguage = KetchSDK.FullConfigurationRequest.formatLanguageTag(Locale.preferredLanguages[0])
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "fetchConfig language query")
+        client.fetchConfig(organization: "acme", property: "prop")
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("fetchConfig failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { _ in }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/config.json")
+        XCTAssertEqual(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            [URLQueryItem(name: "language", value: preferredLanguage)]
+        )
+    }
+
+    func testGetFullConfiguration_blankEnvironment_omittedFromPath() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration blank env")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "", // blank — must be treated as absent, not embedded as an empty path segment
+                jurisdictionCode: "us-ca",
+                languageCode: "en-US"
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        // A blank environmentCode must not produce a malformed path like ".../prop//us-ca/en-US/config.json".
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/config.json")
+        XCTAssertEqual(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            [URLQueryItem(name: "language", value: "en-US"), URLQueryItem(name: "jurisdiction", value: "us-ca")]
+        )
+    }
+
+    func testGetFullConfiguration_environmentAndJurisdictionSet_languageMissing_takesLongPath() throws {
+        // Environment/jurisdiction must not be silently dropped to the short path just because
+        // the caller didn't also supply an explicit language.
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration language missing")
+        client.getFullConfiguration(
+            request: .init(organizationCode: "acme", propertyCode: "prop", environmentCode: "production", jurisdictionCode: "us-ca")
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        let deviceLanguage = KetchSDK.FullConfigurationRequest.deviceLanguageTag()
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/production/us-ca/\(deviceLanguage)/config.json")
+    }
+
+    func testGetFullConfiguration_nothingSet_shortPath_includesDeviceLanguage() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration nothing set")
+        client.getFullConfiguration(request: .init(organizationCode: "acme", propertyCode: "prop"))
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion { XCTFail("getFullConfiguration failed: \(error)") }
+                    expectation.fulfill()
+                },
+                receiveValue: { _ in }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        let deviceLanguage = KetchSDK.FullConfigurationRequest.formatLanguageTag(Locale.preferredLanguages[0])
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/config.json")
+        XCTAssertEqual(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            [URLQueryItem(name: "language", value: deviceLanguage)]
+        )
+    }
+
+    func testGetFullConfiguration_explicitLanguage_winsOverDeviceLocale() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration explicit language")
+        client.getFullConfiguration(request: .init(organizationCode: "acme", propertyCode: "prop", languageCode: "de-DE"))
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion { XCTFail("getFullConfiguration failed: \(error)") }
+                    expectation.fulfill()
+                },
+                receiveValue: { _ in }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertEqual(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            [URLQueryItem(name: "language", value: "de-DE")]
+        )
+    }
+
+    func testGetFullConfiguration_explicitLanguage_normalizedOnLongPath() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration explicit unnormalized language")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "production",
+                jurisdictionCode: "us-ca",
+                languageCode: "fr_ca"
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion { XCTFail("getFullConfiguration failed: \(error)") }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertEqual(url.path, "/web/v3/config/acme/prop/production/us-ca/fr-CA/config.json")
+    }
+
+    func testGetFullConfiguration_blankHash_omittedFromQuery() throws {
+        var capturedURL: URL?
+        let apiClient = CapturingApiClient { request in
+            capturedURL = request.endPoint.url
+            return Just(Data("{}".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        }
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: apiClient)
+
+        let expectation = expectation(description: "getFullConfiguration blank hash")
+        client.getFullConfiguration(
+            request: .init(
+                organizationCode: "acme",
+                propertyCode: "prop",
+                environmentCode: "production",
+                jurisdictionCode: "us-ca",
+                languageCode: "en-US",
+                hash: ""
+            )
+        )
+        .sink(
+            receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    XCTFail("getFullConfiguration failed: \(error)")
+                }
+                expectation.fulfill()
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+
+        let url = try XCTUnwrap(capturedURL)
+        XCTAssertNil(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems, "A blank hash must not appear as a query param")
+    }
+
+    func testBuildURL_fullConfigurationWithHash() {
+        let url = client.buildURL(
+            path: "/config/acme/prop/prod/us-ca/en-US/config.json",
+            queryItems: [URLQueryItem(name: "hash", value: "8913461971881236311")]
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/config/acme/prop/prod/us-ca/en-US/config.json?hash=8913461971881236311"
+        )
+    }
+
+    func testBuildURL_euDataCenter() {
+        let eu = HeadlessApiClient(dataCenter: .eu)
+        let url = eu.buildURL(path: "/ip")
+        XCTAssertEqual(url?.absoluteString, "https://eu.ketchcdn.com/web/v3/ip")
+    }
+
+    func testGetPreferenceQRUrl_matchesContractFixture() {
+        let url = client.getPreferenceQRUrl(
+            request: .init(
+                organizationCode: "switchbitcorp",
+                propertyCode: "switchbit",
+                environmentCode: "production",
+                imageSize: 1024,
+                path: "/policy.html",
+                backgroundColor: "white",
+                foregroundColor: "black",
+                parameters: ["foo": "bar"]
+            )
+        )
+        XCTAssertEqual(
+            url?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/qr/switchbitcorp/switchbit/preferences.png?env=production&size=1024&path=%2Fpolicy.html&bgcolor=white&fgcolor=black&foo=bar"
+        )
+    }
+
+    func testBuildURL_rightsProfileSubscriptions() {
+        let invoke = client.buildURL(path: "/rights/switchbitcorp/invoke")
+        XCTAssertEqual(
+            invoke?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/rights/switchbitcorp/invoke"
+        )
+        let profile = client.buildURL(path: "/profile/acme/get")
+        XCTAssertEqual(
+            profile?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/profile/acme/get"
+        )
+        let subs = client.buildURL(path: "/subscriptions/acme/update")
+        XCTAssertEqual(
+            subs?.absoluteString,
+            "https://global.ketchcdn.com/web/v3/subscriptions/acme/update"
+        )
+    }
+
+    func testKetchDataCenterBaseURLs() {
+        XCTAssertEqual(KetchDataCenter.us.baseURL.absoluteString, "https://global.ketchcdn.com/web/v3")
+        XCTAssertEqual(KetchDataCenter.eu.baseURL.absoluteString, "https://eu.ketchcdn.com/web/v3")
+        XCTAssertEqual(KetchDataCenter.uat.baseURL.absoluteString, "https://dev.ketchcdn.com/web/v3")
+    }
+}
+
+// MARK: - Test doubles
+
+private final class CapturingApiClient: ApiClient {
+    private let handler: (ApiRequest) -> AnyPublisher<Data, ApiClientError>
+
+    init(handler: @escaping (ApiRequest) -> AnyPublisher<Data, ApiClientError>) {
+        self.handler = handler
+    }
+
+    func execute(request: ApiRequest) -> AnyPublisher<Data, ApiClientError> {
+        handler(request)
+    }
+}

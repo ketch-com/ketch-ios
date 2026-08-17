@@ -179,6 +179,72 @@ final class KetchHeadlessCachingTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 5)
     }
+
+    func testSetRegion_clearsConfigCache() {
+        let apiClient = CountingApiClient { _ in
+            Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let ketch = Ketch(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            identities: [],
+            apiClient: apiClient
+        )
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            jurisdictionCode: "us-ca",
+            languageCode: "en-US"
+        )
+
+        let first = expectation(description: "populate config cache")
+        ketch.getFullConfiguration(request: request) { _ in first.fulfill() }
+        wait(for: [first], timeout: 5)
+        XCTAssertEqual(apiClient.callCount, 1)
+
+        ketch.setRegion("US-NY")
+
+        let second = expectation(description: "refetch after setRegion")
+        ketch.getFullConfiguration(request: request) { _ in second.fulfill() }
+        wait(for: [second], timeout: 5)
+
+        XCTAssertEqual(apiClient.callCount, 2, "setRegion must invalidate the config cache")
+    }
+
+    func testSetJurisdiction_clearsConfigCache() {
+        let apiClient = CountingApiClient { _ in
+            Just(Data("{}".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        }
+        let ketch = Ketch(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            identities: [],
+            apiClient: apiClient
+        )
+        let request = KetchSDK.FullConfigurationRequest(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            jurisdictionCode: "us-ca",
+            languageCode: "en-US"
+        )
+
+        let first = expectation(description: "populate config cache")
+        ketch.getFullConfiguration(request: request) { _ in first.fulfill() }
+        wait(for: [first], timeout: 5)
+        XCTAssertEqual(apiClient.callCount, 1)
+
+        ketch.setJurisdiction("us-ny")
+
+        let second = expectation(description: "refetch after setJurisdiction")
+        ketch.getFullConfiguration(request: request) { _ in second.fulfill() }
+        wait(for: [second], timeout: 5)
+
+        XCTAssertEqual(apiClient.callCount, 2, "setJurisdiction must invalidate the config cache")
+    }
 }
 
 // MARK: - Test doubles

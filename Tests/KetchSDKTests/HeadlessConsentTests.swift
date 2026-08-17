@@ -141,6 +141,79 @@ final class HeadlessConsentTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
     }
 
+    func testSetConsentFallsBackOnEmptyBody() {
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data()).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        })
+
+        let expectation = expectation(description: "setConsent empty body")
+        client.setConsent(update: sampleConsentUpdate())
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("setConsent failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { status in
+                    XCTAssertEqual(status.purposes?["analytics"], true)
+                }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testSetConsentFallsBackOnNullBody() {
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data("null".utf8)).setFailureType(to: ApiClientError.self).eraseToAnyPublisher()
+        })
+
+        let expectation = expectation(description: "setConsent null body")
+        client.setConsent(update: sampleConsentUpdate())
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        XCTFail("setConsent failed: \(error)")
+                    }
+                    expectation.fulfill()
+                },
+                receiveValue: { status in
+                    XCTAssertEqual(status.purposes?["analytics"], true)
+                }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testSetConsentFailsOnUnparseableNonEmptyBody() {
+        let client = HeadlessApiClient(dataCenter: .us, apiClient: StubApiClient { _ in
+            Just(Data("<html>nope</html>".utf8))
+                .setFailureType(to: ApiClientError.self)
+                .eraseToAnyPublisher()
+        })
+
+        let expectation = expectation(description: "setConsent garbage body")
+        client.setConsent(update: sampleConsentUpdate())
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        if case .decodingError = error {
+                            expectation.fulfill()
+                        } else {
+                            XCTFail("Expected decodingError, got \(error)")
+                        }
+                    } else {
+                        XCTFail("Expected setConsent to fail on unparseable body")
+                    }
+                },
+                receiveValue: { _ in
+                    XCTFail("Expected no value on unparseable setConsent body")
+                }
+            )
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: 5)
+    }
+
     func testFetchConsentAcceptsVendorsOnlyResponse() throws {
         let body = """
         {"vendors":["google","meta"]}

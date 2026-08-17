@@ -266,14 +266,29 @@ final class HeadlessApiClient {
         }
         let request = ApiRequest(endPoint: EndPoint(url: url), method: .post, body: body)
         return apiClient.execute(request: request)
-            .map { data -> ConsentStatus in
+            .tryMap { data -> ConsentStatus in
+                // Empty / null body: server accepted the write with no payload — mirror
+                // Android / Flutter / RN and synthesize status from the request.
+                if data.isEmpty || String(data: data, encoding: .utf8) == "null" {
+                    return Self.consentStatus(from: fallback)
+                }
                 if let decoded = try? JSONDecoder().decode(ConsentStatus.self, from: data),
                    Self.hasUsableConsentFields(decoded) {
                     return Self.mergingProtocols(from: decoded, fallback: fallback)
                 }
-                return Self.consentStatus(from: fallback)
+                // Valid JSON without usable consent fields — same empty-response fallback.
+                if let object = try? JSONSerialization.jsonObject(with: data),
+                   object is [String: Any] || object is [Any] {
+                    return Self.consentStatus(from: fallback)
+                }
+                throw KetchError.decodingError(message: "Unparseable setConsent response")
             }
-            .mapError { KetchError(with: $0) }
+            .mapError { error -> KetchError in
+                if let ketchError = error as? KetchError {
+                    return ketchError
+                }
+                return KetchError(with: error)
+            }
             .eraseToAnyPublisher()
     }
 

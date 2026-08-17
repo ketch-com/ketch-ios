@@ -154,7 +154,7 @@ public final class Ketch: ObservableObject {
                 environment: environmentCode,
                 hash: Int(Date().timeIntervalSince1970 * 1000),
                 jurisdiction: jurisdiction,
-                language: String(Locale.preferredLanguages[0].prefix(2))
+                language: KetchSDK.FullConfigurationRequest.deviceLanguageTag()
             )
             .sink { result in
                 if case .failure(let error) = result {

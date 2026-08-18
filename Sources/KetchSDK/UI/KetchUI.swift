@@ -199,6 +199,7 @@ public final class KetchUI: ObservableObject {
         // .show and .willShowExperience both fire for the same experience on the warm path;
         // only the first to arrive should actually dispatch showExperience()/onShow().
         guard webPresentationItem == nil else { return }
+        experienceToShow = nil
         showExperience()
         eventListener?.onShow()
     }

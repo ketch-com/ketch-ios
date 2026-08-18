@@ -66,6 +66,21 @@ final class ExperiencePresentationTests: XCTestCase {
         XCTAssertNil(ketchUI.webPresentationItem)
     }
 
+    func testWarmPathShow_doesNotLeaveAStaleQueuedExperienceBehind() {
+        // showConsent() queues unconditionally, but on the warm path the experience presents
+        // immediately -- so the queued copy has to be consumed, or the next tag boot replays it.
+        bootTag()
+        ketchUI.showConsent()
+        ketchUI.handle(webPresentationEvent: .show(.consent))
+        XCTAssertEqual(listener.onShowCount, 1)
+        ketchUI.closeExperience()
+
+        ketchUI.reload()
+        bootTag()
+
+        XCTAssertEqual(listener.onShowCount, 1, "a consumed queued experience must not present again on the next tag boot")
+    }
+
     // MARK: - Teardown parity
 
     func testCloseExperience_notifiesListenerAndPlugin() {

@@ -300,7 +300,10 @@ extension KetchUI {
     }
 
     private static func jsonString(from options: [String: Any]) -> String {
-        guard let data = try? JSONSerialization.data(withJSONObject: options),
+        // data(withJSONObject:) raises an ObjC exception on non-serializable values, and try?
+        // does not catch those.
+        guard JSONSerialization.isValidJSONObject(options),
+              let data = try? JSONSerialization.data(withJSONObject: options),
               let json = String(data: data, encoding: .utf8)
         else {
             return "{}"

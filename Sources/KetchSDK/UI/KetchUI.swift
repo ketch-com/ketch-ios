@@ -32,8 +32,6 @@ public final class KetchUI: ObservableObject {
     // Whether the *currently loaded* page's tag has finished booting (emitted .configurationLoaded).
     // Distinct from "an experience is pending" (experienceToShow) or "queued" (pendingTrigger) --
     // those track what should happen once the tag boots, this tracks whether it has.
-    // internal, not private: exercised directly by TriggerValidationTests via @testable import,
-    // since there is no test seam for driving the WebPresentationItem bridge from outside.
     var isTagBooted = false
     private var experienceToShow: KetchUI.WebPresentationItem.Event.Content?
     private var preloadedPresentationItem: WebPresentationItem?
@@ -108,7 +106,6 @@ public final class KetchUI: ObservableObject {
         return result
     }
     
-    // internal, not private: see isTagBooted's comment above.
     func handle(webPresentationEvent: WebPresentationItem.Event) {
         switch webPresentationEvent {
         case .onClose(let status):

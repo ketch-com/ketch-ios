@@ -120,8 +120,13 @@ public final class KetchUI: ObservableObject {
         case .willShowExperience(let type):
             eventListener?.onWillShowExperience(type: type)
             ketch.notifyWillShowExperience()
-            // The only show signal guaranteed to fire for every experience path.
-            presentExperience(type == .ConsentExperience ? .consent : .preference)
+            // The only show signal guaranteed to fire for every experience path. .None is also
+            // the fallback for an unparseable event body, so it must not present anything.
+            switch type {
+            case .ConsentExperience: presentExperience(.consent)
+            case .PreferenceExperience: presentExperience(.preference)
+            case .None: break
+            }
             
         case .hasShownExperience:
             eventListener?.onHasShownExperience()

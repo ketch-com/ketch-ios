@@ -36,6 +36,36 @@ final class ExperiencePresentationTests: XCTestCase {
         ketchUI.handle(webPresentationEvent: .configurationLoaded(emptyConfiguration))
     }
 
+    // MARK: - Show dedupe
+
+    func testShowThenWillShowExperience_dispatchesOnShowOnce() {
+        bootTag()
+
+        ketchUI.handle(webPresentationEvent: .show(.consent))
+        ketchUI.handle(webPresentationEvent: .willShowExperience(.ConsentExperience))
+
+        XCTAssertEqual(listener.onShowCount, 1, "both show signals fire for one experience; only the first may present")
+    }
+
+    func testWillShowExperienceThenShow_dispatchesOnShowOnce() {
+        bootTag()
+
+        ketchUI.handle(webPresentationEvent: .willShowExperience(.ConsentExperience))
+        ketchUI.handle(webPresentationEvent: .show(.consent))
+
+        XCTAssertEqual(listener.onShowCount, 1, "dedupe must not depend on which signal the tag emits first")
+    }
+
+    func testWillShowExperienceNone_presentsNothing() {
+        bootTag()
+
+        // .None is also PresentationItem's fallback for an unparseable event body.
+        ketchUI.handle(webPresentationEvent: .willShowExperience(.None))
+
+        XCTAssertEqual(listener.onShowCount, 0)
+        XCTAssertNil(ketchUI.webPresentationItem)
+    }
+
     // MARK: - Teardown parity
 
     func testCloseExperience_notifiesListenerAndPlugin() {

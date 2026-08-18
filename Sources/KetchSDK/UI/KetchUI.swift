@@ -68,7 +68,16 @@ public final class KetchUI: ObservableObject {
     
     private func preloadWebExperience() {
         preloadedPresentationItem = webExperience(onEvent: handle)
-        preloadedPresentationItem?.reload(options: options)
+        preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(options))
+    }
+
+    private func experienceOptionsWithDataCenter(_ options: [ExperienceOption]) -> [ExperienceOption] {
+        guard !options.contains(where: { if case .ketchURL = $0 { return true }; return false }) else {
+            return options
+        }
+        var result = options
+        result.append(.ketchURL(ketch.dataCenter.baseURL.absoluteString))
+        return result
     }
     
     private func handle(webPresentationEvent: WebPresentationItem.Event) {
@@ -173,7 +182,7 @@ extension KetchUI {
             newOptions.append(option)
         }
         
-        preloadedPresentationItem?.reload(options: newOptions)
+        preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(newOptions))
     }
     
     public func showExperience() {

@@ -9,11 +9,18 @@ extension KetchSDK {
     public struct Configuration: Codable {
         public let experiences: Experience?
         public let theme: Theme?
-        
+
         //Legacy
         public let rights: [Right]?
         public let jurisdiction: Jurisdiction?
         public let purposes: [Purpose]?
+    }
+}
+
+extension KetchSDK.Configuration {
+    /// Resolved jurisdiction code: the CDN's specific jurisdiction if set, else its default.
+    func jurisdictionCode() -> String? {
+        jurisdiction?.code ?? jurisdiction?.defaultJurisdictionCode
     }
 }
 

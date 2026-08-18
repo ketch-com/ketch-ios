@@ -92,6 +92,11 @@ public final class KetchUI: ObservableObject {
     // reload should still fire once the new page's tag boots, not be discarded by the reload.
     private func resetBridgeState() {
         isTagBooted = false
+        // The current page's script handlers are about to be removed, so no .onClose can arrive
+        // for an experience still on screen -- close it here instead of stranding it.
+        if webPresentationItem != nil {
+            didCloseExperience(status: .None)
+        }
     }
 
     private func experienceOptionsWithDataCenter(_ options: [ExperienceOption]) -> [ExperienceOption] {
@@ -182,15 +187,15 @@ public final class KetchUI: ObservableObject {
     }
 
     private func presentExperience(_ content: WebPresentationItem.Event.Content) {
-        if isTagBooted {
-            // .show and .willShowExperience both fire for the same experience on the warm path;
-            // only the first to arrive should actually dispatch showExperience()/onShow().
-            guard webPresentationItem == nil else { return }
-            showExperience()
-            eventListener?.onShow()
-        } else {
+        guard isTagBooted else {
             experienceToShow = content
+            return
         }
+        // .show and .willShowExperience both fire for the same experience on the warm path;
+        // only the first to arrive should actually dispatch showExperience()/onShow().
+        guard webPresentationItem == nil else { return }
+        showExperience()
+        eventListener?.onShow()
     }
     
     private var display: KetchSDK.Configuration.Experience.ContentDisplay {
@@ -244,7 +249,8 @@ extension KetchUI {
     }
     
     public func closeExperience() {
-        webPresentationItem = nil
+        guard webPresentationItem != nil else { return }
+        didCloseExperience(status: .None)
     }
 
     /// Fires a custom-function (`onFunction`) rule trigger. If a matching backend rule shows an

@@ -66,6 +66,9 @@ struct ContentView: View {
     @State private var selectedTabs: Set<KetchUI.ExperienceOption.PreferencesTab> = Set([.overviewTab, .consentsTab, .subscriptionsTab, .rightsTab])
     @State private var selectedTab = KetchUI.ExperienceOption.PreferencesTab.overviewTab
 
+    @State private var headlessJurisdiction = ""
+    @State private var triggerResult = ""
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
@@ -118,30 +121,26 @@ struct ContentView: View {
                     .font(.footnote)
                     .foregroundStyle(Color.gray)
 
-                HStack {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 12)], alignment: .leading, spacing: 12) {
                     Button("Reload") {
                         ketchUI.reload(with: makeParameters)
                     }
-
-                    Spacer()
 
                     Button("Consent") {
                         showConsent()
                     }
 
-                    Spacer()
-
                     Button("Preferences") {
                         showPreferences()
                     }
 
-                    Spacer()
+                    Button("Trigger") {
+                        triggerFunctionTapped()
+                    }
 
                     Button("Privacy Strings") {
                         showPrivacyStrings()
                     }
-
-                    Spacer()
 
                     Button("Apply CSS") {
                         applyCSS()
@@ -149,8 +148,6 @@ struct ContentView: View {
 
                     #if canImport(AppTrackingTransparency)
                     if #available(iOS 14, *) {
-                        Spacer()
-
                         Button("Request ATT") {
                             requestATT()
                         }
@@ -158,6 +155,27 @@ struct ContentView: View {
                     #endif
                 }
                 .padding(.vertical)
+
+                if !triggerResult.isEmpty {
+                    infoRow("Trigger Result", triggerResult)
+                }
+
+                Text("Headless SDK")
+                    .font(.title2)
+
+                Text("Calls the pre-WebView headless API directly")
+                    .font(.footnote)
+                    .foregroundStyle(Color.gray)
+                    .padding(.bottom, 8)
+
+                Button("Get Jurisdiction") {
+                    getJurisdictionTapped()
+                }
+                .padding(.bottom, 8)
+
+                if !headlessJurisdiction.isEmpty {
+                    infoRow("Headless Jurisdiction", headlessJurisdiction)
+                }
 
                 Spacer()
             }
@@ -262,6 +280,30 @@ struct ContentView: View {
         parameters.append(.css("#ketch-banner-button-primary { display: none !important; }"))
         parameters.append(.forceExperience(.consent))
         ketchUI.reload(with: parameters)
+    }
+
+    /// Calls the headless `getJurisdiction()` API directly (no WebView needed).
+    private func getJurisdictionTapped() {
+        print("[KetchSample] getJurisdiction() called")
+        ketchUI.ketch.getJurisdiction { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let jurisdiction):
+                    headlessJurisdiction = jurisdiction ?? "?"
+                case .failure(let error):
+                    headlessJurisdiction = "error: \(error)"
+                }
+                print("[KetchSample] getJurisdiction() -> \(headlessJurisdiction)")
+            }
+        }
+    }
+
+    /// Fires an onFunction rule trigger by custom function name. Configure a matching backend
+    /// rule on the sandbox org for "demoFunction" to see an experience actually appear.
+    private func triggerFunctionTapped() {
+        let accepted = ketchUI.trigger(triggerName: .custom, functionName: "demoFunction")
+        triggerResult = "demoFunction accepted=\(accepted)"
+        print("[KetchSample] trigger('demoFunction') -> accepted=\(accepted)")
     }
 
     /// Reads the current ATT status from the SDK + the previously stored status from native

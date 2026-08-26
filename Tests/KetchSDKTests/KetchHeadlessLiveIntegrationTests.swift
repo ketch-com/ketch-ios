@@ -5,7 +5,7 @@ import XCTest
 /// Live CDN round-trip for the ported getRegion/getJurisdiction surface (sandbox org).
 ///
 /// Run with network enabled:
-/// `KETCH_INTEGRATION_TESTS=1 xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=iPhone 17' test -only-testing:KetchSDKTests/KetchHeadlessLiveIntegrationTests`
+/// `TEST_RUNNER_KETCH_INTEGRATION_TESTS=1 xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=iPhone 17' test -only-testing:KetchSDKTests/KetchHeadlessLiveIntegrationTests`
 final class KetchHeadlessLiveIntegrationTests: XCTestCase {
     private var cancellables: Set<AnyCancellable> = []
 

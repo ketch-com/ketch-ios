@@ -117,10 +117,13 @@ extension KetchSDK {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            purposes = try? container.decodeIfPresent([String: Bool].self, forKey: .purposes)
+            let decodedPurposes = try? container.decodeIfPresent(
+                [String: ConsentedPurpose].self,
+                forKey: .purposes
+            )
+            purposes = decodedPurposes?.mapValues(\.allowed)
             vendors = try? container.decodeIfPresent([String].self, forKey: .vendors)
             protocols = try? container.decodeIfPresent([String: String].self, forKey: .protocols)
-
         }
 
         public init(
@@ -131,6 +134,33 @@ extension KetchSDK {
             self.purposes = purposes
             self.vendors = vendors
             self.protocols = protocols
+        }
+    }
+}
+
+extension KetchSDK.ConsentStatus {
+    struct ConsentedPurpose: Decodable {
+        let allowed: Bool
+
+        private enum Keys: String, CodingKey { case allowed }
+
+        init(from decoder: Decoder) throws {
+            if let single = try? decoder.singleValueContainer() {
+                if let flag = try? single.decode(Bool.self) {
+                    allowed = flag
+                    return
+                }
+                if let raw = try? single.decode(String.self) {
+                    allowed = raw == "true"
+                    return
+                }
+            }
+            let container = try decoder.container(keyedBy: Keys.self)
+            if let flag = try? container.decode(Bool.self, forKey: .allowed) {
+                allowed = flag
+                return
+            }
+            allowed = (try? container.decode(String.self, forKey: .allowed)) == "true"
         }
     }
 }

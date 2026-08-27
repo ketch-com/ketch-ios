@@ -5,7 +5,7 @@ import XCTest
 /// Live CDN headless round-trip tests (web/v3, sandbox org).
 ///
 /// Run with network enabled:
-/// `KETCH_INTEGRATION_TESTS=1 xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=iPhone 17' test -only-testing:KetchSDKTests/HeadlessCdnIntegrationTests`
+/// `TEST_RUNNER_KETCH_INTEGRATION_TESTS=1 xcodebuild -scheme KetchSDK -destination 'platform=iOS Simulator,name=iPhone 17' test -only-testing:KetchSDKTests/HeadlessCdnIntegrationTests`
 final class HeadlessCdnIntegrationTests: XCTestCase {
     private var client: HeadlessApiClient!
     private var cancellables: Set<AnyCancellable> = []

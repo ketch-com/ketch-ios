@@ -9,8 +9,8 @@ import Foundation
 public final class Ketch: ObservableObject {
     /// Identity entity consumable by Ketch
     public struct Identity {
-        let key: String
-        let value: String
+        public let key: String
+        public let value: String
         
         public init(key: String, value: String) {
             self.key = key

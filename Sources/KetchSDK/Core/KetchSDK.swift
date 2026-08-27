@@ -227,13 +227,6 @@ extension KetchSDK {
                 )
             )
     }
-
-    /// Retrieves list of consent vendors.
-    public static func getVendors(
-        dataCenter: KetchDataCenter = .us
-    ) -> AnyPublisher<Vendors, KetchError> {
-        KetchApiRequest(dataCenter: dataCenter).getVendors()
-    }
 }
 
 extension KetchSDK {

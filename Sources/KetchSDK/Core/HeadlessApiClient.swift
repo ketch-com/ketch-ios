@@ -184,13 +184,6 @@ final class HeadlessApiClient {
         return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
     }
 
-    func getVendors() -> AnyPublisher<KetchSDK.Vendors, KetchError> {
-        get(path: "/gvl/vendor-list.json")
-            .decode(type: KetchSDK.Vendors.self, decoder: JSONDecoder())
-            .mapError(KetchError.init)
-            .eraseToAnyPublisher()
-    }
-
     // MARK: - Networking
 
     private func get(path: String, queryItems: [URLQueryItem] = []) -> AnyPublisher<Data, KetchError> {

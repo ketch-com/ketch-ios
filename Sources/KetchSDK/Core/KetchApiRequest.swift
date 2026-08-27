@@ -14,7 +14,6 @@ class KetchApiRequest {
     typealias ConsentConfig = KetchSDK.ConsentConfig
     typealias ConsentUpdate = KetchSDK.ConsentUpdate
     typealias InvokeRightConfig = KetchSDK.InvokeRightConfig
-    typealias Vendors = KetchSDK.Vendors
     typealias LocalizedStrings = KetchSDK.LocalizedStrings
 
     private let headless: HeadlessApiClient
@@ -100,9 +99,6 @@ class KetchApiRequest {
         headless.getPreferenceQRUrl(request: request)
     }
 
-    func getVendors() -> AnyPublisher<Vendors, KetchError> {
-        headless.getVendors()
-    }
 }
 
 extension KetchSDK.KetchError {

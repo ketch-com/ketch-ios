@@ -65,11 +65,11 @@ public enum PolicyPluginError: Error {
 
 /// PolicyPlugin base class
 open class PolicyPlugin: PolicyProtocol {
-    public var protocolID: String {
+    open var protocolID: String {
         fatalError("protocolID is not implemented")
     }
 
-    public var isApplied: Bool {
+    open var isApplied: Bool {
         fatalError("isApplied is not implemented")
     }
 
@@ -92,17 +92,17 @@ open class PolicyPlugin: PolicyProtocol {
     }
 
     // MARK: - PolicyProtocol
-    public func configLoaded(_ configuration: KetchSDK.Configuration) {
+    open func configLoaded(_ configuration: KetchSDK.Configuration) {
         self.configuration = configuration
     }
 
-    public func consentChanged(_ consentStatus: KetchSDK.ConsentStatus) { }
+    open func consentChanged(_ consentStatus: KetchSDK.ConsentStatus) { }
 
-    public func willShowExperience() { }
+    open func willShowExperience() { }
 
-    public func experienceHidden(reason: ExperienceHiddenReason) { }
+    open func experienceHidden(reason: ExperienceHiddenReason) { }
 
-    public func rightInvoked(
+    open func rightInvoked(
         property: String,
         environment: String,
         invokedAt: Int?,

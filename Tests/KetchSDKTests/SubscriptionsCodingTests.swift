@@ -25,7 +25,7 @@ final class SubscriptionsCodingTests: XCTestCase {
         let json = """
         {"propertyCode":"ios","topics":{
           "marketing_emails":{"email":{"status":"granted"},"sms":{"status":"denied"}}
-        }}
+        },"controls":{"global_opt_out":{"status":"denied","impact":1}}}
         """
 
         let response = try JSONDecoder().decode(
@@ -35,6 +35,8 @@ final class SubscriptionsCodingTests: XCTestCase {
 
         XCTAssertEqual(response.topics?["marketing_emails"]?["email"]?.status, .granted)
         XCTAssertEqual(response.topics?["marketing_emails"]?["sms"]?.status, .denied)
+        XCTAssertEqual(response.controls?["global_opt_out"]?.status, .denied)
+        XCTAssertEqual(response.controls?["global_opt_out"]?.impact, 1)
     }
 
     /// The server rejects a bare string for a contact method setting.

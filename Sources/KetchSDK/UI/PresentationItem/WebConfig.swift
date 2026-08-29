@@ -56,15 +56,18 @@ struct WebConfig {
             return Bundle(for: KetchUI.self).url(forResource: htmlFileName, withExtension: "html")
         #endif
     }
-    /// Document base URL for `loadHTMLString`. Includes query params read by `index.html` via `document.location`.
-    private var documentBaseURL: URL? {
-        guard let bundleHTMLURL else { return nil }
-        var urlComponents = URLComponents(string: bundleHTMLURL.absoluteString)
+    static let documentOrigin = "http://localhost"
+
+    /// URL the document reports as `document.location`. Carries `queryItems`, which `index.html`
+    /// reads via `new URL(document.location).searchParams`.
+    var documentURL: URL? {
+        var urlComponents = URLComponents(string: Self.documentOrigin)
+        urlComponents?.path = "/\(htmlFileName).html"
         urlComponents?.queryItems = queryItems
         return urlComponents?.url
     }
 
-    private var queryItems: [URLQueryItem] {
+    var queryItems: [URLQueryItem] {
         var defaultQuery = [
             "propertyName": URLQueryItem(name: "propertyName", value: propertyName),
             "orgCode": URLQueryItem(name: "orgCode", value: orgCode),
@@ -111,23 +114,33 @@ struct WebConfig {
         webView.scrollView.bounces = false
         if #available(iOS 16.4, *) { webView.isInspectable = true; }
 
-        if let bundleHTMLURL, let documentBaseURL, var htmlString = try? String(contentsOf: bundleHTMLURL) {
-            // inject css if needed
-            if let css = params["ketch_css_inject"] {
-                let wrappedCSS = "<style>\n\(css)\n</style>"
-                htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
-            }
-
-            if let overridesJson = params["ketch_web_resource_overrides"],
-               let script = Self.webResourceOverridesInjectScript(overridesJson: overridesJson) {
-                htmlString = htmlString.replacingOccurrences(of: "<head>", with: "<head>\n\(script)")
-            }
-
-            // Query params (e.g. ketch_att) must be on the document base URL — index.html reads `document.location.searchParams`.
-            webView.loadHTMLString(htmlString, baseURL: documentBaseURL)
+        guard let bundleHTMLURL, let documentURL,
+              var htmlString = try? String(contentsOf: bundleHTMLURL) else {
+            KetchLogger.log.error("WebView not loaded: missing bundled \(htmlFileName).html or document URL")
+            return webView
         }
 
+        // inject css if needed
+        if let css = params["ketch_css_inject"] {
+            let wrappedCSS = "<style>\n\(css)\n</style>"
+            htmlString = htmlString.replacingOccurrences(of: "</head>", with: "\(wrappedCSS)\n</head>")
+        }
+
+        if let overridesJson = params["ketch_web_resource_overrides"],
+           let script = Self.webResourceOverridesInjectScript(overridesJson: overridesJson) {
+            htmlString = htmlString.replacingOccurrences(of: "<head>", with: "<head>\n\(script)")
+        }
+
+        load(htmlString: htmlString, documentURL: documentURL, into: webView)
+
         return webView
+    }
+
+    /// The only place the document is handed to WebKit.
+    private func load(htmlString: String, documentURL: URL, into webView: WKWebView) {
+        // Query params (e.g. ketch_att) must be on the document URL — index.html reads
+        // `new URL(document.location).searchParams`.
+        webView.loadHTMLString(htmlString, baseURL: documentURL)
     }
 
     private static func webResourceOverridesInjectScript(overridesJson: String) -> String? {

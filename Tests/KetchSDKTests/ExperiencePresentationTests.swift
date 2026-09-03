@@ -53,6 +53,20 @@ final class ExperiencePresentationTests: XCTestCase {
         ketchUI.handle(webPresentationEvent: .configurationLoaded(emptyConfiguration))
     }
 
+    func testShowExperienceAfterReload_isNotDropped() {
+        ketchUI.reload()
+        ketchUI.showExperience()
+
+        let installed = expectation(description: "rebuilt")
+        DispatchQueue.main.async { installed.fulfill() }
+        wait(for: [installed], timeout: 1)
+
+        XCTAssertNotNil(
+            ketchUI.webPresentationItem,
+            "the build is asynchronous now, so a show issued before it lands must be replayed"
+        )
+    }
+
     // MARK: - Show dedupe
 
     func testShowThenWillShowExperience_dispatchesOnShowOnce() {

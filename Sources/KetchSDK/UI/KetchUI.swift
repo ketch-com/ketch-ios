@@ -43,6 +43,12 @@ public final class KetchUI: ObservableObject {
     // A show requested while the first resolve is still in flight. evaluateJavaScript on a WebView
     // that does not exist yet is a silent no-op, so without this the request disappears.
     private var pendingShow: ExperienceOption.ExperienceToShow?
+    private var pendingShowExperience = false
+
+    // Resolves for different properties are independent and unordered, so a reload that
+    // switches property can finish before the build it replaced. Without this, the older
+    // build installs last and silently reverts the reload.
+    private var buildGeneration = 0
 
     struct PendingTrigger {
         let triggerName: TriggerName
@@ -98,6 +104,9 @@ public final class KetchUI: ObservableObject {
 
         resetBridgeState()
 
+        buildGeneration += 1
+        let generation = buildGeneration
+
         // Repeat resolves for a property already fetched are answered from the resolver's memo
         // without touching the network, so a reload does not wait on a config request again.
         ketch.resolveManagedIdentity(
@@ -105,7 +114,8 @@ public final class KetchUI: ObservableObject {
             propertyCode: scope.property
         ) { [weak self] resolved in
             DispatchQueue.main.async {
-                self?.install(options: options, resolved: resolved)
+                guard let self, self.buildGeneration == generation else { return }
+                self.install(options: options, resolved: resolved)
             }
         }
     }
@@ -132,6 +142,10 @@ public final class KetchUI: ObservableObject {
     }
 
     private func flushPendingShow() {
+        if pendingShowExperience {
+            pendingShowExperience = false
+            webPresentationItem = preloadedPresentationItem
+        }
         guard let pending = pendingShow else { return }
         pendingShow = nil
         switch pending {
@@ -294,9 +308,10 @@ extension KetchUI {
     }
     
     public func showExperience() {
-        // Assigning nil here would dismiss an experience that is already on screen.
+        // Assigning nil here would dismiss an experience that is already on screen, and dropping
+        // the request would silently do nothing for a caller that reloaded a moment earlier.
         guard preloadedPresentationItem != nil else {
-            KetchLogger.log.debug("showExperience ignored: the web experience is not built yet")
+            pendingShowExperience = true
             return
         }
         webPresentationItem = preloadedPresentationItem

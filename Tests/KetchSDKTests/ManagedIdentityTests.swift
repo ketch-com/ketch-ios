@@ -331,6 +331,29 @@ final class ManagedIdentityTests: XCTestCase {
         XCTAssertTrue(answered)
     }
 
+    func testClearDuringInFlightFetchIsNotResurrected() {
+        let resolver = ManagedIdentityResolver(storage: storage)
+        let config: [String: KetchSDK.IdentityDefinition] =
+            ["swb_android": .init(type: "queryString", variable: "swb_android", ttl: nil)]
+
+        // A fetch is in flight...
+        let gate = PassthroughSubject<[String: KetchSDK.IdentityDefinition]?, Error>()
+        resolver.resolve(organizationCode: "a", propertyCode: "b", loadConfig: { gate.eraseToAnyPublisher() })
+            .sink { _ in }.store(in: &cancellables)
+
+        // ...the app clears identities...
+        resolver.clear()
+
+        // ...and only then does the in-flight fetch deliver.
+        gate.send(config)
+        gate.send(completion: .finished)
+
+        XCTAssertNil(resolver.lastResolved(),
+                     "a completion that started before clear() repopulated the cache after it")
+        XCTAssertEqual(storage.read(key: ManagedIdentity.storageKey), "",
+                       "the cleared identifier was written back to storage")
+    }
+
     func testResolver_clearDropsMemoAndStorage() {
         let resolver = ManagedIdentityResolver(storage: storage)
         let first = resolve(resolver, loadConfig: loader(queryStringConfig))

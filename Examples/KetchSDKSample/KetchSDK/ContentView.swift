@@ -146,6 +146,20 @@ struct ContentView: View {
                         applyCSS()
                     }
 
+                    Button("Get Identities") {
+                        ketchUI.ketch.getIdentities { identities in
+                            let described = identities
+                                .map { "\($0.key)=\($0.value)" }
+                                .joined(separator: ", ")
+                            print("[KetchSample] getIdentities: [\(described)]")
+                        }
+                    }
+
+                    Button("Clear Identities") {
+                        ketchUI.ketch.clearIdentities()
+                        print("[KetchSample] clearIdentities: stored identifier wiped")
+                    }
+
                     #if canImport(AppTrackingTransparency)
                     if #available(iOS 14, *) {
                         Button("Request ATT") {
@@ -167,6 +181,21 @@ struct ContentView: View {
                     .font(.footnote)
                     .foregroundStyle(Color.gray)
                     .padding(.bottom, 8)
+
+                Button("Headless Consent") {
+                    ketchUI.ketch.getConsent(
+                        consentConfig: .init(
+                            organizationCode: config.organizationCode,
+                            propertyCode: config.propertyCode,
+                            environmentCode: config.environmentCode,
+                            jurisdictionCode: "default",
+                            identities: [:],
+                            purposes: [:]
+                        )
+                    ) { result in
+                        print("[KetchSample] headless getConsent: \(result)")
+                    }
+                }
 
                 Button("Get Jurisdiction") {
                     getJurisdictionTapped()

@@ -11,10 +11,27 @@ final class ExperiencePresentationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        ketch = Ketch(organizationCode: "acme", propertyCode: "prop", environmentCode: "production", identities: [])
+        ketch = Ketch(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            identities: [],
+            apiClient: FixedResponseApiClient(),
+            managedIdentity: ManagedIdentityResolver(storage: NativeStorage(userDefaults: UserDefaults(suiteName: UUID().uuidString)!))
+        )
         ketchUI = KetchUI(ketch: ketch)
         listener = SpyEventListener()
         ketchUI.eventListener = listener
+        waitForPresentation()
+    }
+
+    /// The web experience is installed on the main queue once the managed identifier resolves, so
+    /// it does not exist yet when init returns. Draining the queue puts these tests back at the
+    /// point production code reaches before any bridge event can arrive.
+    private func waitForPresentation() {
+        let installed = expectation(description: "web experience installed")
+        DispatchQueue.main.async { installed.fulfill() }
+        wait(for: [installed], timeout: 1)
     }
 
     override func tearDown() {

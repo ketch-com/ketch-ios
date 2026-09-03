@@ -56,7 +56,7 @@ extension KetchUI {
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
                 environmentCode: item.environmentCode,
-                advertisingIdentifiers: item.advertisingIdentifiers
+                identities: item.identities
             )
             
             self.onEvent = onEvent
@@ -69,7 +69,7 @@ extension KetchUI {
             let orgCode: String
             let propertyName: String
             let environmentCode: String
-            let advertisingIdentifiers: [Ketch.Identity]
+            let identities: [Ketch.Identity]
         }
         
         @ViewBuilder
@@ -77,7 +77,7 @@ extension KetchUI {
             webExperience(
                 orgCode: item.orgCode,
                 propertyName: item.propertyName,
-                advertisingIdentifiers: item.advertisingIdentifiers
+                identities: item.identities
             )
         }
         
@@ -145,7 +145,7 @@ extension KetchUI {
         
         private func webExperience(orgCode: String,
                                    propertyName: String,
-                                   advertisingIdentifiers: [Ketch.Identity]) -> some View {
+                                   identities: [Ketch.Identity]) -> some View {
             var config = config
             
             config.configWebApp?.configuration.userContentController.removeAllScriptMessageHandlers()

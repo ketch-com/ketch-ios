@@ -77,7 +77,7 @@ final class RecaptchaOriginIntegrationTests: XCTestCase {
             orgCode: "ketch_samples",
             propertyName: "ios",
             environmentCode: "production",
-            advertisingIdentifiers: []
+            identities: []
         )
         let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 390, height: 800))
         let loaded = expectation(description: "loaded")

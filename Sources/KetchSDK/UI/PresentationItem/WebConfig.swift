@@ -10,7 +10,7 @@ struct WebConfig {
     let orgCode: String
     let propertyName: String
     let environmentCode: String
-    let advertisingIdentifiers: [Ketch.Identity]
+    let identities: [Ketch.Identity]
     let htmlFileName: String
     var params = [String: String]()
     var configWebApp: WKWebView?
@@ -19,13 +19,13 @@ struct WebConfig {
         orgCode: String,
         propertyName: String,
         environmentCode: String,
-        advertisingIdentifiers: [Ketch.Identity],
+        identities: [Ketch.Identity],
         htmlFileName: String = "index"
     ) {
         self.propertyName = propertyName
         self.orgCode = orgCode
         self.environmentCode = environmentCode
-        self.advertisingIdentifiers = advertisingIdentifiers
+        self.identities = identities
         self.htmlFileName = htmlFileName
     }
 
@@ -33,14 +33,14 @@ struct WebConfig {
         orgCode: String,
         propertyName: String,
         environmentCode: String,
-        advertisingIdentifiers: [Ketch.Identity],
+        identities: [Ketch.Identity],
         htmlFileName: String = "index"
     ) -> Self {
         let config = WebConfig(
             orgCode: orgCode,
             propertyName: propertyName,
             environmentCode: environmentCode,
-            advertisingIdentifiers: advertisingIdentifiers,
+            identities: identities,
             htmlFileName: htmlFileName
         )
         
@@ -75,7 +75,7 @@ struct WebConfig {
             "isMobileSdk": URLQueryItem(name: "isMobileSdk", value: "true")
         ]
         
-        advertisingIdentifiers.forEach {
+        identities.forEach {
             defaultQuery[$0.key] = URLQueryItem(name: $0.key, value: $0.value)
         }
         

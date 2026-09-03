@@ -10,7 +10,7 @@ extension KetchSDK {
         public let organizationCode: String
         public let propertyCode: String
         public let environmentCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]
         public let jurisdictionCode: String
         public let migrationOption: MigrationOption
         public let purposes: [String: PurposeAllowedLegalBasis]
@@ -38,6 +38,14 @@ extension KetchSDK {
             self.vendors = vendors
             self.protocols = protocols
         }
+
+        /// A copy carrying `identities`, for adding the Ketch-managed identifier before encoding.
+        func withIdentities(_ identities: [String: String]) -> Self {
+            var copy = self
+            copy.identities = identities
+            return copy
+        }
+
     }
 }
 
@@ -76,7 +84,7 @@ extension KetchSDK {
         public let propertyCode: String
         public let environmentCode: String
         public let jurisdictionCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]
         public let purposes: [String: PurposeLegalBasis]
 
         public init(
@@ -94,6 +102,14 @@ extension KetchSDK {
             self.identities = identities
             self.purposes = purposes
         }
+
+        /// A copy carrying `identities`, for adding the Ketch-managed identifier before encoding.
+        func withIdentities(_ identities: [String: String]) -> Self {
+            var copy = self
+            copy.identities = identities
+            return copy
+        }
+
     }
 }
 

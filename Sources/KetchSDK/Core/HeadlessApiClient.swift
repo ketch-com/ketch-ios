@@ -18,13 +18,16 @@ final class HeadlessApiClient {
 
     private let baseURL: URL
     private let apiClient: ApiClient
+    private let managedIdentity: ManagedIdentityResolver
 
     init(
         dataCenter: KetchDataCenter = .us,
-        apiClient: ApiClient = DefaultApiClient()
+        apiClient: ApiClient = DefaultApiClient(),
+        managedIdentity: ManagedIdentityResolver = .shared
     ) {
         self.baseURL = dataCenter.baseURL
         self.apiClient = apiClient
+        self.managedIdentity = managedIdentity
     }
 
     func getLocation() -> AnyPublisher<KetchSDK.LocationResponse, KetchError> {
@@ -58,21 +61,95 @@ final class HeadlessApiClient {
             .eraseToAnyPublisher()
     }
 
+    /// The `identities` section of a property's configuration.
+    func getIdentityConfiguration(
+        organization: String,
+        property: String
+    ) -> AnyPublisher<[String: KetchSDK.IdentityDefinition]?, KetchError> {
+        get(
+            path: "/config/\(organization)/\(property)/config.json",
+            queryItems: [URLQueryItem(name: "include", value: "identities")]
+        )
+        .decode(type: IdentityConfigurationResponse.self, decoder: JSONDecoder())
+        .mapError(KetchError.init)
+        .map(\.identities)
+        .handleEvents(receiveOutput: { identities in
+            if identities == nil {
+                KetchLogger.log.warning(
+                    "Config for \(organization)/\(property) carried no identities key; treating as no managed identity"
+                )
+            }
+        })
+        .eraseToAnyPublisher()
+    }
+
+    /// Adds the Ketch-managed identifier to `identities`.
+    ///
+    /// Without a property code the identity space cannot be looked up, so the identifier already
+    /// resolved is reused. Omitting it is worse than reusing it.
+    private func withManagedIdentity(
+        _ identities: [String: String],
+        organization: String,
+        property: String?
+    ) -> AnyPublisher<[String: String], Never> {
+        guard let property, !property.isEmpty else {
+            return Just(ManagedIdentity.merged(identities, with: managedIdentity.lastResolved()))
+                .eraseToAnyPublisher()
+        }
+        return managedIdentity.resolve(
+            organizationCode: organization,
+            propertyCode: property,
+            loadConfig: { [weak self] in
+                guard let self else {
+                    return Fail(error: KetchError.requestError).eraseToAnyPublisher()
+                }
+                return self.getIdentityConfiguration(organization: organization, property: property)
+                    .mapError { $0 as Error }
+                    .eraseToAnyPublisher()
+            }
+        )
+        .map { ManagedIdentity.merged(identities, with: $0) }
+        .eraseToAnyPublisher()
+    }
+
+    /// The encoded request body for `makePayload`, with the Ketch-managed identifier merged into
+    /// the identities handed to it.
+    ///
+    /// Every identity-bearing endpoint needs the same three steps -- resolve, merge, encode -- and
+    /// only the payload type differs, so the call sites supply just that.
+    private func identifiedBody<Payload: Encodable>(
+        identities: [String: String],
+        organization: String,
+        property: String?,
+        _ makePayload: @escaping ([String: String]) -> Payload
+    ) -> AnyPublisher<Data, KetchError> {
+        withManagedIdentity(identities, organization: organization, property: property)
+            .tryMap { try JSONEncoder().encode(makePayload($0)) }
+            .mapError { _ in KetchError.requestError }
+            .eraseToAnyPublisher()
+    }
+
     func getConsent(config: ConsentConfig) -> AnyPublisher<ConsentStatus, KetchError> {
         let path = "/consent/\(config.organizationCode)/get"
-        guard let body = try? JSONEncoder().encode(ConsentConfigPayload(config: config)) else {
-            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
-        }
-        return postConsent(path: path, body: body, config: config)
+        return identifiedBody(
+            identities: config.identities,
+            organization: config.organizationCode,
+            property: config.propertyCode
+        ) { ConsentConfigPayload(config: config.withIdentities($0)) }
+        .flatMap { self.postConsent(path: path, body: $0, config: config) }
+        .eraseToAnyPublisher()
     }
 
     /// Returns server consent including computed `protocols`; omits `protocols` from request body.
     func setConsent(update: ConsentUpdate) -> AnyPublisher<ConsentStatus, KetchError> {
         let path = "/consent/\(update.organizationCode)/update"
-        guard let body = try? JSONEncoder().encode(SetConsentPayload(update: update)) else {
-            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
-        }
-        return postSetConsent(path: path, body: body, fallback: update)
+        return identifiedBody(
+            identities: update.identities,
+            organization: update.organizationCode,
+            property: update.propertyCode
+        ) { SetConsentPayload(update: update.withIdentities($0)) }
+        .flatMap { self.postSetConsent(path: path, body: $0, fallback: update) }
+        .eraseToAnyPublisher()
     }
 
     // MARK: - Legacy v3 endpoints (used by existing KetchApiRequest)
@@ -109,31 +186,39 @@ final class HeadlessApiClient {
 
     func invokeRight(request: KetchSDK.InvokeRightRequest) -> AnyPublisher<Void, KetchError> {
         let path = "/rights/\(request.organizationCode)/invoke"
-        guard let body = try? JSONEncoder().encode(request) else {
-            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
-        }
-        return postVoid(path: path, body: body)
+        return identifiedBody(
+            identities: request.identities,
+            organization: request.organizationCode,
+            property: request.propertyCode
+        ) { request.withIdentities($0) }
+        .flatMap { self.postVoid(path: path, body: $0) }
+        .eraseToAnyPublisher()
     }
 
     func getSubscriptions(
         request: KetchSDK.SubscriptionsRequest
     ) -> AnyPublisher<KetchSDK.SubscriptionsResponse, KetchError> {
         let path = "/subscriptions/\(request.organizationCode)/get"
-        guard let body = try? JSONEncoder().encode(request) else {
-            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
-        }
-        return post(path: path, body: body)
-            .decode(type: KetchSDK.SubscriptionsResponse.self, decoder: JSONDecoder())
-            .mapError(KetchError.init)
-            .eraseToAnyPublisher()
+        return identifiedBody(
+            identities: request.identities ?? [:],
+            organization: request.organizationCode,
+            property: request.propertyCode
+        ) { request.withIdentities($0) }
+        .flatMap { self.post(path: path, body: $0) }
+        .decode(type: KetchSDK.SubscriptionsResponse.self, decoder: JSONDecoder())
+        .mapError(KetchError.init)
+        .eraseToAnyPublisher()
     }
 
     func setSubscriptions(request: KetchSDK.SubscriptionsRequest) -> AnyPublisher<Void, KetchError> {
         let path = "/subscriptions/\(request.organizationCode)/update"
-        guard let body = try? JSONEncoder().encode(request) else {
-            return Fail(error: KetchError.requestError).eraseToAnyPublisher()
-        }
-        return postVoid(path: path, body: body)
+        return identifiedBody(
+            identities: request.identities ?? [:],
+            organization: request.organizationCode,
+            property: request.propertyCode
+        ) { request.withIdentities($0) }
+        .flatMap { self.postVoid(path: path, body: $0) }
+        .eraseToAnyPublisher()
     }
 
     func invokeRights(organization: String, config: KetchSDK.InvokeRightConfig) -> AnyPublisher<Void, KetchError> {
@@ -382,4 +467,8 @@ extension KetchSDK.KetchError {
     fileprivate init(with error: ApiClientError) {
         self.init(with: error as Error)
     }
+}
+
+private struct IdentityConfigurationResponse: Decodable {
+    let identities: [String: KetchSDK.IdentityDefinition]?
 }

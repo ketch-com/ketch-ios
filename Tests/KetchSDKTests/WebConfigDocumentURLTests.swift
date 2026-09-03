@@ -6,13 +6,13 @@ import XCTest
 final class WebConfigDocumentURLTests: XCTestCase {
     private func makeConfig(
         params: [String: String] = [:],
-        advertisingIdentifiers: [Ketch.Identity] = []
+        identities: [Ketch.Identity] = []
     ) -> WebConfig {
         var config = WebConfig(
             orgCode: "testorg",
             propertyName: "testproperty",
             environmentCode: "production",
-            advertisingIdentifiers: advertisingIdentifiers
+            identities: identities
         )
         config.params = params
         return config
@@ -68,7 +68,7 @@ final class WebConfigDocumentURLTests: XCTestCase {
     }
 
     func testDocumentURL_includesAdvertisingIdentifiers() throws {
-        let config = makeConfig(advertisingIdentifiers: [
+        let config = makeConfig(identities: [
             Ketch.Identity(key: "idfa", value: "abc-123")
         ])
         let pairs = queryPairs(try XCTUnwrap(config.documentURL))
@@ -88,7 +88,7 @@ final class WebConfigDocumentURLTests: XCTestCase {
             orgCode: "",
             propertyName: "",
             environmentCode: "",
-            advertisingIdentifiers: []
+            identities: []
         )
         config.params = ["": ""]
 

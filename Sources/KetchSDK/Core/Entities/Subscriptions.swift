@@ -40,7 +40,7 @@ extension KetchSDK {
         public let controllerCode: String?
         public let propertyCode: String?
         public let environmentCode: String?
-        public let identities: [String: String]?
+        public var identities: [String: String]?
         /// Topic code to its per-contact-method settings, e.g. `marketing_emails -> email -> granted`.
         public let topics: [String: SubscriptionTopicSetting]?
         public let controls: [String: SubscriptionControlSetting]?
@@ -70,6 +70,13 @@ extension KetchSDK {
             self.collectedAt = collectedAt
             self.jurisdictionCode = jurisdictionCode
             self.regionCode = regionCode
+        }
+
+        /// A copy carrying `identities`, for adding the Ketch-managed identifier before encoding.
+        func withIdentities(_ identities: [String: String]) -> Self {
+            var copy = self
+            copy.identities = identities
+            return copy
         }
     }
 

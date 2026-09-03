@@ -39,6 +39,13 @@ class KetchApiRequest {
         headless.getLocation()
     }
 
+    func identityConfiguration(
+        organization: String,
+        property: String
+    ) -> AnyPublisher<[String: KetchSDK.IdentityDefinition]?, KetchError> {
+        headless.getIdentityConfiguration(organization: organization, property: property)
+    }
+
     func getBootstrapConfiguration(organization: String, property: String) -> AnyPublisher<Configuration, KetchError> {
         headless.getBootstrapConfiguration(organization: organization, property: property)
     }

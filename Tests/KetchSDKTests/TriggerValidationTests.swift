@@ -38,7 +38,14 @@ final class TriggerValidationTests: XCTestCase {
     // injecting a fake WebPresentationItem to exercise the real .configurationLoaded flow.
 
     private func makeKetchUI() -> KetchUI {
-        let ketch = Ketch(organizationCode: "acme", propertyCode: "prop", environmentCode: "production", identities: [])
+        let ketch = Ketch(
+            organizationCode: "acme",
+            propertyCode: "prop",
+            environmentCode: "production",
+            identities: [],
+            apiClient: FixedResponseApiClient(),
+            managedIdentity: ManagedIdentityResolver(storage: NativeStorage(userDefaults: UserDefaults(suiteName: UUID().uuidString)!))
+        )
         return KetchUI(ketch: ketch)
     }
 

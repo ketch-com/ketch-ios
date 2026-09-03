@@ -47,7 +47,7 @@ final class WebViewOriginTests: XCTestCase {
             orgCode: "testorg",
             propertyName: "testproperty",
             environmentCode: "production",
-            advertisingIdentifiers: []
+            identities: []
         )
         let webView = loadedWebView(baseURL: try XCTUnwrap(config.documentURL))
 
@@ -62,7 +62,7 @@ final class WebViewOriginTests: XCTestCase {
             orgCode: "testorg",
             propertyName: "testproperty",
             environmentCode: "production",
-            advertisingIdentifiers: []
+            identities: []
         )
         let webView = loadedWebView(baseURL: try XCTUnwrap(config.documentURL))
 

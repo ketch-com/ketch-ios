@@ -30,7 +30,9 @@ public final class Ketch: ObservableObject {
     let organizationCode: String
     let propertyCode: String
     let environmentCode: String
-    let identities: [Identity]
+    private var _identities: [Identity]
+    private let identitiesLock = NSLock()
+    private let managedIdentity: ManagedIdentityResolver
     public let dataCenter: KetchDataCenter
     private let apiRequest: KetchApiRequest
     private let userDefaults: UserDefaults
@@ -52,6 +54,14 @@ public final class Ketch: ObservableObject {
 
     private let cacheLock = NSLock()
 
+    /// Identities supplied by the host app. Does not include the Ketch-managed identifier --
+    /// see `getIdentities(completion:)`.
+    var identities: [Identity] {
+        identitiesLock.lock()
+        defer { identitiesLock.unlock() }
+        return _identities
+    }
+
     private var configurationSubject = CurrentValueSubject<KetchSDK.Configuration?, KetchSDK.KetchError>(nil)
     private var localizedStringsSubject = CurrentValueSubject<KetchSDK.LocalizedStrings?, KetchSDK.KetchError>(nil)
     private var consentSubject = CurrentValueSubject<KetchSDK.ConsentStatus?, KetchSDK.KetchError>(nil)
@@ -71,12 +81,14 @@ public final class Ketch: ObservableObject {
         identities: [Identity],
         dataCenter: KetchDataCenter = .us,
         userDefaults: UserDefaults = .standard,
-        apiClient: ApiClient = DefaultApiClient()
+        apiClient: ApiClient = DefaultApiClient(),
+        managedIdentity: ManagedIdentityResolver = .shared
     ) {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
-        self.identities = identities
+        self._identities = identities
+        self.managedIdentity = managedIdentity
         self.dataCenter = dataCenter
         self.apiRequest = KetchApiRequest(dataCenter: dataCenter, apiClient: apiClient)
         self.userDefaults = userDefaults
@@ -350,9 +362,50 @@ extension Ketch {
         }
     }
 
-    /// Overrides the value returned by `getRegion()`, bypassing the GeoIP round-trip. Also feeds
-    /// `getJurisdiction()`'s config request, so pass `nil` to clear the override and resume
-    /// resolving both from the server.
+    /// Replaces the identities supplied by the host app.
+    public func setIdentities(_ identities: [Identity]) {
+        identitiesLock.lock()
+        _identities = identities
+        identitiesLock.unlock()
+    }
+
+    /// The identities the SDK supplies, including the Ketch-managed identifier.
+    public func getIdentities(completion: @escaping ([Identity]) -> Void) {
+        resolveManagedIdentity(
+            organizationCode: organizationCode,
+            propertyCode: propertyCode
+        ) { [weak self] resolved in
+            guard let self else { return completion([]) }
+            completion(ManagedIdentity.merged(self.identities, with: resolved))
+        }
+    }
+
+    /// Wipes the stored Ketch-managed identifier. A new one is minted on the next resolve, which
+    /// starts a new consent record. Identities supplied by the app are unaffected.
+    public func clearIdentities() {
+        managedIdentity.clear()
+    }
+
+    /// Resolves the Ketch-managed identifier for an organization and property, which an
+    /// experience option may override.
+    func resolveManagedIdentity(
+        organizationCode: String,
+        propertyCode: String,
+        completion: @escaping (ManagedIdentity.Resolved?) -> Void
+    ) {
+        managedIdentity.resolve(
+            organizationCode: organizationCode,
+            propertyCode: propertyCode,
+            loadConfig: { [apiRequest] in
+                apiRequest.identityConfiguration(organization: organizationCode, property: propertyCode)
+                    .mapError { $0 as Error }
+                    .eraseToAnyPublisher()
+            }
+        )
+        .sink(receiveValue: completion)
+        .store(in: &subscriptions)
+    }
+
     public func setRegion(_ region: String?) {
         self.region = region
         clearConfigCache()

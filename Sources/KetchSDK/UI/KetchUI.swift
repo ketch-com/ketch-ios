@@ -40,6 +40,10 @@ public final class KetchUI: ObservableObject {
     // internal, not private: see isTagBooted's comment above.
     var pendingTrigger: PendingTrigger?
 
+    // A show requested while the first resolve is still in flight. evaluateJavaScript on a WebView
+    // that does not exist yet is a silent no-op, so without this the request disappears.
+    private var pendingShow: ExperienceOption.ExperienceToShow?
+
     struct PendingTrigger {
         let triggerName: TriggerName
         let functionName: String
@@ -80,9 +84,60 @@ public final class KetchUI: ObservableObject {
     }
     
     private func preloadWebExperience() {
+        buildPresentation(options: experienceOptionsWithDataCenter(options))
+    }
+
+    /// Builds the WebView, waiting for the Ketch-managed identifier when this property has not
+    /// resolved one yet.
+    ///
+    /// The identifier has to be known before the WebView is built, because it is carried as a query
+    /// parameter on the document URL that `loadHTMLString` is given -- injecting it afterwards would
+    /// mean rebuilding the WebView and re-booting the tag.
+    private func buildPresentation(options: [ExperienceOption]) {
+        let scope = identityScope(for: options)
+
         resetBridgeState()
-        preloadedPresentationItem = webExperience(onEvent: handle)
-        preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(options))
+
+        // Repeat resolves for a property already fetched are answered from the resolver's memo
+        // without touching the network, so a reload does not wait on a config request again.
+        ketch.resolveManagedIdentity(
+            organizationCode: scope.organization,
+            propertyCode: scope.property
+        ) { [weak self] resolved in
+            DispatchQueue.main.async {
+                self?.install(options: options, resolved: resolved)
+            }
+        }
+    }
+
+    private func install(options: [ExperienceOption], resolved: ManagedIdentity.Resolved?) {
+        preloadedPresentationItem = webExperience(onEvent: handle, managedIdentity: resolved)
+        preloadedPresentationItem?.reload(options: options)
+        flushPendingShow()
+    }
+
+    /// The organization and property the identity space is looked up under, which an experience
+    /// option may override for this build.
+    private func identityScope(for options: [ExperienceOption]) -> (organization: String, property: String) {
+        var organization = ketch.organizationCode
+        var property = ketch.propertyCode
+        options.forEach { option in
+            switch option {
+            case .organizationCode(let code): organization = code
+            case .propertyCode(let code): property = code
+            default: break
+            }
+        }
+        return (organization, property)
+    }
+
+    private func flushPendingShow() {
+        guard let pending = pendingShow else { return }
+        pendingShow = nil
+        switch pending {
+        case .consent: preloadedPresentationItem?.showConsent()
+        case .preferences: preloadedPresentationItem?.showPreferences()
+        }
     }
 
     // Single choke point for "a new page is about to load". Resets the state that describes the
@@ -95,6 +150,11 @@ public final class KetchUI: ObservableObject {
         if webPresentationItem != nil {
             didCloseExperience(status: .None)
         }
+        // Torn down synchronously even though the replacement WebView may not exist until the
+        // managed identifier resolves: until then the old page must not still look current, or
+        // events it emits during the wait are handled as though they came from the new one.
+        preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
+        preloadedPresentationItem = nil
     }
 
     private func experienceOptionsWithDataCenter(_ options: [ExperienceOption]) -> [ExperienceOption] {
@@ -189,7 +249,7 @@ public final class KetchUI: ObservableObject {
     }
 
     private func presentExperience(_ content: WebPresentationItem.Event.Content) {
-        guard isTagBooted else {
+        guard isTagBooted, preloadedPresentationItem != nil else {
             experienceToShow = content
             return
         }
@@ -220,10 +280,6 @@ public final class KetchUI: ObservableObject {
 // MARK: - Direct trigger of dialog item presentation
 extension KetchUI {
     public func reload(with options: [ExperienceOption] = []) {
-        resetBridgeState()
-        preloadedPresentationItem?.webView?.configuration.userContentController.removeAllScriptMessageHandlers()
-        preloadedPresentationItem = webExperience(onEvent: handle)
-
         // merge options, override existing if needed
         var newOptions = self.options
         options.forEach { option in
@@ -233,21 +289,34 @@ extension KetchUI {
             
             newOptions.append(option)
         }
-        
-        preloadedPresentationItem?.reload(options: experienceOptionsWithDataCenter(newOptions))
+
+        buildPresentation(options: experienceOptionsWithDataCenter(newOptions))
     }
     
     public func showExperience() {
+        // Assigning nil here would dismiss an experience that is already on screen.
+        guard preloadedPresentationItem != nil else {
+            KetchLogger.log.debug("showExperience ignored: the web experience is not built yet")
+            return
+        }
         webPresentationItem = preloadedPresentationItem
     }
 
     public func showPreferences() {
         experienceToShow = .preference
+        guard preloadedPresentationItem != nil else {
+            pendingShow = .preferences
+            return
+        }
         preloadedPresentationItem?.showPreferences()
     }
     
     public func showConsent() {
         experienceToShow = .consent
+        guard preloadedPresentationItem != nil else {
+            pendingShow = .consent
+            return
+        }
         preloadedPresentationItem?.showConsent()
     }
     
@@ -413,13 +482,16 @@ extension KetchUI {
 
 // MARK: - Dialog presentation item generation of each type
 extension KetchUI {
-    private func webExperience(onEvent: ((WebPresentationItem.Event) -> Void)?) -> WebPresentationItem? {
+    private func webExperience(
+        onEvent: ((WebPresentationItem.Event) -> Void)?,
+        managedIdentity: ManagedIdentity.Resolved?
+    ) -> WebPresentationItem? {
         WebPresentationItem(
             item: .init(
                 orgCode: ketch.organizationCode,
                 propertyName: ketch.propertyCode,
                 environmentCode: ketch.environmentCode,
-                advertisingIdentifiers: ketch.identities
+                identities: ManagedIdentity.merged(ketch.identities, with: managedIdentity)
             ),
             onEvent: onEvent
         )

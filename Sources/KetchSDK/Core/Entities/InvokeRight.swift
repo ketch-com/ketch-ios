@@ -42,7 +42,7 @@ extension KetchSDK {
         public let controllerCode: String?
         public let propertyCode: String
         public let environmentCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]
         public let invokedAt: Int?
         public let jurisdictionCode: String
         public let rightCode: String
@@ -50,6 +50,13 @@ extension KetchSDK {
         public let recaptchaToken: String?
         public let regionCode: String?
         public let isAuthenticated: Bool?
+
+        /// A copy carrying `identities`, for adding the Ketch-managed identifier before encoding.
+        func withIdentities(_ identities: [String: String]) -> Self {
+            var copy = self
+            copy.identities = identities
+            return copy
+        }
 
         public init(
             organizationCode: String,

@@ -42,7 +42,7 @@ extension KetchSDK {
         public let controllerCode: String?
         public let propertyCode: String
         public let environmentCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]?
         public let invokedAt: Int?
         public let jurisdictionCode: String
         public let rightCode: String
@@ -55,7 +55,7 @@ extension KetchSDK {
             organizationCode: String,
             propertyCode: String,
             environmentCode: String,
-            identities: [String: String],
+            identities: [String: String]? = nil,
             jurisdictionCode: String,
             rightCode: String,
             user: DataSubject,

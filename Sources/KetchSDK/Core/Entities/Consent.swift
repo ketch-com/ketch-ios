@@ -10,7 +10,7 @@ extension KetchSDK {
         public let organizationCode: String
         public let propertyCode: String
         public let environmentCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]?
         public let jurisdictionCode: String
         public let migrationOption: MigrationOption
         public let purposes: [String: PurposeAllowedLegalBasis]
@@ -21,7 +21,7 @@ extension KetchSDK {
             organizationCode: String,
             propertyCode: String,
             environmentCode: String,
-            identities: [String: String],
+            identities: [String: String]? = nil,
             jurisdictionCode: String,
             migrationOption: MigrationOption,
             purposes: [String: PurposeAllowedLegalBasis],
@@ -76,7 +76,7 @@ extension KetchSDK {
         public let propertyCode: String
         public let environmentCode: String
         public let jurisdictionCode: String
-        public let identities: [String: String]
+        public var identities: [String: String]?
         public let purposes: [String: PurposeLegalBasis]
 
         public init(
@@ -84,7 +84,7 @@ extension KetchSDK {
             propertyCode: String,
             environmentCode: String,
             jurisdictionCode: String,
-            identities: [String: String],
+            identities: [String: String]? = nil,
             purposes: [String: PurposeLegalBasis]
         ) {
             self.organizationCode = organizationCode

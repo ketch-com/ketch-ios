@@ -661,6 +661,10 @@ extension Ketch {
 
 // MARK: - Identities
 
+// Ketch-managed identity keys are `swb_<appCode>`, resolved by the tag over the native bridge
+// and stored via the existing `nativeStoragePut` handler — see `NativeResolveHandler`.
+private let managedIdentityKeyPrefix = "swb_"
+
 extension Ketch {
     /// Replaces the identities supplied by the host app.
     public func setIdentities(_ identities: [Identity]) {
@@ -669,14 +673,21 @@ extension Ketch {
         identitiesLock.unlock()
     }
 
-    /// The identities currently supplied by the host app.
+    /// The identities supplied by the host app, merged with the Ketch-managed identity the tag
+    /// has resolved via the native bridge, if any — the managed value wins on key collision.
     public func getIdentities() -> [Identity] {
-        identities
+        var merged = [String: String](uniqueKeysWithValues: identities.map { ($0.key, $0.value) })
+        nativeStorage.values(withPrefix: managedIdentityKeyPrefix).forEach { merged[$0.key] = $0.value }
+        return merged.map { Identity(key: $0.key, value: $0.value) }
     }
 
-    /// Clears the identities supplied by the host app.
+    /// Clears the Ketch-managed identity from storage, so the tag mints a fresh one on its next
+    /// resolve. Identities supplied by the host app (via the constructor or `setIdentities`) are
+    /// unaffected.
     public func clearIdentities() {
-        setIdentities([])
+        nativeStorage.values(withPrefix: managedIdentityKeyPrefix).keys.forEach {
+            nativeStorage.removeObject(forKey: $0)
+        }
     }
 }
 

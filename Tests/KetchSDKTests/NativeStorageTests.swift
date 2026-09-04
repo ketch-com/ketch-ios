@@ -67,6 +67,24 @@ final class NativeStorageTests: XCTestCase {
         XCTAssertNil(storage.value(forKey: "some_key"))
     }
 
+    func testValuesWithPrefixReturnsOnlyMatchingStringValues() {
+        let storage = NativeStorage(userDefaults: userDefaults)
+        storage.write(key: "swb_acme", value: "minted-value")
+        storage.write(key: "swb_other", value: "another-value")
+        storage.write(key: "keep_me", value: "unrelated")
+        storage.set(42, forKey: "swb_not_a_string")
+
+        let matches = storage.values(withPrefix: "swb_")
+
+        XCTAssertEqual(matches, ["swb_acme": "minted-value", "swb_other": "another-value"])
+    }
+
+    func testValuesWithPrefixReturnsEmptyWhenNoneMatch() {
+        let storage = NativeStorage(userDefaults: userDefaults)
+        storage.write(key: "keep_me", value: "unrelated")
+        XCTAssertEqual(storage.values(withPrefix: "swb_"), [:])
+    }
+
     func testRemoveObjectDeletesKey() {
         let storage = NativeStorage(userDefaults: userDefaults)
         storage.write(key: "to_remove", value: "bye")

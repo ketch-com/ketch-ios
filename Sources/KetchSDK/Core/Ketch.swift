@@ -685,13 +685,15 @@ extension Ketch {
         return merged.map { Identity(key: $0.key, value: $0.value) }
     }
 
-    /// Wipes every identity value the tag has resolved this session, both from memory and from
-    /// native storage, so the tag mints fresh values on the next resolve. Identities supplied by
-    /// the host app (via the constructor or `setIdentities`) are unaffected.
+    /// Forgets every identity: those supplied by the host app (via the constructor or
+    /// `setIdentities`), and every one the tag has resolved over the native bridge this
+    /// session, both from memory and from native storage, so the tag mints fresh values on
+    /// the next resolve.
     public func clearIdentities() {
         identitiesLock.lock()
         let keys = Array(resolvedIdentities.keys)
         resolvedIdentities = [:]
+        _identities = []
         identitiesLock.unlock()
         keys.forEach { nativeStorage.removeObject(forKey: $0) }
     }

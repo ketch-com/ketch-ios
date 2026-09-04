@@ -164,8 +164,12 @@ public final class KetchUI: ObservableObject {
             eventListener?.onConsentUpdated(consent: consent)
 
         case .nativeStoragePut(let key, let value):
+            ketch.recordIdentityPut(key: key, value: value)
             eventListener?.onNativeStoragePut(key: key, value: value)
-            
+
+        case .nativeIdentityResolved(let key, let value):
+            ketch.recordIdentityResolveAttempt(key: key, value: value)
+
         case .error(let description):
             eventListener?.onError(description: description)
         case .environment(let env):

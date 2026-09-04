@@ -31,6 +31,11 @@ public final class Ketch: ObservableObject {
     let propertyCode: String
     let environmentCode: String
     private var _identities: [Identity]
+    // Keys the tag has asked to resolve over the native bridge, and whatever value (if any) was
+    // found for each. Tracked generically — not scoped to a naming convention — since
+    // NativeStorage also holds unrelated things (consent version, IAB privacy strings, ATT)
+    private var resolvedIdentityKeys: Set<String> = []
+    private var resolvedIdentities: [String: String] = [:]
     private let identitiesLock = NSLock()
 
     /// Identities supplied by the host app.
@@ -661,10 +666,6 @@ extension Ketch {
 
 // MARK: - Identities
 
-// Ketch-managed identity keys are `swb_<appCode>`, resolved by the tag over the native bridge
-// and stored via the existing `nativeStoragePut` handler — see `NativeResolveHandler`.
-private let managedIdentityKeyPrefix = "swb_"
-
 extension Ketch {
     /// Replaces the identities supplied by the host app.
     public func setIdentities(_ identities: [Identity]) {
@@ -673,21 +674,49 @@ extension Ketch {
         identitiesLock.unlock()
     }
 
-    /// The identities supplied by the host app, merged with the Ketch-managed identity the tag
-    /// has resolved via the native bridge, if any — the managed value wins on key collision.
+    /// The identities supplied by the host app, merged with everything the tag has resolved
+    /// over the native bridge this session — the resolved value wins on key collision, since it
+    /// reflects the tag's current state.
     public func getIdentities() -> [Identity] {
-        var merged = [String: String](uniqueKeysWithValues: identities.map { ($0.key, $0.value) })
-        nativeStorage.values(withPrefix: managedIdentityKeyPrefix).forEach { merged[$0.key] = $0.value }
+        identitiesLock.lock()
+        defer { identitiesLock.unlock() }
+        var merged = [String: String](uniqueKeysWithValues: _identities.map { ($0.key, $0.value) })
+        resolvedIdentities.forEach { merged[$0.key] = $0.value }
         return merged.map { Identity(key: $0.key, value: $0.value) }
     }
 
-    /// Clears the Ketch-managed identity from storage, so the tag mints a fresh one on its next
-    /// resolve. Identities supplied by the host app (via the constructor or `setIdentities`) are
-    /// unaffected.
+    /// Wipes every identity value the tag has resolved this session, both from memory and from
+    /// native storage, so the tag mints fresh values on the next resolve. Identities supplied by
+    /// the host app (via the constructor or `setIdentities`) are unaffected.
     public func clearIdentities() {
-        nativeStorage.values(withPrefix: managedIdentityKeyPrefix).keys.forEach {
-            nativeStorage.removeObject(forKey: $0)
+        identitiesLock.lock()
+        let keys = Array(resolvedIdentities.keys)
+        resolvedIdentities = [:]
+        identitiesLock.unlock()
+        keys.forEach { nativeStorage.removeObject(forKey: $0) }
+    }
+
+    /// Records that the tag asked to resolve `key` over the native bridge, and the value found
+    /// for it, if any. Called for every resolve request, even when nothing was found — that's
+    /// how `recordIdentityPut` below knows a later put for the same key is identity-related.
+    func recordIdentityResolveAttempt(key: String, value: String?) {
+        identitiesLock.lock()
+        resolvedIdentityKeys.insert(key)
+        if let value {
+            resolvedIdentities[key] = value
         }
+        identitiesLock.unlock()
+    }
+
+    /// Records a value the tag minted and pushed back via `nativeStoragePut` — but only for a
+    /// key already known to be an identity (asked about via a prior resolve), since that event
+    /// also carries unrelated tag storage writes.
+    func recordIdentityPut(key: String, value: String) {
+        identitiesLock.lock()
+        if resolvedIdentityKeys.contains(key) {
+            resolvedIdentities[key] = value
+        }
+        identitiesLock.unlock()
     }
 }
 

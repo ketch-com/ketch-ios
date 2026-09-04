@@ -37,12 +37,6 @@ struct NativeStorage {
         userDefaults.value(forKey: key)
     }
 
-    /// Returns every stored key/value pair whose key begins with `prefix`.
-    func values(withPrefix prefix: String) -> [String: String] {
-        let matches = userDefaults.dictionaryRepresentation().filter { $0.key.hasPrefix(prefix) }
-        return matches.compactMapValues { $0 as? String }
-    }
-
     // MARK: - Removal
 
     func removeObject(forKey key: String) {

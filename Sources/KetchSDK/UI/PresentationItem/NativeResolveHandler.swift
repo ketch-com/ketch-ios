@@ -19,13 +19,19 @@ func parseNativeResolveKey(from body: Any) -> String? {
 /// Bridges the tag's `ketchNativeResolve.postMessage({ key })` call to `NativeStorage`. Always
 /// replies — with `nil` when nothing is stored — so the tag's own ~2s timeout is never hit.
 /// Never writes: storage writes remain the existing `nativeStoragePut` handler's job.
+///
+/// `onResolve`, if set, is called with every key the tag asks about and whatever value (if any)
+/// was found — this is how the SDK learns which storage keys are identities at all, since
+/// `NativeStorage` also holds unrelated things (consent version, IAB privacy strings, ATT)
 final class NativeResolveHandler: NSObject, WKScriptMessageHandlerWithReply {
     static let messageName = "ketchNativeResolve"
 
     private let nativeStorage: NativeStorage
+    private let onResolve: ((String, String?) -> Void)?
 
-    init(nativeStorage: NativeStorage) {
+    init(nativeStorage: NativeStorage, onResolve: ((String, String?) -> Void)? = nil) {
         self.nativeStorage = nativeStorage
+        self.onResolve = onResolve
     }
 
     func userContentController(
@@ -38,6 +44,8 @@ final class NativeResolveHandler: NSObject, WKScriptMessageHandlerWithReply {
             replyHandler(nil, nil)
             return
         }
-        replyHandler(nativeStorage.readIfPresent(key: key), nil)
+        let value = nativeStorage.readIfPresent(key: key)
+        onResolve?(key, value)
+        replyHandler(value, nil)
     }
 }

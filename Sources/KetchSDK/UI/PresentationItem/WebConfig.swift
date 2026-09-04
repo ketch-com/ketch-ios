@@ -95,16 +95,22 @@ struct WebConfig {
         return Array(defaultQuery.values)
     }
 
-    func preferencesWebView(with webHandler: WebHandler) -> WKWebView {
+    func preferencesWebView(with webHandler: WebHandler, nativeResolveHandler: NativeResolveHandler) -> WKWebView {
         let preferences = WKWebpagePreferences()
         preferences.allowsContentJavaScript = true
-        
+
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences = preferences
 
         WebHandler.Event.allCases.forEach { event in
             configuration.userContentController.add(webHandler, name: event.rawValue)
         }
+
+        configuration.userContentController.addScriptMessageHandler(
+            nativeResolveHandler,
+            contentWorld: .page,
+            name: NativeResolveHandler.messageName
+        )
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.backgroundColor = .clear

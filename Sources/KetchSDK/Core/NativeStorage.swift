@@ -17,6 +17,12 @@ struct NativeStorage {
         userDefaults.string(forKey: key) ?? defaultValue
     }
 
+    /// Returns the stored value for `key`, or `nil` if nothing has ever been written for it.
+    /// Unlike `read(key:defaultValue:)`, this distinguishes "absent" from "present but empty".
+    func readIfPresent(key: String) -> String? {
+        userDefaults.string(forKey: key)
+    }
+
     func write(key: String, value: String) {
         userDefaults.set(value, forKey: key)
     }

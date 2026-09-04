@@ -85,6 +85,8 @@ extension KetchUI {
             var options = validateOptions(options)
             
             let webHandler = WebHandler(onEvent: handle)
+            let nativeResolveHandler = NativeResolveHandler(nativeStorage: nativeStorage)
+            
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
@@ -99,7 +101,7 @@ extension KetchUI {
             KetchLogger.log.debug("Params: \(config.params)")
 
             webView?.configuration.userContentController.removeAllScriptMessageHandlers()
-            webView = config.preferencesWebView(with: webHandler)
+            webView = config.preferencesWebView(with: webHandler, nativeResolveHandler: nativeResolveHandler)
             webView?.navigationDelegate = webNavigationHandler
             webView?.uiDelegate = webNavigationHandler
             

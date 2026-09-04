@@ -464,10 +464,20 @@ extension Ketch {
         ] + query).joined(separator: "|")
     }
 
+    /// `getIdentities()` as a plain dictionary, for filling in a headless request's `identities`
+    /// when the caller left it unset.
+    private func mergedIdentities() -> [String: String] {
+        [String: String](uniqueKeysWithValues: getIdentities().map { ($0.key, $0.value) })
+    }
+
     public func getConsent(
         consentConfig: KetchSDK.ConsentConfig,
         completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
     ) {
+        var consentConfig = consentConfig
+        if consentConfig.identities == nil {
+            consentConfig.identities = mergedIdentities()
+        }
         apiRequest.getConsent(config: consentConfig)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
@@ -478,6 +488,10 @@ extension Ketch {
         consentUpdate: KetchSDK.ConsentUpdate,
         completion: @escaping (Result<KetchSDK.ConsentStatus, KetchSDK.KetchError>) -> Void
     ) {
+        var consentUpdate = consentUpdate
+        if consentUpdate.identities == nil {
+            consentUpdate.identities = mergedIdentities()
+        }
         apiRequest.setConsent(update: consentUpdate)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
@@ -488,6 +502,10 @@ extension Ketch {
         request: KetchSDK.InvokeRightRequest,
         completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
     ) {
+        var request = request
+        if request.identities == nil {
+            request.identities = mergedIdentities()
+        }
         apiRequest.invokeRight(request: request)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success(())) }
@@ -498,6 +516,10 @@ extension Ketch {
         request: KetchSDK.SubscriptionsRequest,
         completion: @escaping (Result<KetchSDK.SubscriptionsResponse, KetchSDK.KetchError>) -> Void
     ) {
+        var request = request
+        if request.identities == nil {
+            request.identities = mergedIdentities()
+        }
         apiRequest.getSubscriptions(request: request)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success($0)) }
@@ -508,6 +530,10 @@ extension Ketch {
         request: KetchSDK.SubscriptionsRequest,
         completion: @escaping (Result<Void, KetchSDK.KetchError>) -> Void
     ) {
+        var request = request
+        if request.identities == nil {
+            request.identities = mergedIdentities()
+        }
         apiRequest.setSubscriptions(request: request)
             .sink { if case .failure(let error) = $0 { completion(.failure(error)) } }
             receiveValue: { completion(.success(())) }

@@ -40,7 +40,7 @@ extension KetchSDK {
         public let controllerCode: String?
         public let propertyCode: String?
         public let environmentCode: String?
-        public let identities: [String: String]?
+        public var identities: [String: String]?
         /// Topic code to its per-contact-method settings, e.g. `marketing_emails -> email -> granted`.
         public let topics: [String: SubscriptionTopicSetting]?
         public let controls: [String: SubscriptionControlSetting]?

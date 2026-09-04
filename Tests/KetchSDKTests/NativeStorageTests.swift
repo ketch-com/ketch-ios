@@ -36,6 +36,24 @@ final class NativeStorageTests: XCTestCase {
         XCTAssertEqual(storage.read(key: "sample_key", defaultValue: ""), "sample_value")
     }
 
+    func testReadIfPresentReturnsNilWhenKeyMissing() {
+        let storage = NativeStorage(userDefaults: userDefaults)
+        XCTAssertNil(storage.readIfPresent(key: "missing"))
+    }
+
+    func testReadIfPresentReturnsWrittenValue() {
+        let storage = NativeStorage(userDefaults: userDefaults)
+        storage.write(key: "sample_key", value: "sample_value")
+        XCTAssertEqual(storage.readIfPresent(key: "sample_key"), "sample_value")
+    }
+
+    func testReadIfPresentDistinguishesEmptyFromAbsent() {
+        let storage = NativeStorage(userDefaults: userDefaults)
+        storage.write(key: "empty_key", value: "")
+        XCTAssertEqual(storage.readIfPresent(key: "empty_key"), "")
+        XCTAssertNil(storage.readIfPresent(key: "never_written"))
+    }
+
     func testSetAndValueRoundTripForInt() {
         let storage = NativeStorage(userDefaults: userDefaults)
         storage.set(42, forKey: "consent_version")

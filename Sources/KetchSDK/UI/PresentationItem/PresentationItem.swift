@@ -23,6 +23,7 @@ extension KetchUI {
             case onGPPUpdated(String?)
             case onConsentUpdated(consent: KetchSDK.ConsentStatus)
             case nativeStoragePut(key: String, value: String)
+            case nativeIdentityResolved(key: String, value: String?)
             case error(description: String)
             case tapOutside
             case environment(String?)
@@ -85,6 +86,8 @@ extension KetchUI {
             var options = validateOptions(options)
             
             let webHandler = WebHandler(onEvent: handle)
+            let nativeResolveHandler = NativeResolveHandler(nativeStorage: nativeStorage, onResolve: handleNativeResolve)
+            
             var config = config
             config.params = Dictionary(uniqueKeysWithValues: options.map { ($0.queryParameter.key, $0.queryParameter.value) })
             
@@ -99,7 +102,7 @@ extension KetchUI {
             KetchLogger.log.debug("Params: \(config.params)")
 
             webView?.configuration.userContentController.removeAllScriptMessageHandlers()
-            webView = config.preferencesWebView(with: webHandler)
+            webView = config.preferencesWebView(with: webHandler, nativeResolveHandler: nativeResolveHandler)
             webView?.navigationDelegate = webNavigationHandler
             webView?.uiDelegate = webNavigationHandler
             
@@ -155,6 +158,10 @@ extension KetchUI {
                 .asResponsiveSheet(style: .custom)
         }
         
+        private func handleNativeResolve(key: String, value: String?) {
+            onEvent?(.nativeIdentityResolved(key: key, value: value))
+        }
+
         private func handle(event: WebHandler.Event, body: Any) {
             switch event {
             case .showConsentExperience:

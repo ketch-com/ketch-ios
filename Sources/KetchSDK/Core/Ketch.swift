@@ -30,7 +30,15 @@ public final class Ketch: ObservableObject {
     let organizationCode: String
     let propertyCode: String
     let environmentCode: String
-    let identities: [Identity]
+    private var _identities: [Identity]
+    private let identitiesLock = NSLock()
+
+    /// Identities supplied by the host app.
+    var identities: [Identity] {
+        identitiesLock.lock()
+        defer { identitiesLock.unlock() }
+        return _identities
+    }
     public let dataCenter: KetchDataCenter
     private let apiRequest: KetchApiRequest
     private let userDefaults: UserDefaults
@@ -76,7 +84,7 @@ public final class Ketch: ObservableObject {
         self.organizationCode = organizationCode
         self.propertyCode = propertyCode
         self.environmentCode = environmentCode
-        self.identities = identities
+        self._identities = identities
         self.dataCenter = dataCenter
         self.apiRequest = KetchApiRequest(dataCenter: dataCenter, apiClient: apiClient)
         self.userDefaults = userDefaults
@@ -648,6 +656,27 @@ extension Ketch {
 
     func getPreferenceVersion() -> Int? {
         nativeStorage.value(forKey: PREFERENCE_VERSION) as? Int
+    }
+}
+
+// MARK: - Identities
+
+extension Ketch {
+    /// Replaces the identities supplied by the host app.
+    public func setIdentities(_ identities: [Identity]) {
+        identitiesLock.lock()
+        _identities = identities
+        identitiesLock.unlock()
+    }
+
+    /// The identities currently supplied by the host app.
+    public func getIdentities() -> [Identity] {
+        identities
+    }
+
+    /// Clears the identities supplied by the host app.
+    public func clearIdentities() {
+        setIdentities([])
     }
 }
 

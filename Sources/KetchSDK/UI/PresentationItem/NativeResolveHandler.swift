@@ -58,9 +58,7 @@ final class NativeResolveHandler: NSObject, WKScriptMessageHandlerWithReply {
             return
         }
         let value = resolveNativeValue(key: key, nativeStorage: nativeStorage)
-        if key != idfvKey {
-            onResolve?(key, value)
-        }
+        onResolve?(key, value)
         replyHandler(value, nil)
     }
 }

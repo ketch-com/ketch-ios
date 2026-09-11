@@ -111,6 +111,18 @@ final class KetchIdentitiesTests: XCTestCase {
 
         XCTAssertEqual(ketch.getIdentities().map(\.key), ["email"])
     }
+
+    func testIDFVResolveAttemptAppearsInGetIdentitiesAndIsClearedByClearIdentities() {
+        let ketch = makeKetch()
+        ketch.recordIdentityResolveAttempt(key: "ketch_idfv", value: "12345678-ABCD-1234-ABCD-1234567890AB")
+
+        let identities = Dictionary(uniqueKeysWithValues: ketch.getIdentities().map { ($0.key, $0.value) })
+        XCTAssertEqual(identities["ketch_idfv"], "12345678-ABCD-1234-ABCD-1234567890AB")
+
+        ketch.clearIdentities()
+
+        XCTAssertEqual(ketch.getIdentities(), [])
+    }
 }
 
 extension Ketch.Identity: Equatable {

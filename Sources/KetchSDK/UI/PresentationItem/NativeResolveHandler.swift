@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import UIKit
 import WebKit
 
 /// Extracts the `key` argument from the `ketchNativeResolve` message body (`{ key: string }`).
@@ -14,6 +15,18 @@ func parseNativeResolveKey(from body: Any) -> String? {
           let key = dict["key"] as? String else { return nil }
     let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
+}
+
+private let idfvKey = "ketch_idfv"
+
+/// Routes a `ketchNativeResolve` key to its value. `ketch_idfv` answers with the device's vendor
+/// identifier, every other key reads from native storage.
+func resolveNativeValue(
+    key: String,
+    nativeStorage: NativeStorage,
+    identifierForVendor: () -> String? = { UIDevice.current.identifierForVendor?.uuidString }
+) -> String? {
+    key == idfvKey ? identifierForVendor() : nativeStorage.readIfPresent(key: key)
 }
 
 /// Bridges the tag's `ketchNativeResolve.postMessage({ key })` call to `NativeStorage`. Always
@@ -44,8 +57,10 @@ final class NativeResolveHandler: NSObject, WKScriptMessageHandlerWithReply {
             replyHandler(nil, nil)
             return
         }
-        let value = nativeStorage.readIfPresent(key: key)
-        onResolve?(key, value)
+        let value = resolveNativeValue(key: key, nativeStorage: nativeStorage)
+        if key != idfvKey {
+            onResolve?(key, value)
+        }
         replyHandler(value, nil)
     }
 }

@@ -1,0 +1,40 @@
+name: KetchIntegrationTests
+options:
+  bundleIdPrefix: com.ketch
+  deploymentTarget:
+    iOS: 15.0
+packages:
+  KetchSDK:
+    path: ../
+targets:
+  KetchIntegrationTestsApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.ketch.integration.tests
+      INFOPLIST_FILE: App/Info.plist
+    dependencies:
+      - package: KetchSDK
+    scheme:
+      testTargets:
+        - name: KetchIntegrationUITests
+  KetchIntegrationUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: KetchIntegrationTestsApp
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+schemes:
+  KetchIntegrationTestsApp:
+    build:
+      targets:
+        KetchIntegrationTestsApp: all
+    test:
+      targets:
+        - name: KetchIntegrationUITests
+      gatherCoverageData: false

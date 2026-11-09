@@ -129,7 +129,7 @@ public final class KetchUI: ObservableObject {
             eventListener?.onHasShownExperience()
             
         case .tapOutside:
-            // Public API case that the page no longer emits; keep it so exhaustive switches still compile.
+            // Kept for source compatibility: WebPresentationItem.Event is public, so removing the case would break callers' exhaustive switches.
             break
 
         case .configurationLoaded(let configuration):

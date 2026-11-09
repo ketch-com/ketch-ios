@@ -129,7 +129,7 @@ public final class KetchUI: ObservableObject {
             eventListener?.onHasShownExperience()
             
         case .tapOutside:
-            // Kept for source compatibility; tapping outside the experience no longer dismisses it.
+            // Tapping outside the experience does not dismiss it.
             break
 
         case .configurationLoaded(let configuration):

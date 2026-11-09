@@ -116,7 +116,7 @@ final class ExperiencePresentationTests: XCTestCase {
 
         ketchUI.handle(webPresentationEvent: .tapOutside)
 
-        XCTAssertNotNil(ketchUI.webPresentationItem, "tapping outside the banner must not dismiss it, matching web and Android")
+        XCTAssertNotNil(ketchUI.webPresentationItem, "tapping outside the banner must not dismiss it")
         XCTAssertEqual(listener.dismissCount, 0)
         XCTAssertEqual(plugin.hiddenReasons, [])
     }

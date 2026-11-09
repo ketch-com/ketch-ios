@@ -195,10 +195,6 @@ extension KetchUI {
                 KetchLogger.log.debug("webView onEvent: \(event.rawValue)")
                 onEvent?(.hasShownExperience)
                 
-            case .tapOutside:
-                KetchLogger.log.debug("webView onEvent: \(event.rawValue): \((body as? String) ?? "-")")
-                onEvent?(.tapOutside)
-                
             case .updateCCPA:
                 guard let stringBody = body as? String else {
                     KetchLogger.log.error("Failed to retrieve CCPA string")
@@ -413,7 +409,6 @@ class WebHandler: NSObject, WKScriptMessageHandler {
         case hasShownExperience
         case onConfigLoaded
         case error
-        case tapOutside
         case geoip
         case openAppSettings
         case nativeStoragePut = "nativeStoragePut"

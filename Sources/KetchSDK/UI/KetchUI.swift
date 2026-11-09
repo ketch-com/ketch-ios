@@ -129,7 +129,7 @@ public final class KetchUI: ObservableObject {
             eventListener?.onHasShownExperience()
             
         case .tapOutside:
-            // Tapping outside the experience does not dismiss it.
+            // Public API case that the page no longer emits; keep it so exhaustive switches still compile.
             break
 
         case .configurationLoaded(let configuration):

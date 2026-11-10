@@ -129,8 +129,9 @@ public final class KetchUI: ObservableObject {
             eventListener?.onHasShownExperience()
             
         case .tapOutside:
-            didCloseExperience(status: KetchSDK.HideExperienceStatus.None)
-            
+            // Kept for source compatibility: WebPresentationItem.Event is public, so removing the case would break callers' exhaustive switches.
+            break
+
         case .configurationLoaded(let configuration):
             self.ketch.configuration = configuration
 

@@ -67,19 +67,6 @@
             };
         })(window.console);
 
-        // A temporary workaround to get banner/modal dimensions on tablets
-        // TODO: remove this once there will be a way to get dialogs position from JS SDK
-        function getDialogSize() {
-            var domElem = document.querySelector('#lanyard_root div[role="dialog"]');
-            if (!domElem) {
-                return;
-            }
-            var domRect = domElem.getBoundingClientRect();
-            if (domRect) {
-                return domRect;
-            }
-        }
-
         // Get query parameters
         let params = (new URL(document.location)).searchParams;
 
@@ -113,14 +100,5 @@
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover" />
 </head>
 <body>
-<script>
-    // We put the script inside body, otherwise document.body will be null
-    // Trigger taps outside of the dialog
-    document.body.addEventListener("touchstart", function(e) {
-        if (e.target === document.body) {
-            emitEvent("tapOutside", [getDialogSize()]);
-        }
-    });
-</script>
 </body>
 </html>

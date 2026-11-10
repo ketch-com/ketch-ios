@@ -105,6 +105,22 @@ final class ExperiencePresentationTests: XCTestCase {
         XCTAssertEqual(listener.dismissCount, 0, "closing nothing must not fabricate a dismiss event")
     }
 
+    // MARK: - Tap outside
+
+    func testTapOutside_whileExperienceShowing_keepsItOpen() {
+        let plugin = SpyHidePlugin()
+        ketch.add(plugin: plugin)
+        bootTag()
+        ketchUI.handle(webPresentationEvent: .show(.consent))
+        XCTAssertNotNil(ketchUI.webPresentationItem)
+
+        ketchUI.handle(webPresentationEvent: .tapOutside)
+
+        XCTAssertNotNil(ketchUI.webPresentationItem, "tapping outside the banner must not dismiss it")
+        XCTAssertEqual(listener.dismissCount, 0)
+        XCTAssertEqual(plugin.hiddenReasons, [])
+    }
+
     func testReload_whileExperienceShowing_tearsItDownRatherThanStrandingIt() {
         bootTag()
         ketchUI.handle(webPresentationEvent: .show(.consent))

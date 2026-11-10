@@ -1,0 +1,435 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		08B910F232D40F399672500A /* KetchIntegrationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4F5222445FBD4AF9C11CEB /* KetchIntegrationApp.swift */; };
+		177D8C5617212B784928796A /* IntegrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FED76042B2AD86E3CCFE60C /* IntegrationViewModel.swift */; };
+		821B7D067042ECF4198C3DE0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DB99F46ECCB76EB81D170F /* ContentView.swift */; };
+		90AB3A837B2F001A7119F0FF /* KetchIntegrationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 106A31067F258958A8640C1B /* KetchIntegrationUITests.swift */; };
+		973E8038CF0CC107C9505926 /* KetchSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F161731F347374CF1E22D61A /* KetchSDK */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0E9DF73B8CB38B0A703398C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49778FD1E8FCA3F379409827 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CAF9B686C2618D0FB42E1758;
+			remoteInfo = KetchIntegrationTestsApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		04DB99F46ECCB76EB81D170F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		09666802D1E121B9B3BBB9B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0FED76042B2AD86E3CCFE60C /* IntegrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationViewModel.swift; sourceTree = "<group>"; };
+		106A31067F258958A8640C1B /* KetchIntegrationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KetchIntegrationUITests.swift; sourceTree = "<group>"; };
+		20916F22196C3B49A7FD0999 /* ketch-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ketch-ios"; path = ..; sourceTree = SOURCE_ROOT; };
+		40C4244BA9014E0417A2ABA3 /* KetchIntegrationUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KetchIntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A8C85FCEE21D107D6E9F276 /* KetchIntegrationTestsApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KetchIntegrationTestsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD4F5222445FBD4AF9C11CEB /* KetchIntegrationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KetchIntegrationApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		45020DF832F9BA25FFE1E6D0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				973E8038CF0CC107C9505926 /* KetchSDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0DEE1E51154F04F1E08C4C67 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				106A31067F258958A8640C1B /* KetchIntegrationUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		27AE9CA3BBDC608BE2F44631 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5A8C85FCEE21D107D6E9F276 /* KetchIntegrationTestsApp.app */,
+				40C4244BA9014E0417A2ABA3 /* KetchIntegrationUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4A4F33876EC5C53D4F2F1AD8 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				20916F22196C3B49A7FD0999 /* ketch-ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		690BB6A21E9D767FC4D826E8 = {
+			isa = PBXGroup;
+			children = (
+				EAA07DB0F5BAC41F306FB3E3 /* App */,
+				4A4F33876EC5C53D4F2F1AD8 /* Packages */,
+				0DEE1E51154F04F1E08C4C67 /* UITests */,
+				27AE9CA3BBDC608BE2F44631 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EAA07DB0F5BAC41F306FB3E3 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				04DB99F46ECCB76EB81D170F /* ContentView.swift */,
+				09666802D1E121B9B3BBB9B5 /* Info.plist */,
+				0FED76042B2AD86E3CCFE60C /* IntegrationViewModel.swift */,
+				AD4F5222445FBD4AF9C11CEB /* KetchIntegrationApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CAF9B686C2618D0FB42E1758 /* KetchIntegrationTestsApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAF4A9C6651E3E43694B6F09 /* Build configuration list for PBXNativeTarget "KetchIntegrationTestsApp" */;
+			buildPhases = (
+				592C5216A1E79BBFDAC2633D /* Sources */,
+				45020DF832F9BA25FFE1E6D0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KetchIntegrationTestsApp;
+			packageProductDependencies = (
+				F161731F347374CF1E22D61A /* KetchSDK */,
+			);
+			productName = KetchIntegrationTestsApp;
+			productReference = 5A8C85FCEE21D107D6E9F276 /* KetchIntegrationTestsApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F1040B66216ADFAF7A39A342 /* KetchIntegrationUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 14FC9A0D03BA15C9E4074B9C /* Build configuration list for PBXNativeTarget "KetchIntegrationUITests" */;
+			buildPhases = (
+				21454A2A91148664BCA05003 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7FB8AA13405EBB293223108C /* PBXTargetDependency */,
+			);
+			name = KetchIntegrationUITests;
+			packageProductDependencies = (
+			);
+			productName = KetchIntegrationUITests;
+			productReference = 40C4244BA9014E0417A2ABA3 /* KetchIntegrationUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		49778FD1E8FCA3F379409827 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					F1040B66216ADFAF7A39A342 = {
+						TestTargetID = CAF9B686C2618D0FB42E1758;
+					};
+				};
+			};
+			buildConfigurationList = 7F226A446111C04D2F3EBBE8 /* Build configuration list for PBXProject "KetchIntegrationTests" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 690BB6A21E9D767FC4D826E8;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				83A3EC8E6EB589A36FC3C24E /* XCLocalSwiftPackageReference "..//" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CAF9B686C2618D0FB42E1758 /* KetchIntegrationTestsApp */,
+				F1040B66216ADFAF7A39A342 /* KetchIntegrationUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		21454A2A91148664BCA05003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90AB3A837B2F001A7119F0FF /* KetchIntegrationUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		592C5216A1E79BBFDAC2633D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				821B7D067042ECF4198C3DE0 /* ContentView.swift in Sources */,
+				177D8C5617212B784928796A /* IntegrationViewModel.swift in Sources */,
+				08B910F232D40F399672500A /* KetchIntegrationApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7FB8AA13405EBB293223108C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CAF9B686C2618D0FB42E1758 /* KetchIntegrationTestsApp */;
+			targetProxy = 0E9DF73B8CB38B0A703398C9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		001976BFFBBAE3D59A14F5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ketch.KetchIntegrationUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KetchIntegrationTestsApp;
+			};
+			name = Release;
+		};
+		20548A9A9D0FB8535BD97642 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ketch.integration.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		68A09B64F555682535B4B752 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		69CE7056B693B3106C3CC907 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8DDA4E17A4A1EE45C7695775 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ketch.KetchIntegrationUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KetchIntegrationTestsApp;
+			};
+			name = Debug;
+		};
+		B46469F86212A257E79F9B41 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ketch.integration.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		14FC9A0D03BA15C9E4074B9C /* Build configuration list for PBXNativeTarget "KetchIntegrationUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DDA4E17A4A1EE45C7695775 /* Debug */,
+				001976BFFBBAE3D59A14F5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7F226A446111C04D2F3EBBE8 /* Build configuration list for PBXProject "KetchIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68A09B64F555682535B4B752 /* Debug */,
+				69CE7056B693B3106C3CC907 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AAF4A9C6651E3E43694B6F09 /* Build configuration list for PBXNativeTarget "KetchIntegrationTestsApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				20548A9A9D0FB8535BD97642 /* Debug */,
+				B46469F86212A257E79F9B41 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		83A3EC8E6EB589A36FC3C24E /* XCLocalSwiftPackageReference "..//" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "..//";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F161731F347374CF1E22D61A /* KetchSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KetchSDK;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 49778FD1E8FCA3F379409827 /* Project object */;
+}

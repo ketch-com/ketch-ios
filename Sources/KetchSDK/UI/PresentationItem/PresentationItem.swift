@@ -327,9 +327,27 @@ extension KetchUI.WebPresentationItem {
         webView?.evaluateJavaScript("ketch('showConsent')")
     }
 
-    /// Fires a custom-function (`onFunction`) rule trigger on an already-booted page.
-    func trigger(triggerName: String, functionName: String, optionsJson: String) {
-        webView?.evaluateJavaScript("ketch('trigger', '\(triggerName)', '\(functionName)', \(optionsJson))")
+    /// Fires a rule trigger on an already-booted page.
+    func trigger(triggerName: String, functionName: String?, optionsJson: String) {
+        guard let script = Self.triggerScript(triggerName: triggerName, functionName: functionName, optionsJson: optionsJson) else {
+            return
+        }
+        webView?.evaluateJavaScript(script)
+    }
+
+    /// Builds the `ketch('trigger', ...)` call: the custom-function form when `functionName` is set,
+    /// otherwise the named form with the trigger name as a JSON string literal.
+    /// Returns `nil` if the name cannot be encoded.
+    static func triggerScript(triggerName: String, functionName: String?, optionsJson: String) -> String? {
+        if let functionName {
+            return "ketch('trigger', '\(triggerName)', '\(functionName)', \(optionsJson))"
+        }
+        guard let data = try? JSONEncoder().encode(triggerName),
+              let nameLiteral = String(data: data, encoding: .utf8)
+        else {
+            return nil
+        }
+        return "ketch('trigger', \(nameLiteral), \(optionsJson))"
     }
 }
 

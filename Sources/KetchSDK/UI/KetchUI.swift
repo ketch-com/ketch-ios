@@ -41,8 +41,9 @@ public final class KetchUI: ObservableObject {
     var pendingTrigger: PendingTrigger?
 
     struct PendingTrigger {
-        let triggerName: TriggerName
-        let functionName: String
+        let triggerName: String
+        // Set only for the custom-function form, `ketch('trigger', 'custom', <functionName>, <options>)`.
+        let functionName: String?
         let optionsJson: String
     }
 
@@ -140,7 +141,7 @@ public final class KetchUI: ObservableObject {
             if let pending = pendingTrigger {
                 pendingTrigger = nil
                 preloadedPresentationItem?.trigger(
-                    triggerName: pending.triggerName.rawValue,
+                    triggerName: pending.triggerName,
                     functionName: pending.functionName,
                     optionsJson: pending.optionsJson
                 )
@@ -284,15 +285,59 @@ extension KetchUI {
             return false
         }
 
-        let optionsJson = Self.jsonString(from: options)
+        dispatchTrigger(
+            PendingTrigger(triggerName: triggerName.rawValue, functionName: functionName, optionsJson: Self.jsonString(from: options))
+        )
+        return true
+    }
 
+    /// Fires a named rule trigger, `ketch('trigger', <name>, <options>)`. If a matching backend rule
+    /// shows an experience, it is displayed automatically. The name is passed through to the tag
+    /// unchanged, so trigger names added to the tag later need no SDK update.
+    ///
+    /// Trigger names supported by the tag include `privacyPreferenceUnknown`, `preferencesOpened` and
+    /// `dnsOpened`. Use `trigger(triggerName:functionName:options:)` for custom-function triggers.
+    ///
+    /// - Parameters:
+    ///   - name: the trigger name
+    ///   - options: optional key/value options passed to the experience
+    /// - Returns: `false` if `name` is invalid or `custom`, or an experience is already showing.
+    @discardableResult
+    public func trigger(_ name: String, options: [String: Any] = [:]) -> Bool {
+        guard name != TriggerName.custom.rawValue else {
+            KetchLogger.log.debug("[Ketch] trigger rejected: use trigger(triggerName:functionName:options:) for custom-function triggers")
+            return false
+        }
+        guard Self.isValidTriggerName(name) else {
+            KetchLogger.log.debug("[Ketch] trigger rejected: name must start with a letter and contain only letters, digits, '_', or '-'")
+            return false
+        }
+        guard webPresentationItem == nil else {
+            KetchLogger.log.debug("Not triggering '\(name)' as an experience is already being shown")
+            return false
+        }
+
+        dispatchTrigger(PendingTrigger(triggerName: name, functionName: nil, optionsJson: Self.jsonString(from: options)))
+        return true
+    }
+
+    // Fires on a booted page; otherwise queues until .configurationLoaded, replacing any earlier queued trigger.
+    private func dispatchTrigger(_ trigger: PendingTrigger) {
         if isTagBooted {
             pendingTrigger = nil
-            preloadedPresentationItem?.trigger(triggerName: triggerName.rawValue, functionName: functionName, optionsJson: optionsJson)
+            preloadedPresentationItem?.trigger(
+                triggerName: trigger.triggerName,
+                functionName: trigger.functionName,
+                optionsJson: trigger.optionsJson
+            )
         } else {
-            pendingTrigger = PendingTrigger(triggerName: triggerName, functionName: functionName, optionsJson: optionsJson)
+            pendingTrigger = trigger
         }
-        return true
+    }
+
+    /// Starts with a letter, then only letters, digits, '_', or '-'.
+    static func isValidTriggerName(_ name: String) -> Bool {
+        name.range(of: "^[A-Za-z][A-Za-z0-9_-]*$", options: .regularExpression) != nil
     }
 
     /// Mirrors ketch-tag's function-name validation: non-blank, and only letters, digits, '_', '-', or '.'.
@@ -301,7 +346,7 @@ extension KetchUI {
             && functionName.range(of: "^[A-Za-z0-9_.-]+$", options: .regularExpression) != nil
     }
 
-    private static func jsonString(from options: [String: Any]) -> String {
+    static func jsonString(from options: [String: Any]) -> String {
         // data(withJSONObject:) raises an ObjC exception on non-serializable values, and try?
         // does not catch those.
         guard JSONSerialization.isValidJSONObject(options),

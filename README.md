@@ -257,16 +257,27 @@ ketchUI.eventListener = #{myEventListener}#
 
 ### Rule Triggers
 
-Fire an `onFunction` rule. If a matching backend rule shows an experience, it is
-presented automatically.
+Fire a deployment-rule trigger by name. If a matching backend rule shows an
+experience, it is presented automatically.
+
+```swift
+ketchUI.trigger("dnsOpened")
+ketchUI.trigger("preferencesOpened", options: ["tab": "rightsTab"])
+```
+
+This calls `ketch('trigger', <name>, <options>)` in the tag. Names include
+`privacyPreferenceUnknown`, `preferencesOpened` and `dnsOpened`; the name is passed
+through as-is, so new trigger names need no SDK update.
+
+Fire an `onFunction` (custom function) rule:
 
 ```swift
 ketchUI.trigger(triggerName: .custom, functionName: "managePrivacy")
 ```
 
-Returns `false` if the function name is invalid or an experience is already
-showing. Calls made before the tag finishes loading are queued and fired once it
-is ready.
+Both return `false` if the name is invalid or an experience is already showing;
+`trigger(_:)` also rejects `"custom"`. Calls made before the tag finishes loading
+are queued and fired once it is ready.
 
 ### Reading Values
 

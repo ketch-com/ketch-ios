@@ -266,7 +266,7 @@ ketchUI.trigger("preferencesOpened", options: ["tab": "rightsTab"])
 ```
 
 This calls `ketch('trigger', <name>, <options>)` in the tag. Names include
-`privacyPrefUnknown`, `preferencesOpened` and `dnsOpened`; the name is passed
+`privacyPreferenceUnknown`, `preferencesOpened` and `dnsOpened`; the name is passed
 through as-is, so new trigger names need no SDK update.
 
 Fire an `onFunction` (custom function) rule:

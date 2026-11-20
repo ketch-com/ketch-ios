@@ -295,7 +295,7 @@ extension KetchUI {
     /// shows an experience, it is displayed automatically. The name is passed through to the tag
     /// unchanged, so trigger names added to the tag later need no SDK update.
     ///
-    /// Trigger names supported by the tag include `privacyPrefUnknown`, `preferencesOpened` and
+    /// Trigger names supported by the tag include `privacyPreferenceUnknown`, `preferencesOpened` and
     /// `dnsOpened`. Use `trigger(triggerName:functionName:options:)` for custom-function triggers.
     ///
     /// - Parameters:

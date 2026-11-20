@@ -55,7 +55,7 @@ final class TriggerValidationTests: XCTestCase {
     }
 
     func testValidTriggerName_acceptsTagTriggerNames() {
-        XCTAssertTrue(KetchUI.isValidTriggerName("privacyPrefUnknown"))
+        XCTAssertTrue(KetchUI.isValidTriggerName("privacyPreferenceUnknown"))
         XCTAssertTrue(KetchUI.isValidTriggerName("preferencesOpened"))
         XCTAssertTrue(KetchUI.isValidTriggerName("dnsOpened"))
         XCTAssertTrue(KetchUI.isValidTriggerName("future_trigger-2"))
